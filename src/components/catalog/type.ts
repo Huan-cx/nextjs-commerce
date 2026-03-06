@@ -1,3 +1,7 @@
+export interface SingleProductResponse {
+  product: ProductNode;
+}
+
 export interface ProductSectionNode {
   isSaleable: string | undefined;
   id: string;
@@ -17,8 +21,27 @@ export interface ProductSectionNode {
   };
 }
 
+export interface ProductVariantNode {
+  id: string;
+  sku: string;
+  name?: string;
+  price?: number;
+  attributeValues?: {
+    edges: Array<{
+      node: {
+        attribute?: {
+          code?: string;
+        };
+        value?: string;
+      };
+    }>;
+  };
+}
+
 export interface ProductNode {
-  variants: any;
+  variants: {
+    edges: Array<{ node: ProductVariantNode }>;
+  };
   id: string;
   sku: string;
   type: string;
@@ -29,6 +52,11 @@ export interface ProductNode {
   specialPrice?: string;
   metaTitle?: string;
   baseImageUrl?: string;
+  price?: string | number | { value?: number; currencyCode?: string } | null;
+  minimumPrice?: string | number;
+  priceHtml?: {
+    currencyCode?: string;
+  };
   superAttributes?: {
     edges: Array<{ node: ProductReviewNode }>;
   };
@@ -99,15 +127,29 @@ export interface ProductFilterAttributeResponse {
   };
 }
 
-export interface ProductReviewNode {
-  id: string;
+export type ProductReview = {
   rating: number;
-  name?: string;
-  title?: string;
-  comment?: string;
+};
+
+export interface ProductReviewNode {
+  __typename: "ProductReview";
+  name: string;
+  title: string;
+  rating: number;
+  comment: string;
+  createdAt: string;
+  images?: {
+    url: string;
+    reviewId: string;
+  }[];
+  customer?: {
+    name: string;
+    imageUrl: string;
+  };
 }
 
 export interface ProductData {
+  urlKey: string;
   variants?: {
     edges?: {
       node?: {
@@ -150,12 +192,21 @@ export interface ProductData {
   } | null;
 }
 
+export interface AttributeType {
+  isVisibleOnFront: string;
+  id: string;
+  code: string;
+  adminName: string;
+  type: string;
+  label?: string;
+}
+
 export type additionalDataTypes = {
-  attribute: any;
+  attribute: AttributeType;
   id: string;
   code: string;
   label: string;
-  value: null;
+  value: string | null;
   admin_name: string;
   type: string;
 };
@@ -190,7 +241,3 @@ export interface ReviewDatatypes {
   };
 }
 
-export interface ReviewDetailProps {
-  reviewDetails: ReviewDatatypes[];
-  totalReview: number;
-}

@@ -19,10 +19,10 @@ export default function OrderReview({
   selectedShipping?: string;
   selectedShippingRateTitle?: string;
 }) {
-  const { isPlaceOrder, SavePlaceOrder } = useCheckout();
+  const { isPlaceOrder, savePlaceOrder } = useCheckout();
   const { handleSubmit } = useForm();
   const onSubmit = () => {
-    SavePlaceOrder();
+    savePlaceOrder();
   };
 
   return (

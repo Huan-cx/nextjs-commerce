@@ -20,11 +20,11 @@ export function VariantSelector({
 
   return (
     <>
-      {variants.map((option) => {
+      {variants.map((option , index : number) => {
         const attributeCode = option.code;
         const _isAlreadySelected = searchParams.has(attributeCode);
         return (
-          <dl key={option.id} className="mb-8">
+          <dl key={`${option.id} + ${index}` } className="mb-8">
             <dt className="mb-4 text-sm capitalize tracking-wide">
               {getValidTitle(attributeCode)}
             </dt>

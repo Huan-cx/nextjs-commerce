@@ -8,22 +8,20 @@ import MobileFilter from "@components/theme/filters/MobileFilter";
 import ProductGridItems from "@components/catalog/product/ProductGridItems";
 import Pagination from "@components/catalog/Pagination";
 import {
-  ProductFilterAttributeResponse,
   ProductsResponse,
 } from "@components/catalog/type";
 import {
-  GET_FILTER_OPTIONS,
   GET_FILTER_PRODUCTS,
   GET_TREE_CATEGORIES,
-  graphqlRequest,
 } from "@/graphql";
+import { cachedGraphQLRequest, cachedCategoryRequest } from "@/utils/hooks/useCache";
 import { SortByFields } from "@utils/constants";
 import { CategoryDetail } from "@components/theme/search/CategoryDetail";
 import { Suspense } from "react";
 import FilterListSkeleton from "@components/common/skeleton/FilterSkeleton";
 import { TreeCategoriesResponse } from "@/types/theme/category-tree";
 import { MobileSearchBar } from "@components/layout/navbar/MobileSearch";
-import { extractNumericId, findCategoryBySlug } from "@utils/helper";
+import { extractNumericId, findCategoryBySlug, getFilterAttributes, buildProductFilters } from "@utils/helper";
 
 
 export async function generateMetadata({
@@ -33,10 +31,10 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { collection: categorySlug } = await params;
 
-  const treeData = await graphqlRequest<TreeCategoriesResponse>(
+  const treeData = await cachedGraphQLRequest<TreeCategoriesResponse>(
+    "category",
     GET_TREE_CATEGORIES,
-    { parentId: 1 },
-    { tags: ["categories"], life: "days" }
+    { parentId: 1 }
   );
 
   const categories = treeData?.treeCategories || [];
@@ -62,15 +60,13 @@ export default async function CategoryPage({
   const { collection: categorySlug } = await params;
   const resolvedParams = await searchParams;
 
-  const [treeData, colorFilterData, sizeFilterData, brandFilterData] = await Promise.all([
-    graphqlRequest<TreeCategoriesResponse>(
+  const [treeData, filterAttributes] = await Promise.all([
+    cachedGraphQLRequest<TreeCategoriesResponse>(
+      "category",
       GET_TREE_CATEGORIES,
-      { parentId: 1 },
-      { tags: ["categories"], life: "days" }
+      { parentId: 1 }
     ),
-    graphqlRequest<ProductFilterAttributeResponse>(GET_FILTER_OPTIONS, { id: "/api/admin/attributes/23", locale: "en" }),
-    graphqlRequest<ProductFilterAttributeResponse>(GET_FILTER_OPTIONS, { id: "/api/admin/attributes/24", locale: "en" }),
-    graphqlRequest<ProductFilterAttributeResponse>(GET_FILTER_OPTIONS, { id: "/api/admin/attributes/25", locale: "en" }),
+    getFilterAttributes(),
   ]);
 
   const categories = treeData?.treeCategories || [];
@@ -95,56 +91,33 @@ export default async function CategoryPage({
   const selectedSort =
     SortByFields.find((s) => s.key === sortValue) || SortByFields[0];
 
-  const rawColor = resolvedParams?.color;
-  const rawSize = resolvedParams?.size;
-  const rawBrand = resolvedParams?.brand;
+  const { filterObject: baseFilterObject } = buildProductFilters(resolvedParams || {});
 
-  const colorFilter = typeof rawColor === "string" ? rawColor.split(",") : [];
-  const sizeFilter = typeof rawSize === "string" ? rawSize.split(",") : [];
-  const brandFilter = typeof rawBrand === "string" ? rawBrand.split(",") : [];
-
-  const colorIds = colorFilter.map((iri) => extractNumericId(iri)).filter(Boolean);
-  const sizeIds = sizeFilter.map((iri) => extractNumericId(iri)).filter(Boolean);
-  const brandIds = brandFilter.map((iri) => extractNumericId(iri)).filter(Boolean);
-
-  const filterObject: Record<string, string> = {};
+  const filterObject: Record<string, string> = {
+    ...baseFilterObject,
+  };
 
   if (numericId) {
     filterObject.category_id = numericId;
   }
 
-  if (colorIds.length > 0) filterObject.color = colorIds.join(",");
-  if (sizeIds.length > 0) filterObject.size = sizeIds.join(",");
-  if (brandIds.length > 0) filterObject.brand = brandIds.join(",");
-
-  const filterInput = JSON.stringify(filterObject)
+  const filterInput = JSON.stringify(filterObject);
+  
   const [data] = await Promise.all([
-    graphqlRequest<ProductsResponse>(GET_FILTER_PRODUCTS, {
-      query: searchValue || "",
-      filter: filterInput,
-      ...(before
-        ? { last: itemsPerPage, before: before }
-        : { first: itemsPerPage, after: cursor }),
-      sortKey: selectedSort.sortKey,
-      reverse: selectedSort.reverse,
-    }),
+    cachedCategoryRequest<ProductsResponse>(
+      categorySlug,
+      GET_FILTER_PRODUCTS,
+      {
+        query: searchValue || "",
+        filter: filterInput,
+        ...(before
+          ? { last: itemsPerPage, before: before }
+          : { first: itemsPerPage, after: cursor }),
+        sortKey: selectedSort.sortKey,
+        reverse: selectedSort.reverse,
+      }
+    ),
   ]);
-
-  const filterAttributes = [
-    colorFilterData?.attribute,
-    sizeFilterData?.attribute,
-    brandFilterData?.attribute,
-  ]
-    .filter(Boolean)
-    .map((attr) => ({
-      id: attr.id,
-      code: attr.code,
-      adminName: attr.code.toUpperCase(),
-      options: attr.options.edges.map((o) => ({
-        id: o.node.id,
-        adminName: o.node.adminName,
-      })),
-    }));
 
   const products = data?.products?.edges?.map((e) => e.node) || [];
   const pageInfo = data?.products?.pageInfo;
@@ -171,8 +144,9 @@ export default async function CategoryPage({
         </div>
 
         {isArray(products) && products.length > 0 ? (
-          <Grid className="grid-cols-2 lg:grid-cols-4 gap-5 md:gap-11.5 w-full max-w-screen-2xl mx-auto px-4"
-          >
+         <Grid
+                   className="grid grid-flow-row grid-cols-2 gap-5 lg:gap-11.5 w-full max-w-screen-2xl mx-auto md:grid-cols-3 lg:grid-cols-4 px-4 xss:px-7.5"
+                 >
             <ProductGridItems products={products} />
           </Grid>
         ) : (

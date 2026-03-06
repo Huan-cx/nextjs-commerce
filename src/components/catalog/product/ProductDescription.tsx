@@ -8,7 +8,7 @@ import { useState } from "react";
 import { getVariantInfo } from "@utils/hooks/useVariantInfo";
 import { useSearchParams } from "next/navigation";
 import Prose from "@components/theme/search/Prose";
-import { ProductData, ProductReviewNode } from "../type";
+import { ProductData , ProductReviewNode } from "../type";
 import { safeCurrencyCode, safePriceValue, safeParse } from "@utils/helper";
 import Link from "next/link";
 
@@ -17,10 +17,12 @@ export function ProductDescription({
   reviews,
   totalReview,
   productSwatchReview,
+  avgRating
 }: {
   product: ProductData;
   slug: string;
-  reviews: ProductReviewNode[];
+  reviews: ProductReviewNode[] ; 
+  avgRating : number ;
   totalReview: number;
   productSwatchReview: any;
 }) {
@@ -49,11 +51,11 @@ export function ProductDescription({
     productSwatchReview?.attributeValues?.edges?.map(
       (e: { node: any }) => e.node
     ) || [];
-const [expandedKeys, setExpandedKeys] = useState<Set<string>>(new Set());
-    const handleReviewClick = () => {
-  setExpandedKeys(new Set(["2"])); 
-};
-
+  const [expandedKeys, setExpandedKeys] = useState<Set<string>>(new Set());
+  const handleReviewClick = () => {
+    setExpandedKeys(new Set(["2"]));
+  };
+  
   return (
     <>
       <div className="mb-2 flex flex-col pb-6">
@@ -96,7 +98,7 @@ const [expandedKeys, setExpandedKeys] = useState<Set<string>>(new Set());
 
           <Rating
             length={5}
-            star={reviews[0]?.rating ?? 0}
+            star={avgRating}
             reviewCount={totalReview}
             className="mt-2"
             onReviewClick={handleReviewClick}

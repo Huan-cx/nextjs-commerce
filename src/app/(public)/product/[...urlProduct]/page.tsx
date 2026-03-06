@@ -12,20 +12,30 @@ import {
   PRODUCT_TYPE,
 } from "@/utils/constants";
 import HeroCarousel from "@/components/common/slider/HeroCarousel";
-import { GET_PRODUCT_BY_URL_KEY, graphqlRequest } from "@/graphql";
+import { GET_PRODUCT_BY_URL_KEY } from "@/graphql";
 import { isArray } from "@/utils/type-guards";
-import { ProductNode } from "@/components/catalog/type";
+import { cachedProductRequest } from "@/utils/hooks/useCache";
+import {
+  ProductNode,
+  ProductVariantNode,
+  ProductData,
+} from "@/components/catalog/type";
 import { RelatedProductsSection } from "@components/catalog/product/RelatedProductsSection";
 import ProductInfo from "@components/catalog/product/ProductInfo";
 import { LRUCache } from "@/utils/LRUCache";
-import { ProductVariant } from "@/types/category/type";
 import { MobileSearchBar } from "@components/layout/navbar/MobileSearch";
+import { HeroCarouselShimmer } from "@components/common/slider";
 
 const productCache = new LRUCache<ProductNode>(100, 10);
 export const dynamic = "force-static";
 
 export interface SingleProductResponse {
   product: ProductNode;
+}
+
+interface VariantImage {
+  baseImageUrl: string;
+  name: string;
 }
 
 async function getSingleProduct(urlKey: string) {
@@ -35,15 +45,10 @@ async function getSingleProduct(urlKey: string) {
   }
 
   try {
-    const dataById = await graphqlRequest<SingleProductResponse>(
+    const dataById = await cachedProductRequest<SingleProductResponse>(
+      urlKey,
       GET_PRODUCT_BY_URL_KEY,
-      {
-        urlKey: urlKey,
-      },
-      {
-        tags: ["products", `product-${urlKey}`],
-        life: "hours",
-      }
+      { urlKey: urlKey },
     );
 
     const product = dataById?.product || null;
@@ -84,17 +89,19 @@ export default async function ProductPage({
     sku: product?.sku,
   };
 
-  const reviews = Array.isArray(product?.reviews?.edges)
+    const reviews = Array.isArray(product?.reviews?.edges)
     ? product?.reviews.edges.map((e) => e.node)
     : [];
 
   const VariantImages = isArray(product?.variants?.edges)
-    ? product?.variants.edges.map((edge: { node: ProductVariant }) => edge.node)
+    ? product?.variants.edges.map(
+        (edge: { node: ProductVariantNode }) => edge.node,
+      )
     : [];
 
   return (
     <>
-      <MobileSearchBar/>
+      <MobileSearchBar />
       <script
         dangerouslySetInnerHTML={{
           __html: JSON.stringify(productJsonLd),
@@ -103,17 +110,17 @@ export default async function ProductPage({
       />
       <div className="flex flex-col gap-y-4 rounded-lg pb-0 pt-4 sm:gap-y-6 md:py-7.5 lg:flex-row w-full max-w-screen-2xl mx-auto px-4 xss:px-7.5 lg:gap-8">
         <div className="h-full w-full max-w-[885px] max-1366:max-w-[650px] max-lg:max-w-full">
-          <Suspense fallback={<ProductDetailSkeleton />}>
+          <Suspense fallback={<HeroCarouselShimmer />}>
             {isArray(VariantImages) ? (
               <HeroCarousel
                 images={
-                  VariantImages?.map(
-                    (image: { baseImageUrl: string; name: unknown }) => ({
+                  (VariantImages as unknown as VariantImage[])?.map(
+                    (image) => ({
                       src:
                         getImageUrl(image.baseImageUrl, baseUrl, NOT_IMAGE) ||
                         "",
-                      altText: image?.name || "",
-                    })
+                      altText: image.name || "",
+                    }),
                   ) || []
                 }
               />
@@ -132,15 +139,13 @@ export default async function ProductPage({
         <div className="basis-full lg:basis-4/6">
           <Suspense fallback={<ProductDetailSkeleton />}>
             <ProductInfo
-              product={product}
+              product={product as ProductData}
               slug={fullPath}
-              reviews={reviews}
-              totalReview={reviews.length}
+              reviews={reviews as any}
             />
           </Suspense>
         </div>
       </div>
-
       <Suspense fallback={<RelatedProductSkeleton />}>
         <RelatedProductsSection fullPath={fullPath} />
       </Suspense>

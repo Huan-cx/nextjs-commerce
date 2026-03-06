@@ -2,7 +2,6 @@ import { ProductCard } from "@components/catalog/product/ProductCard";
 import { ProductsSectionProps } from "@components/catalog/type";
 import { baseUrl, getImageUrl, NOT_IMAGE } from "@utils/constants";
 
-
 const Theme = ({ title, description, products }: ProductsSectionProps) => {
   return (
     <section className="pt-8 sm:pt-12 lg:pt-20">
@@ -16,13 +15,17 @@ const Theme = ({ title, description, products }: ProductsSectionProps) => {
       </div>
 
       <div className="w-full pb-6 pt-1">
-        <ul className="m-0 grid grid-cols-2 justify-center gap-5 md:gap-11.5 p-0 xss:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-         {products.map((item, index) => {
-                 const imageUrl = getImageUrl(item?.baseImageUrl, baseUrl, NOT_IMAGE);
-                  const ProductPrice =
-                    item?.type === "configurable"
-                      ? item?.minimumPrice ?? "0"
-                      : item?.price ?? "0";
+        <ul className="m-0 grid grid-cols-2 justify-center gap-5 lg:gap-11.5 p-0 xss:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+          {products.map((item, index) => {
+            const imageUrl = getImageUrl(
+              item?.baseImageUrl,
+              baseUrl,
+              NOT_IMAGE,
+            );
+            const ProductPrice =
+              item?.type === "configurable"
+                ? (item?.minimumPrice ?? "0")
+                : (item?.price ?? "0");
 
             return (
               <ProductCard
@@ -35,8 +38,11 @@ const Theme = ({ title, description, products }: ProductsSectionProps) => {
                   name: item?.name || item.sku,
                   id: item.id,
                   type: item.type,
-                  isSaleable : item.isSaleable
-                }} specialPrice={""}            />
+                  isSaleable: item.isSaleable,
+                }}
+                specialPrice={""}
+                priority={index < 4}
+              />
             );
           })}
         </ul>

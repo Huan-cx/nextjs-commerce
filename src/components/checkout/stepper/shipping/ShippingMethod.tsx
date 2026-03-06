@@ -7,19 +7,34 @@ import { ProceedToCheckout } from "../ProceedToCheckout";
 import { useCustomToast } from "@utils/hooks/useToast";
 import { useCheckout } from "@utils/hooks/useCheckout";
 import { CustomRadioProps, ShippingMethodType } from "@components/checkout/type";
+import { useDispatch } from "react-redux";
+import { updateCart } from "@/store/slices/cart-slice";
 
 
 export default function ShippingMethod({
   shippingMethod,
   selectedShippingRate,
+  currentStep
 }: {
   shippingMethod?: ShippingMethodType[];
   selectedShippingRate?: any;
   methodDesc?: string;
+  currentStep?: string;
 }) {
   const { isSaving, saveCheckoutShipping } = useCheckout();
   const { showToast } = useCustomToast();
-  const [isOpen, setIsOpen] = useState(true);
+  const [isOpen, setIsOpen] = useState(currentStep !== "shipping");
+
+  const [prevValues, setPrevValues] = useState({ currentStep, selectedShippingRate });
+
+  if (currentStep !== prevValues.currentStep || selectedShippingRate !== prevValues.selectedShippingRate) {
+    setPrevValues({ currentStep, selectedShippingRate });
+    if (currentStep === "shipping") {
+      setIsOpen(false);
+    } else if (selectedShippingRate) {
+      setIsOpen(true);
+    }
+  }
   const { control, handleSubmit } = useForm({
     mode: "onSubmit",
     defaultValues: {
@@ -27,18 +42,27 @@ export default function ShippingMethod({
     },
   });
   const selectedMethodTitle = shippingMethod?.find(
-    (method: any) => method.method === selectedShippingRate
+    (method) => method.method === selectedShippingRate
   )?.label;
   const selectedMethodPrice = shippingMethod?.find(
-    (method: any) => method.method === selectedShippingRate
+    (method) => method.method === selectedShippingRate
   )?.price;
 
+  const dispatch = useDispatch();
   const onSubmit = async (data: FieldValues) => {
     if (!data?.method) {
       showToast("Please Choose the Shipping Method", "warning");
       return;
     }
     try {
+      const selectedRate = shippingMethod?.find(m => m.method === data.method);
+      if (selectedRate) {
+        dispatch(updateCart({
+          shippingMethod: selectedRate?.method || "",
+          selectedShippingRate: selectedRate?.method || "",
+          selectedShippingRateTitle: selectedRate?.label || "",
+        }));
+      }
       await saveCheckoutShipping(data?.method);
     } catch {
       showToast("Failed to save shipping method. Please try again.");
@@ -51,41 +75,45 @@ export default function ShippingMethod({
       {(selectedShippingRate) ? (
         isOpen ? (
           <>
-             <div className="mt-4  justify-between hidden sm:flex">
-            <div className="flex">
-              <p className="w-auto text-base font-normal text-black/60 dark:text-white/60 sm:w-[192px]">
-                Shipping Method
-              </p>
-              <p className="text-base font-normal">{selectedMethodTitle} (${selectedMethodPrice})</p>
+            <div className="mt-4  justify-between hidden sm:flex">
+              <div className="flex">
+                <p className="w-auto text-base font-normal text-black/60 dark:text-white/60 sm:w-[192px]">
+                  Shipping Method
+                </p>
+                <p className="text-base font-normal">{selectedMethodTitle} (${selectedMethodPrice})</p>
+              </div>
+              <div className="flex">
+                <button
+                  onClick={() => {
+                    setIsOpen(!isOpen);
+                  }}
+                  className="cursor-pointer text-base font-normal text-black/[60%] underline dark:text-neutral-300"
+                >
+                  Change
+                </button>
+              </div>
             </div>
-          <div className="flex">
-            <button
-              onClick={() => setIsOpen(!isOpen)}
-              className="cursor-pointer text-base font-normal text-black/[60%] underline dark:text-neutral-300"
-            >
-              Change
-            </button>
-            </div>
-          </div>
 
             <div className="mt-4 block sm:hidden flex flex-col justify-between sm:flex-row relative  ">
-            <div className="flex justify-between  flex-1 wrap">
-              <p className="w-auto text-base font-normal text-black/60 dark:text-white/60 sm:w-[192px]">
-                Shipping Method
-              </p>
-              <p className="text-base font-normal">{selectedMethodTitle} (${selectedMethodPrice})</p>
-            </div>
+              <div className="flex justify-between  flex-1 wrap">
+                <p className="w-auto text-base font-normal text-black/60 dark:text-white/60 sm:w-[192px]">
+                  Shipping Method
+                </p>
+                <p className="text-base font-normal">{selectedMethodTitle} (${selectedMethodPrice})</p>
+              </div>
 
-            <button
-              onClick={() => setIsOpen(!isOpen)}
-              className="cursor-pointer absolute right-0  text-base font-normal text-black/[60%] underline dark:text-neutral-300"
-              style={{ top: "-36px" }}
-            >
-              Change
-            </button>
-          </div>
+              <button
+                onClick={() => {
+                  setIsOpen(!isOpen);
+                }}
+                className="cursor-pointer absolute right-0  text-base font-normal text-black/[60%] underline dark:text-neutral-300"
+                style={{ top: "-36px" }}
+              >
+                Change
+              </button>
+            </div>
           </>
-        
+
         ) : (
           <form className="mt-6" onSubmit={handleSubmit(onSubmit)}>
             <div className="flex flex-col gap-5">
@@ -140,7 +168,7 @@ export default function ShippingMethod({
                         field.onChange(value);
                       }}
                     >
-                      {shippingMethod.map((method: any) => (
+                      {shippingMethod.map((method : any) => (
                         <CustomRadio
                           key={method?.code}
                           className="inset-0 my-1 border border-solid border-neutral-300 dark:border-neutral-500"

@@ -5,9 +5,9 @@ import { CartSkeleton } from "../common/skeleton/ProductCartSkeleton";
 import { useCartDetail } from "@/utils/hooks/useCartDetail";
 import CheckoutCart from "./checkout-cart/CheckoutCart";
 import Stepper from "./stepper";
-import { useState, useEffect } from 'react';
-import { useAddressesFromApi } from "@utils/helper";
+import { useEffect } from 'react';
 import { useScrollToTop } from "@/utils/hooks/useScrollTo";
+import { useAddressesFromApi } from "@utils/hooks/getAddress";
 
 
 
@@ -16,30 +16,26 @@ interface CheckOutProps {
 }
 
 const CheckOut = ({ step }: CheckOutProps) => {
-  const { isLoading } = useCartDetail();
-  const { billingAddress, shippingAddress } = useAddressesFromApi();
+  const { isLoading, getCartDetail } = useCartDetail();
+  const { billingAddress, shippingAddress } = useAddressesFromApi(true);
   const cartDetail = useAppSelector((state) => state.cartDetail);
   const cartItems = cartDetail?.cart;
   const selectedShippingRate = cartItems?.selectedShippingRate;
-  const selectedShippingRateTitle = cartItems?.selectedShippingRateTitle || cartItems?.selectedShippingRate;
+  const selectedShippingRateTitle = cartItems?.selectedShippingRateTitle;
   const selectedPayment = cartItems?.paymentMethod;
   const selectedPaymentTitle = cartItems?.paymentMethodTitle;
-  const [isOpen, setIsOpen] = useState(!selectedPayment);
   useScrollToTop();
 
   useEffect(() => {
-    if (selectedPayment) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setIsOpen(false);
-    }
-  }, [selectedPayment]);
+    getCartDetail();
+  }, [getCartDetail]);
 
 
 
   return (
     <>
       <section className="flex flex-col items-start justify-between lg:flex-row lg:justify-between">
-        <div className="w-full px-0 py-2 sm:px-4 sm:py-4 lg:w-1/2 xl:px-16">
+        <div className="w-full px-0 py-2 sm:px-4 sm:py-4 lg:w-1/2 xl:pl-16 xl:pr-0">
           {isLoading ? (
             <CheckoutSkeleton />
           ) : (
@@ -51,8 +47,6 @@ const CheckOut = ({ step }: CheckOutProps) => {
               selectedShippingRate={selectedShippingRate}
               selectedShippingRateTitle={selectedShippingRateTitle}
               shippingAddress={shippingAddress}
-              setIsOpen={setIsOpen}
-              isOpen={isOpen}
             />
           )}
         </div>

@@ -62,15 +62,14 @@ body::-webkit-scrollbar-thumb {
   --foreground: #000;
   --color-selected-black: #00000099;
 
-
   --hero-background: #ffffff;
   --hero-foreground: #000;
   --dark-grey: #404040;
-  --selected-color: #E3ECFF;
+  --selected-color: #e3ecff;
   --selected-color-dark: #555b69;
-  --selected-bottom-dark: #95B6FF;
+  --selected-bottom-dark: #95b6ff;
   --selected-bg-bottom-dark: #314779;
-  --input-color: #B3B3B3;
+  --input-color: #b3b3b3;
   /* font size  */
   --font-size-xxs: 13px;
   /* Spacing */
@@ -100,7 +99,6 @@ body::-webkit-scrollbar-thumb {
   --hero-foreground: #ffffff;
 }
 
-
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -115,7 +113,6 @@ body::-webkit-scrollbar-thumb {
   --color-input-color: var(--input-color);
 }
 
-
 body {
   background: var(--background);
   color: var(--foreground);
@@ -123,6 +120,20 @@ body {
 }
 
 @layer components {
+
+  /* Hide scrollbar for drawer content */
+  .drawer-scrollbar-hidden {
+    scrollbar-width: none;
+    /* Firefox */
+    -ms-overflow-style: none;
+    /* IE and Edge */
+  }
+
+  .drawer-scrollbar-hidden::-webkit-scrollbar {
+    display: none;
+    /* Chrome, Safari, Opera */
+  }
+
   .placeholder-input-color::placeholder {
     color: var(--input-color);
   }
@@ -176,5 +187,15 @@ body {
     }
   }
 
-
+  /* Prevent body scrolling when drawer is open */
+  .scroll-locked {
+    overflow: hidden !important;
+    height: 100vh !important;
+    width: 100vw !important;
+    position: fixed !important;
+    top: 0;
+    left: 0;
+    touch-action: none;
+    -webkit-overflow-scrolling: none;
+  }
 }

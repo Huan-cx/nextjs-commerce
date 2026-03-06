@@ -88,3 +88,58 @@ export interface ThemeCustomizationResult {
   services_content: GetFooterResponse | null;
 }
 
+
+
+// Theme Customization Options Types
+
+export interface ImageCarouselOptions {
+  images?: Array<{
+    title?: string;
+    link?: string;
+    image?: string;
+    imageUrl?: string;
+  }>;
+}
+
+export interface ProductCarouselOptions {
+  title?: string;
+  filters: {
+    sort?: string;
+    limit?: string | number;
+    [key: string]: string | number | boolean | undefined;
+  };
+}
+
+export interface CategoryCarouselOptions {
+  filters: Record<string, string | number | boolean | undefined>;
+}
+
+export interface StaticContentOptions {
+  html: string;
+  css?: string;
+}
+
+export type RenderableThemeOptions =
+  | ImageCarouselOptions
+  | ProductCarouselOptions
+  | CategoryCarouselOptions
+  | StaticContentOptions;
+
+
+
+  // Page Translation Types
+
+  export interface PageTranslation {
+  id: string;
+  metaTitle?: string;
+  pageTitle?: string;
+  urlKey: string;
+  htmlContent?: string;
+  cmsPageId: string;
+}
+
+export interface PageData {
+  id: string;
+  updatedAt: string;
+  translation: PageTranslation;
+}

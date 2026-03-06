@@ -1,46 +1,63 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
-import { useAppDispatch } from "@/store/hooks";
-import { fetchHandler } from "../fetch-handler";
+import { useMutation } from "@apollo/client";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { addItem } from "@/store/slices/cart-slice";
-import { isObject } from "@utils/type-guards";
-import { useEffect } from "react";
-import { getCartToken } from "@utils/getCartToken";
+import { useCallback, useEffect, useState, useRef } from "react";
+import { GET_CART_ITEM } from "@/graphql";
+import { getCartToken } from "@/utils/getCartToken";
+
 
 
 export function useCartDetail() {
   const dispatch = useAppDispatch();
-  const token = getCartToken();
+  const cart = useAppSelector((state) => state.cartDetail.cart);
+  const [isInFlight, setIsInFlight] = useState(false);
+  const isInFlightRef = useRef(false);
 
-  const { data, isLoading, refetch } = useQuery({
-    queryKey: ["cart-detail", token],
-    queryFn: () =>
-      fetchHandler({
-        url: "cart-detail",
-        method: "POST",
-        contentType: true,
-        body: {},
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      }),
-    enabled: !!token,
-  });
+  const [getCartDetailMutation, { data, loading: isLoading, error }] =
+    useMutation(GET_CART_ITEM, {
+      onCompleted: (response) => {
+        const cartData = response?.createReadCart?.readCart;
+        if (cartData) {
+          dispatch(addItem(cartData));
+        }
+      },
+      onError: (error) => {
+        console.error("Cart detail error:", error);
+      },
+    });
+
+  const getCartDetail = useCallback(async () => {
+    const token = getCartToken();
+    if (!token) {
+      return;
+    }
+
+    if (isInFlightRef.current) return;
+
+    isInFlightRef.current = true;
+    setIsInFlight(true);
+    try {
+      await getCartDetailMutation();
+    } catch (e) {
+      throw e;
+    } finally {
+      isInFlightRef.current = false;
+      setIsInFlight(false);
+    }
+  }, [getCartDetailMutation]);
 
   useEffect(() => {
-    const cartData = data?.data?.createReadCart?.readCart;
-
-    if (isObject(cartData)) {
-      dispatch(addItem(cartData as any));
-    } else if (data && !isLoading) {
-      console.error("Invalid cart data structure:", data);
+    if (!cart && !isInFlightRef.current) {
+      getCartDetail();
     }
-  }, [data, isLoading, dispatch]);
+  }, [cart, getCartDetail]);
 
   return {
-    getCartDetail: refetch,
-    isLoading,
+    cartData: cart || data?.createReadCart?.readCart,
+    getCartDetail,
+    isLoading: isLoading || (isInFlight && !cart),
+    error,
   };
 }

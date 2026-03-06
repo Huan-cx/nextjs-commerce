@@ -9,6 +9,12 @@ import { useAddProduct } from "@utils/hooks/useAddToCart";
 import LoadingDots from "@components/common/icons/LoadingDots";
 import { getVariantInfo } from "@utils/hooks/useVariantInfo";
 import { safeParse } from "@utils/helper";
+import { ProductSwatchReview } from "@/types/category/type";
+
+interface AddToCartFormData {
+  quantity: number;
+  isBuyNow: boolean;
+}
 
 function SubmitButton({
   selectedVariantId,
@@ -80,14 +86,14 @@ export function AddToCart({
   productId,
   userInteracted,
 }: {
-  productSwatchReview: any;
+  productSwatchReview: ProductSwatchReview;
   productId: string;
   index: ConfigurableProductIndexData[];
   userInteracted: boolean;
 }) {
   const isSaleable = productSwatchReview?.isSaleable || "";
   const { onAddToCart, isCartLoading } = useAddProduct();
-  const { handleSubmit, setValue, control, register } = useForm({
+  const { handleSubmit, setValue, control, register } = useForm<AddToCartFormData>({
     defaultValues: {
       quantity: 1,
       isBuyNow: false,
@@ -117,7 +123,7 @@ export function AddToCart({
   const superAttributes = productSwatchReview?.superAttributeOptions
     ? safeParse(productSwatchReview.superAttributeOptions)
     : productSwatchReview?.superAttributes?.edges?.map(
-        (e: { node: any }) => e.node,
+        (e) => e.node,
       ) || [];
 
   const isConfigurable = superAttributes.length > 0;
@@ -130,7 +136,7 @@ export function AddToCart({
   );
   const buttonStatus = !!selectedVariantId;
 
-  const actionWithVariant = async (data: any) => {
+  const actionWithVariant = async (data: AddToCartFormData) => {
     const pid =
       type === "configurable"
         ? String(selectedVariantId)
@@ -144,7 +150,7 @@ export function AddToCart({
   return (
     <>
       {!checkStock && type === "configurable" && userInteracted && (
-        <div className="gap-1 px-2 py-1 my-2 font-bold">
+        <div className="gap-1 px-2 py-1 my-2 font-bold text-red-500 dark:text-red-400">
           <h1>NO STOCK AVAILABLE</h1>
         </div>
       )}
@@ -165,7 +171,7 @@ export function AddToCart({
               {...register("quantity", { valueAsNumber: true })}
             />
 
-            <div className="flex h-12 min-w-[3rem] items-center justify-center px-4 font-medium text-gray-800 dark:text-white">
+            <div className="flex h-12 min-w-[4rem] items-center justify-center px-2 font-medium text-gray-800 dark:text-white">
               {quantity}
             </div>
 

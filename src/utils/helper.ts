@@ -3,14 +3,15 @@ import { Metadata } from "next";
 import { CartItem, FilterDataTypes } from "@/types/types";
 import { isArray } from "./type-guards";
 import { BASE_URL, baseUrl } from "./constants";
-import { ProductData, ReviewDatatypes } from "@components/catalog/type";
-import { useAddress } from "@utils/useAddress";
-import { CheckoutAddressNode, MappedCheckoutAddress } from "@/types/checkout/type";
+import { ProductData } from "@components/catalog/type";
 import { CategoryNode } from "@/types/theme/category-tree";
+import { cachedGraphQLRequest } from "./hooks/useCache";
+import { GET_FILTER_ATTRIBUTES } from "@/graphql";
+import { ProductReview } from "@/types/category/type";
 
 export const createUrl = (
   pathname: string,
-  params: URLSearchParams | ReadonlyURLSearchParams
+  params: URLSearchParams | ReadonlyURLSearchParams,
 ) => {
   const paramsString = params.toString();
   const queryString = `${paramsString.length ? "?" : ""}${paramsString}`;
@@ -36,8 +37,8 @@ export const validateEnvironmentVariables = () => {
   if (missingEnvironmentVariables.length) {
     throw new Error(
       `The following environment variables are missing. Your site will not work without them. Read more: https://vercel.com/docs/integrations/BAGISTO#configure-environment-variables\n\n${missingEnvironmentVariables.join(
-        "\n"
-      )}\n`
+        "\n",
+      )}\n`,
     );
   }
 
@@ -46,7 +47,7 @@ export const validateEnvironmentVariables = () => {
     process.env.BAGISTO_STORE_DOMAIN?.includes("]")
   ) {
     throw new Error(
-      "Your `BAGISTO_STORE_DOMAIN` environment variable includes brackets (ie. `[` and / or `]`). Your site will not work with them there. Please remove them."
+      "Your `BAGISTO_STORE_DOMAIN` environment variable includes brackets (ie. `[` and / or `]`). Your site will not work with them there. Please remove them.",
     );
   }
 };
@@ -59,16 +60,15 @@ export const getBaseUrl = (baseUrl: string) => {
   return baseUrl ? `https://${baseUrl}` : "http://localhost:3000";
 };
 
-
 export const isCleanFilter = (
   filters: FilterDataTypes[],
-  type: "url" | "filter" | string = "filter"
+  type: "url" | "filter" | string = "filter",
 ): string | object => {
   if (type === "url") {
     return `search?${filters
       .map(
         ({ key, value }) =>
-          `${encodeURIComponent(key)}=${encodeURIComponent(value)}`
+          `${encodeURIComponent(key)}=${encodeURIComponent(value)}`,
       )
       .join("&")}`;
   }
@@ -76,18 +76,18 @@ export const isCleanFilter = (
   const limitValue = type === "filter" ? "3" : "12";
 
   return filters.map(({ __typename: _typename, ...rest }) =>
-    rest.key === "limit" ? { ...rest, value: limitValue } : rest
+    rest.key === "limit" ? { ...rest, value: limitValue } : rest,
   );
 };
 
-export function getReviews(reviews: ReviewDatatypes[]): {
+export function getReviews(reviews: { rating: number }[]): {
   totalReviews: number;
   reviewAvg: number;
-  ratingCounts: { [key: number]: number };
+  ratingCounts: Record<number, number>;
 } {
   let totalReviewsAvg = 0;
   let totalReviews = 0;
-  const ratingCounts = {
+  const ratingCounts: Record<number, number> = {
     5: 0,
     4: 0,
     3: 0,
@@ -99,7 +99,7 @@ export function getReviews(reviews: ReviewDatatypes[]): {
     totalReviews = reviews.length;
     const totalReviewCount = reviews.reduce(
       (sum, review) => sum + review.rating,
-      0
+      0,
     );
 
     totalReviewsAvg = totalReviewCount / totalReviews;
@@ -135,7 +135,7 @@ export const isCheckout = (
   email: string,
   isSeclectAddress: boolean,
   isSelectShipping: boolean,
-  isSelectPayment: boolean
+  isSelectPayment: boolean,
 ): string => {
   if (!isArray(items) || items.length === 0) {
     return "/";
@@ -144,7 +144,7 @@ export const isCheckout = (
   if (isGuest) {
     const hasRestrictedProduct = items.some(
       ({ product }) =>
-        product?.guestCheckout === false || product?.guestCheckout === null
+        product?.guestCheckout === false || product?.guestCheckout === null,
     );
 
     if (hasRestrictedProduct) {
@@ -195,7 +195,7 @@ export function generateCookieValue(length: number) {
 
   for (let i = 0; i < length; i++) {
     cookieValue += characters.charAt(
-      Math.floor(Math.random() * characters.length)
+      Math.floor(Math.random() * characters.length),
     );
   }
 
@@ -217,7 +217,7 @@ export async function generateMetadataForPage(
     image?: string;
     canonical?: string;
     other?: Record<string, string>;
-  }
+  },
 ): Promise<Metadata> {
   const seo: {
     title?: string;
@@ -287,7 +287,6 @@ export const parseCsv = (value?: string) =>
     .map((v) => v.trim())
     .filter(Boolean) ?? [];
 
-
 /**
  * Safely converts a value to an array, handling null/undefined
  * @param value - Any value that might be an array, null, or undefined
@@ -305,20 +304,20 @@ export const setCookie = (name: string, value: string | number, days = 30) => {
   d.setTime(d.getTime() + days * 24 * 60 * 60 * 1000);
   const expires = "expires=" + d.toUTCString();
   document.cookie = `${name}=${encodeURIComponent(
-    String(value)
+    String(value),
   )};${expires};path=/`;
 };
 
 export const getValidTitle = (text: string) => {
-  return text?.toLowerCase()?.replaceAll('_', ' ') ?? ''
-}
-
+  return text?.toLowerCase()?.replaceAll("_", " ") ?? "";
+};
 
 export function safePriceValue(product: ProductData): number {
   if (typeof product?.price === "string") {
-    const priceValue = product?.type === "configurable"
-      ? product?.minimumPrice ?? "0"
-      : product?.price ?? "0";
+    const priceValue =
+      product?.type === "configurable"
+        ? (product?.minimumPrice ?? "0")
+        : (product?.price ?? "0");
     return parseFloat(priceValue) || 0;
   }
   if (
@@ -346,47 +345,6 @@ export function safeCurrencyCode(product: ProductData): string {
   return "USD";
 }
 
-
-export const useAddressesFromApi = (): {
-  billingAddress: MappedCheckoutAddress | null;
-  shippingAddress: MappedCheckoutAddress | null;
-} => {
-  const { data } = useAddress();
-  const address = data?.data?.edges;
-  if (!Array.isArray(address))
-    return { billingAddress: null, shippingAddress: null };
-
-  const billingNode = address.find((a) => a.node?.addressType === "cart_billing")
-    ?.node;
-
-  const shippingNode = address.find(
-    (a) => a.node?.addressType === "cart_shipping"
-  )?.node;
-
-  const mapNode = (
-    node?: CheckoutAddressNode
-  ): MappedCheckoutAddress | null =>
-    node
-      ? {
-        firstName: node.firstName,
-        lastName: node.lastName,
-        companyName: node.companyName,
-        address: node.address,
-        city: node.city,
-        state: node.state,
-        country: node.country,
-        postcode: node.postcode,
-        email: node.email,
-        phone: node.phone,
-      }
-      : null;
-
-  return {
-    billingAddress: mapNode(billingNode),
-    shippingAddress: mapNode(shippingNode),
-  };
-};
-
 /**
  * Reusable throttle function
  * @param func - The function to throttle
@@ -395,7 +353,7 @@ export const useAddressesFromApi = (): {
  */
 export function throttle<T extends (...args: any[]) => any>(
   func: T,
-  limit: number
+  limit: number,
 ): (...args: Parameters<T>) => void {
   let inThrottle: boolean = false;
   return function (this: any, ...args: Parameters<T>) {
@@ -409,7 +367,10 @@ export function throttle<T extends (...args: any[]) => any>(
   };
 }
 
-export function findCategoryBySlug(categories: CategoryNode[], slug: string): CategoryNode | null {
+export function findCategoryBySlug(
+  categories: CategoryNode[],
+  slug: string,
+): CategoryNode | null {
   for (const category of categories) {
     if (category.translation?.slug === slug) return category;
 
@@ -420,7 +381,6 @@ export function findCategoryBySlug(categories: CategoryNode[], slug: string): Ca
   }
   return null;
 }
-
 
 export function extractNumericId(id: string): string | undefined {
   if (!id) return undefined;
@@ -445,4 +405,105 @@ export function safeParse<T = any>(value: string | null | undefined): T | null {
   } catch {
     return null;
   }
+}
+
+/**
+ * Fetches filter attributes (color, size, brand) for product filtering
+ *
+ * @returns Promise with formatted filter attributes
+ */
+export async function getFilterAttributes() {
+  const filterData = await cachedGraphQLRequest<{
+    color: any;
+    size: any;
+    brand: any;
+  }>("static", GET_FILTER_ATTRIBUTES, { locale: "en" });
+
+  const attributes = [filterData?.color, filterData?.size, filterData?.brand];
+
+  return attributes.filter(Boolean).map((attr) => ({
+    id: attr.id,
+    code: attr.code,
+    adminName: attr.code.toUpperCase(),
+    options: attr.options.edges.map((o: any) => ({
+      id: o.node.id,
+      adminName: o.node.adminName,
+    })),
+  }));
+}
+
+/**
+ * Parses URL search parameters and builds a filter object for product filtering
+ * @param params - URL search parameters
+ * @returns Object containing filterInput string and isFilterApplied boolean
+ */
+export function buildProductFilters(params: {
+  [key: string]: string | string[] | undefined;
+}) {
+  const rawColor = params?.color;
+  const rawSize = params?.size;
+  const rawBrand = params?.brand;
+
+  const colorFilter =
+    typeof rawColor === "string"
+      ? rawColor.split(",")
+      : Array.isArray(rawColor)
+        ? rawColor
+        : [];
+
+  const sizeFilter =
+    typeof rawSize === "string"
+      ? rawSize.split(",")
+      : Array.isArray(rawSize)
+        ? rawSize
+        : [];
+
+  const brandFilter =
+    typeof rawBrand === "string"
+      ? rawBrand.split(",")
+      : Array.isArray(rawBrand)
+        ? rawBrand
+        : [];
+
+  const extractId = (value: string) => {
+    if (/^\d+$/.test(value)) return value;
+    const match = value.match(/\/(\d+)$/);
+    return match ? match[1] : null;
+  };
+
+  const colorIds = colorFilter
+    .map(extractId)
+    .filter((id): id is string => Boolean(id));
+
+  const sizeIds = sizeFilter
+    .map(extractId)
+    .filter((id): id is string => Boolean(id));
+
+  const brandIds = brandFilter
+    .map(extractId)
+    .filter((id): id is string => Boolean(id));
+
+  const filterObject: Record<string, string> = {};
+
+  if (colorIds.length > 0) filterObject.color = colorIds.join(",");
+  if (sizeIds.length > 0) filterObject.size = sizeIds.join(",");
+  if (brandIds.length > 0) filterObject.brand = brandIds.join(",");
+
+  const isFilterApplied = Object.keys(filterObject).length > 0;
+  const filterInput = isFilterApplied
+    ? JSON.stringify(filterObject)
+    : undefined;
+
+  return {
+    filterObject,
+    filterInput,
+    isFilterApplied,
+  };
+}
+
+export function getAverageRating(reviews: ProductReview[]): number {
+  if (!reviews.length) return 0;
+
+  const total = reviews.reduce((sum, review) => sum + review.rating, 0);
+  return total / reviews.length;
 }

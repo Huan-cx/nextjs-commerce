@@ -33,11 +33,18 @@ function SubmitButton({
   );
 }
 
-export function DeleteItemButton({ item }: { item: any }) {
-  // const [message, formAction] = useActionState(removeItem, null);
+interface CartItemEdge {
+  node: {
+    id: string;
+    quantity: number;
+    name: string;
+    price: number;
+  };
+}
+
+export function DeleteItemButton({ item }: { item: CartItemEdge }) {
   const { onAddToRemove, isRemoveLoading } = useAddProduct();
   const itemId = item?.node?.id;
-  // const actionWithVariant = formAction.bind(null, Number(itemId));
   const handleRemoveCart = () => {
     onAddToRemove(itemId);
   };

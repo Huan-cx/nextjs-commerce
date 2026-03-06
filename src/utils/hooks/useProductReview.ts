@@ -1,51 +1,44 @@
 "use client";
 
-import { useMutation } from "@tanstack/react-query";
-import { fetchHandler } from "../fetch-handler";
+import { useMutation } from "@apollo/client";
+import { CREATE_PRODUCT_REVIEW } from "@/graphql";
 import { useCustomToast } from "./useToast";
-import { isObject } from "@utils/type-guards";
-
-interface AddInput {
-    productId: number,
-    title: string,
-    comment: string,
-    rating: number,
-    name: string,
-    email: string,
-    attachments: string
-}
-
+import { CreateProductReviewInput, ProductReviewResponse } from "@/types/review";
 
 export function useProductReview() {
     const { showToast } = useCustomToast();
-    const { mutateAsync: createProductReview, isPending: isLoading } = useMutation({
-        mutationFn: ({ token, ...input }: AddInput & { token: string }) =>
-            fetchHandler({
-                url: "review",
-                method: "POST",
-                contentType: true,
-                body: { ...input },
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${token}`,
-                },
-            }),
 
-        onSuccess: (response) => {
-            const responseData = response?.data?.createProductReview?.productReview;
-            if (isObject(responseData)) {
+    const [mutateAsync, { loading: isLoading, error }] = useMutation<ProductReviewResponse>(CREATE_PRODUCT_REVIEW, {
+        onCompleted: (response) => {
+            const responseData = response?.createProductReview;
+            if (responseData) {
                 showToast("Product review created successfully", "success");
             }
         },
-
         onError: (error) => {
-            console.error("Product review creation error:", error);
+            showToast(error.message, "danger");
         },
     });
 
+    const createProductReview = async (input: CreateProductReviewInput) => {
+        return await mutateAsync({
+            variables: {
+                input: {
+                    productId: input.productId,
+                    title: input.title,
+                    comment: input.comment,
+                    rating: input.rating,
+                    name: input.name,
+                    email: input.email,
+                    attachments: input.attachments || "",
+                },
+            },
+        });
+    };
 
     return {
         createProductReview,
         isLoading,
+        error
     };
 }

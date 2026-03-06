@@ -28,12 +28,10 @@ export default function MobileFilter({
   const pathname = usePathname();
   const router = useRouter();
 
-  // Temporary state for filters in the drawer
   const [tempFilters, setTempFilters] = useState<Record<string, Set<string>>>(
     {}
   );
 
-  // Sync temp state with URL when opening the drawer
   useEffect(() => {
     if (isOpen) {
       const initialFilters: Record<string, Set<string>> = {};
@@ -64,7 +62,6 @@ export default function MobileFilter({
       }
     });
 
-    // Reset to page 1 when applying filters
     newParams.delete(PAGE);
 
     const newUrl = createUrl(pathname, newParams);

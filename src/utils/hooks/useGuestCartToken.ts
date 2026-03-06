@@ -6,8 +6,7 @@ import { GUEST_CART_ID, GUEST_CART_TOKEN, IS_GUEST } from "@/utils/constants";
 import { encodeJWT, decodeJWT } from "@/utils/jwt-cookie";
 import { setCookie, deleteCookie, getNativeCookie } from "../getCartToken";
 
-let tokenCreated = false;
-let tokenPromise: Promise<string | null> | null = null;
+
 
 // ---------------------------
 // Main Hook
@@ -18,12 +17,14 @@ export const useGuestCartToken = () => {
   const [isReady, setIsReady] = useState(false);
 
   const isResettingRef = useRef(false);
+  const tokenCreatedRef = useRef(false);
+  const tokenPromiseRef = useRef<Promise<string | null> | null>(null);
 
   const createGuestToken = async (): Promise<string | null> => {
-    if (tokenPromise) return tokenPromise;
+    if (tokenPromiseRef.current) return tokenPromiseRef.current;
 
-    tokenPromise = (async () => {
-      if (tokenCreated) {
+    tokenPromiseRef.current = (async () => {
+      if (tokenCreatedRef.current) {
         // Return existing raw token from cookie
         const cookieVal = getNativeCookie(GUEST_CART_TOKEN);
         if (cookieVal) {
@@ -33,18 +34,19 @@ export const useGuestCartToken = () => {
         }
         return null;
       }
-      tokenCreated = true;
+      tokenCreatedRef.current = true;
 
       try {
         const res = await fetchHandler({
-          url: "cart/createGuestToken",
+          url: "graphql",
           method: "POST",
+          body: { operationName: "CreateCart" },
           contentType: true,
         });
 
         const cart = res?.data?.createCartToken?.cartToken;
         if (!cart) {
-          tokenCreated = false;
+          tokenCreatedRef.current = false;
           return null;
         }
 
@@ -65,21 +67,23 @@ export const useGuestCartToken = () => {
         return cart.sessionToken;
       } catch (e) {
         console.error("Error creating guest token:", e);
-        tokenCreated = false;
+        tokenCreatedRef.current = false;
         return null;
       } finally {
-        tokenPromise = null;
+        tokenPromiseRef.current = null;
       }
     })();
 
-    return tokenPromise;
+    return tokenPromiseRef.current;
+
+
   };
 
   const resetGuestToken = async () => {
     if (isResettingRef.current) return;
     isResettingRef.current = true;
 
-    tokenCreated = false;
+    tokenCreatedRef.current = false;
 
     // delete old
     deleteCookie(GUEST_CART_TOKEN);

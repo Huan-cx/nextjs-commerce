@@ -4,7 +4,7 @@ import {
   createUserToLogin,
   logoutUser,
   recoverUserLogin,
-  subsCribeUser,
+  subscribeUser,
 } from '@/utils/bagisto';
 import { isObject } from "@utils/type-guards";
 import { RegisterInputs } from "@components/customer/RegistrationForm";
@@ -100,7 +100,7 @@ export async function userSubscribe(
   };
 
   try {
-    const result = await subsCribeUser(data) as Record<string, unknown>;
+    const result = await subscribeUser(data) as Record<string, unknown>;
 
     if (result?.error) {
       const error = result.error as Record<string, unknown>;

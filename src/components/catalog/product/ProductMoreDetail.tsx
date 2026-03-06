@@ -17,8 +17,7 @@ export const ProductMoreDetails: FC<{
   setExpandedKeys: (keys: Set<string>) => void;
 }> = ({ description, additionalData, reviews, productId, totalReview, expandedKeys, setExpandedKeys }) => {
 
-  const filterAdditionalData = additionalData.filter((item) => item?.attribute?.
-    isVisibleOnFront == "1");
+  const filterAdditionalData = additionalData.filter((item) => item?.attribute?.isVisibleOnFront == "1");
 
 
   return (
@@ -50,7 +49,7 @@ export const ProductMoreDetails: FC<{
           aria-label="Description"
           title="Description"
         >
-          <Prose className="pb-2" html={description} />
+          <Prose className="pb-2 text-selected-black dark:text-white font-light" html={description} />
         </AccordionItem>
 
         {filterAdditionalData.length > 0
@@ -111,10 +110,11 @@ export const ProductMoreDetails: FC<{
               <ReviewDetail
                 reviewDetails={reviews}
                 totalReview={totalReview}
+                productId={productId}
               />
             </>
           ) : (
-            <ReviewSection productId={productId} />
+            <ReviewSection productId={productId}  totalReview={totalReview} />
           )}
         </AccordionItem>
       </Accordion>

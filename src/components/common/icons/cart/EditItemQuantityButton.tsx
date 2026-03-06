@@ -40,11 +40,20 @@ function SubmitButton({
   );
 }
 
+interface CartItemEdge {
+  node: {
+    id: string;
+    quantity: number;
+    name: string;
+    price: number;
+  };
+}
+
 export function EditItemQuantityButton({
   item,
   type,
 }: {
-  item: any;
+  item: CartItemEdge;
   type: "plus" | "minus";
 }) {
   const { onUpdateCart, isUpdateLoading } = useAddProduct();

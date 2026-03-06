@@ -18,6 +18,11 @@ export interface CartItemEdge {
   node: CartItem;
 }
 
+// Cart Item Edge for Modal (same structure as CartItemEdge)
+export interface CartItemEdgeForModal {
+  node: CartItem;
+}
+
 // Items connection
 export interface CartItemsConnection {
   edges: CartItemEdge[];
@@ -49,12 +54,9 @@ export interface GetCartItemData {
   createReadCart: CreateReadCart;
 }
 
-
-// Full GraphQL operation shape (commonly used with bagistoFetch)
 export interface ReadCartOperation {
   data: GetCartItemData;
 }
-
 
 // Add Product In Cart
 export interface AddToCartItem {
@@ -95,7 +97,6 @@ export interface AddProductInCart {
   items: AddToCartItemsConnection;
 }
 
-
 export interface CreateAddProductInCart {
   addProductInCart: AddProductInCart;
 }
@@ -115,7 +116,7 @@ export interface AddToCartOperation {
   variables: AddToCartVariables;
 }
 
-// Guest Cart Token 
+// Guest Cart Token
 export interface CartToken {
   id: string;
   cartToken: string;
@@ -135,12 +136,10 @@ export interface CreateCartTokenData {
 }
 export type CreateCartTokenVariables = void;
 
-
 export interface CreateCartTokenOperation {
   data: CreateCartTokenData;
   variables: CreateCartTokenVariables;
 }
-
 
 // Merge Cart
 
@@ -179,14 +178,12 @@ export interface CreateMergeCartData {
   createMergeCart: CreateMergeCartPayload;
 }
 export interface CreateMergeCartVariables {
-  // token removed - now passed in Authorization header
   cartId: number;
 }
 export interface CreateMergeCartOperation {
   data: CreateMergeCartData;
   variables: CreateMergeCartVariables;
 }
-
 
 // Remove Cart Item
 export interface RemoveCartItemNode {
@@ -232,7 +229,6 @@ export interface RemoveCartItemData {
 }
 
 export interface RemoveCartItemVariables {
-  // token removed - now passed in Authorization header
   cartItemId: number;
 }
 
@@ -240,7 +236,6 @@ export interface RemoveCartItemOperation {
   data: RemoveCartItemData;
   variables: RemoveCartItemVariables;
 }
-
 
 // Update Cart Item
 export interface UpdateCartItemNode {
@@ -280,7 +275,6 @@ export interface UpdateCartItemData {
   createUpdateCartItem: CreateUpdateCartItemPayload;
 }
 export interface UpdateCartItemVariables {
-  // token removed - now passed in Authorization header
   cartItemId: number;
   quantity: number;
 }

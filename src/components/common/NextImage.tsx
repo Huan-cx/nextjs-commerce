@@ -6,13 +6,14 @@ import { NOT_IMAGE } from "@/utils/constants";
 import { NextImageProps } from "./type";
 import { Shimmer } from "./Shimmer";
 
+
 export function NextImage({
   src,
   alt,
   className = "",
   width,
   height,
-  sizes = "100vw",
+  sizes,
   priority = false,
 }: NextImageProps) {
   const [isLoaded, setIsLoaded] = useState(false);
@@ -47,9 +48,8 @@ export function NextImage({
           setHasError(true);
           setIsLoaded(true);
         }}
-        className={`transition-opacity duration-300 object-cover w-full h-full ${
-          isLoaded ? "opacity-100" : "opacity-0"
-        }`}
+        className={`transition-opacity duration-300 object-cover w-full h-full ${isLoaded ? "opacity-100" : "opacity-0"
+          }`}
       />
     </div>
   );

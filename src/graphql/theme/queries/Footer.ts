@@ -1,4 +1,6 @@
-export const GET_FOOTER = `
+import { gql } from "@apollo/client";
+
+export const GET_FOOTER = gql`
   query footerQuery($type: String) {
     themeCustomizations(type: $type) {
       edges {

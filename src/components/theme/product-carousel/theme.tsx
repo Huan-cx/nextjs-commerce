@@ -39,6 +39,7 @@ const Theme: FC<{
                 imageUrl={imageUrl}
                 price={price}
                 product={product}
+                priority={index < 4}
               />
             );
           })}

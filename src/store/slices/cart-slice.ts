@@ -8,40 +8,25 @@ export interface Cart {
   shippingAmount: number;
   grandTotal: number;
   items: any;
-  paymentMethod : string ;
-  paymentMethodTitle : string ; 
-  shippingMethod : string ;
-  selectedShippingRate : string;
-  selectedShippingRateTitle : string;
-}
-export interface SelectedPayment {
-  method: string;
-  methodTitle?: string;
+  paymentMethod: string;
+  paymentMethodTitle: string;
+  shippingMethod: string;
+  selectedShippingRate: string;
+  selectedShippingRateTitle: string;
 }
 
-
-interface SelectedShippingRate {
-  method: string;
-  methodDescription?: string;
-  methodPrice?: string;
-}
-
-// Define the shape of our cart state
 interface CartState {
   cart?: Cart;
-  selectedShippingRate: SelectedShippingRate | null;
-  selectedPayment: SelectedPayment | null;
   billingAddress: AddressDataTypes | null;
   shippingAddress: AddressDataTypes | null;
 }
-// Initial state for the cart
+
 const initialState: CartState = {
   cart: undefined,
-  selectedShippingRate: null,
-  selectedPayment: null,
   billingAddress: null,
   shippingAddress: null,
 };
+
 const cartSlice = createSlice({
   name: "cartDetail",
   initialState,
@@ -49,29 +34,27 @@ const cartSlice = createSlice({
     addItem: (state, action: PayloadAction<Cart>) => {
       state.cart = { ...action.payload };
     },
+    updateCart: (state, action: PayloadAction<Partial<Cart>>) => {
+      if (state.cart) {
+        state.cart = { ...state.cart, ...action.payload };
+      } else {
+        state.cart = action.payload as Cart;
+      }
+    },
     clearCart(state) {
       state.cart = undefined;
       state.billingAddress = null;
       state.shippingAddress = null;
-      state.selectedShippingRate = null;
-      state.selectedPayment = null;
     },
 
-    /** ADDRESSES */
-    setBillingAddress(
-      state,
-      action: PayloadAction<AddressDataTypes>
-    ) {
+    setBillingAddress(state, action: PayloadAction<AddressDataTypes>) {
       state.billingAddress = action.payload;
     },
     clearBillingAddress(state) {
       state.billingAddress = null;
     },
 
-    setShippingAddress(
-      state,
-      action: PayloadAction<AddressDataTypes>
-    ) {
+    setShippingAddress(state, action: PayloadAction<AddressDataTypes>) {
       state.shippingAddress = action.payload;
     },
     clearShippingAddress(state) {
@@ -89,43 +72,28 @@ const cartSlice = createSlice({
       state.shippingAddress = action.payload.shipping;
     },
 
-    /** SHIPPING */
-    setSelectedShippingRate(
-      state,
-      action: PayloadAction<SelectedShippingRate>
-    ) {
-      state.selectedShippingRate = action.payload;
-    },
-    clearSelectedShipping(state) {
-      state.selectedShippingRate = null;
+    resetAddressStep(_state) {
+      // Intentionally kept empty to retain previous selections while allowing re-entry to the step
     },
 
-    /** PAYMENT */
-    setSelectedPayment(state, action: PayloadAction<SelectedPayment>) {
-      state.selectedPayment = action.payload;
+    resetShippingStep(_state) {
+      // Intentionally kept empty to retain previous selections while allowing re-entry to the step
     },
-    clearSelectedPayment(state) {
-      state.selectedPayment = null;
-    },
-
 
   },
 });
 
-// Export the actions (functions you call in components)
 export const {
   addItem,
+  updateCart,
   clearCart,
-  setSelectedShippingRate,
-  setSelectedPayment,
-  clearSelectedShipping,
-  clearSelectedPayment,
   setBillingAddress,
   clearBillingAddress,
   setShippingAddress,
   clearShippingAddress,
   setCheckoutAddresses,
+  resetAddressStep,
+  resetShippingStep,
 } = cartSlice.actions;
 
-// Export the reducer so the store can use it
 export default cartSlice.reducer;

@@ -1,18 +1,14 @@
 import { SingleProductResponse } from "@/app/(public)/product/[...urlProduct]/page";
-import { GET_PRODUCT_SWATCH_REVIEW, graphqlRequest } from "@/graphql";
+import { GET_PRODUCT_SWATCH_REVIEW } from "@/graphql";
+import { cachedProductRequest } from "@/utils/hooks/useCache";
 
 
 export async function getProductWithSwatchAndReview(urlKey: string) {
   try {
-    const dataById = await graphqlRequest<SingleProductResponse>(
+    const dataById = await cachedProductRequest<SingleProductResponse>(
+      urlKey,
       GET_PRODUCT_SWATCH_REVIEW,
-      {
-        urlKey: urlKey,
-      },
-      {
-        tags: ["swatch-and-reviews", `product-${urlKey}`],
-        life: "hours",
-      }
+      { urlKey: urlKey }
     );
 
     return dataById?.product || null;

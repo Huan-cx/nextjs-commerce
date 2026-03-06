@@ -28,7 +28,7 @@ export const CHECKOUT = {
 };
 export const HIDDEN_PRODUCT_TAG = "nextjs-frontend-hidden";
 export const DEFAULT_OPTION = "Default Title";
-export const BAGISTO_GRAPHQL_API_ENDPOINT = "/graphql";
+export const BAGISTO_GRAPHQL_API_ENDPOINT = "/api/graphql";
 
 /**
  * productJsonLd constant
@@ -44,12 +44,14 @@ export const BAGISTO_SESSION = process.env.BAGISTO_SESSION ?? "bagisto_session";
 export const TOKEN = "token";
 export const BASE_URL = process.env.NEXT_PUBLIC_NEXT_AUTH_URL;
 export const baseUrl = process.env.NEXT_PUBLIC_BAGISTO_ENDPOINT;
-export const GRAPHQL_URL = typeof window === 'undefined'
-  ? `${process.env.NEXT_PUBLIC_BAGISTO_ENDPOINT}/api/graphql`
-  : `${process.env.NEXT_PUBLIC_BAGISTO_ENDPOINT}`;
+export const GRAPHQL_URL = `${(process.env.NEXT_PUBLIC_BAGISTO_ENDPOINT || '').replace(/\/$/, '')}${BAGISTO_GRAPHQL_API_ENDPOINT}`;
 export const NEXT_AUTH_SECRET = process.env.NEXT_PUBLIC_NEXT_AUTH_SECRET;
-export const STOREFRONT_KEY = process.env.NEXT_PUBLIC_BAGISTO_STOREFRONT_KEY || ""
 
+// Server-only: Use non-public env var, fallback to public for backwards compatibility
+export const STOREFRONT_KEY = process.env.BAGISTO_STOREFRONT_KEY || process.env.NEXT_PUBLIC_BAGISTO_STOREFRONT_KEY || "";
+
+export const OPERATION_TO_ROUTE_MAP: Record<string, string> = {
+};
 
 // -----Pagination--------//
 export const PAGE = "page";
@@ -169,10 +171,6 @@ export const configHeader = [
   },
 ]
 
-
-// export const magentoImageDomains = parseCsv(
-//   process.env.NEXT_SERVER_BAGISTO_IMAGE_DOMAINS
-// );
 
 export const imageProtocol = (process.env.NEXT_SERVER_MAGENTO_PROTOCOL ||
   "https") as "http" | "https";

@@ -1,4 +1,4 @@
-import { useToast } from "@/providers/ToastProvider";
+import { useToast } from "@/providers";
 import { Toast } from "./Toast";
 
 

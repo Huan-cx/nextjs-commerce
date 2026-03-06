@@ -1,241 +1,145 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation } from "@apollo/client";
 import { useRouter } from "next/navigation";
 import { useCustomToast } from "./useToast";
-import { isObject } from "../type-guards";
-import { fetchHandler } from "../fetch-handler";
+import { useDispatch } from "react-redux";
+import {
+  clearCart,
+} from "@/store/slices/cart-slice";
 import { getCartToken, getCookie } from "@utils/getCartToken";
 import { setCookie } from "@utils/helper";
-import { useGuestCartToken } from './useGuestCartToken';
-import { useDispatch } from "react-redux";
-import { clearCart } from "@/store/slices/cart-slice";
-import { ORDER_ID, IS_GUEST } from "@/utils/constants";
-
-export interface InputDataTypes {
-  input: {
-    productId: number;
-    quantity: number;
-    isBuyNow: boolean;
-  };
-}
-
-interface saveShippingMethodsTypes {
-  token: string;
-  shippingMethod: string;
-}
-
-interface savePaymentMethodsTypes {
-  token: string;
-  paymentMethod: string;
-}
-
+import { useGuestCartToken } from "./useGuestCartToken";
+import { ORDER_ID, IS_GUEST } from "@utils/constants";
+import { useCartDetail } from "./useCartDetail";
+import {
+  CREATE_CHECKOUT_ADDRESS,
+  CREATE_CHECKOUT_ORDER,
+  CREATE_CHECKOUT_PAYMENT_METHODS,
+  CREATE_CHECKOUT_SHIPPING_METHODS,
+  GET_CHECKOUT_ADDRESSES,
+} from "@/graphql";
 
 export const useCheckout = () => {
   const router = useRouter();
   const { resetGuestToken } = useGuestCartToken();
   const { showToast } = useCustomToast();
   const dispatch = useDispatch();
-  const queryClient = useQueryClient();
+  const { getCartDetail } = useCartDetail();
 
+  const handleMutationError = (error: any) => {
+    showToast(error?.message || "An error occurred", "danger");
+  };
 
-
-  const { mutateAsync: saveAddressToCheckout, isPending: isLoadingToSave } =
-    useMutation({
-      mutationFn: ({ token, ...data }: any) =>
-        fetchHandler({
-          url: "checkout/saveCheckoutAddresses",
-          method: "POST",
-          contentType: true,
-          body: data,
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        }),
-
-      onSuccess: (response) => {
-        const responseData =
-          response?.data?.createCheckoutAddress?.checkoutAddress;
-
-        if (isObject(responseData)) {
-          showToast(responseData?.message as string, "success");
-          queryClient.invalidateQueries({ queryKey: ["cart-detail"] });
-          queryClient.invalidateQueries({ queryKey: ["address"] });
-          router.replace("/checkout?step=shipping");
-        } else {
-          showToast(response?.error?.message, "warning");
-        }
+  const [saveAddressToCheckout, { loading: isLoadingToSave }] = useMutation(
+    CREATE_CHECKOUT_ADDRESS,
+    {
+      refetchQueries: [{ query: GET_CHECKOUT_ADDRESSES }],
+      awaitRefetchQueries: true,
+      onCompleted: () => {
+        showToast("Address saved successfully", "success");
+        router.replace("/checkout?step=shipping");
       },
-
-      onError: (error) => {
-        showToast(error?.message, "danger");
-      },
-    });
+      onError: handleMutationError,
+    },
+  );
 
   const saveCheckoutAddress = async (input: any) => {
     const token = getCartToken();
     await saveAddressToCheckout({
-      token: token || "",
-      ...input,
+      variables: {
+        token: token || "",
+        ...input,
+      },
     });
   };
 
-  // ---Get Shipping Rates from checkout
-
-  const {
-    mutateAsync: getShippingRates,
-    isPending: isLoadingToGetShippingMethods,
-    isSuccess
-  } = useMutation({
-    mutationFn: async ({ token }: { token: string }) => {
-      return fetchHandler({
-        url: "checkout/shippingMethods",
-        method: "POST",
-        contentType: true,
-        body: {},
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      });
-    },
-    onError: (error) => {
-      showToast(error?.message || "Something went wrong", "danger");
-    },
-  });
-
-  const handleGetShippingRates = async () => {
-    if (isLoadingToGetShippingMethods || isSuccess) return;
-
-    try {
-      const token = getCartToken() || "";
-
-      const response = await getShippingRates({ token });
-      if (Array.isArray(response?.data)) {
-        showToast("Shipping rates loaded", "success");
-      } else {
-        showToast("No shipping rates found", "warning");
-      }
-
-      return response;
-    } catch (error: any) {
-      showToast(error?.message || "Something went wrong", "danger");
-      throw error;
-    }
-  };
-
-  // --------Save Shipping Methods to checkout --------//
-  const { mutateAsync: saveShipping, isPending: isSaving } = useMutation({
-    mutationFn: ({ token, ...data }: saveShippingMethodsTypes) =>
-      fetchHandler({
-        url: "checkout/saveShipping",
-        method: "POST",
-        contentType: true,
-        body: data,
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      }),
-    onSuccess: (response) => {
-      const responseData = response?.data?.createCheckoutShippingMethod?.checkoutShippingMethod;
-
-      if (isObject(responseData)) {
-        showToast(responseData?.message as string, "success");
-        queryClient.invalidateQueries({ queryKey: ["cart-detail"] });
-        router.replace("/checkout?step=payment");
-      } else {
-        showToast(response?.error?.message as string, "warning");
-      }
-    },
-    onError: (error) => {
-      showToast(error?.message as string, "danger");
-    },
-  });
-
-  const saveCheckoutShipping = async (input: any) => {
-    const token = getCartToken();
-    await saveShipping({
-      token: token || "",
-      shippingMethod: input
-    });
-  };
-
-  // ---Get Payment Methods from checkout
-
-  // --------Save Payment Methods to checkout --------//
-  const { mutateAsync: savePayment, isPending: isPaymentLoading } = useMutation(
+  const [saveShipping, { loading: isSaving }] = useMutation(
+    CREATE_CHECKOUT_SHIPPING_METHODS,
     {
-      mutationFn: ({ token, ...data }: savePaymentMethodsTypes) =>
-        fetchHandler({
-          url: "/checkout/savePayment",
-          method: "POST",
-          contentType: true,
-          body: data,
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        }),
-      onSuccess: (response) => {
-        const responseData = response?.data?.createCheckoutPaymentMethod?.checkoutPaymentMethod;
-
-        if (isObject(responseData)) {
-          showToast(responseData?.message as string, "success");
-          queryClient.invalidateQueries({ queryKey: ["cart-detail"] });
-          router.replace("/checkout?step=review");
+      onCompleted: (response) => {
+        const responseData =
+          response?.createCheckoutShippingMethod?.checkoutShippingMethod;
+        if (responseData?.success) {
+          getCartDetail();
+          showToast("Shipping method saved successfully", "success");
+          router.replace("/checkout?step=payment");
         } else {
-          showToast(response?.error?.message as string, "warning");
+          showToast(
+            responseData?.message || "Failed to save shipping method",
+            "warning",
+          );
         }
       },
-      onError: (error) => {
-        showToast(error?.message as string, "danger");
-      },
-    }
+      onError: handleMutationError,
+    },
   );
 
-  const saveCheckoutPayment = async (input: any) => {
+  const saveCheckoutShipping = async (shippingMethod: string) => {
     const token = getCartToken();
-    await savePayment({
-      token: token || "",
-      paymentMethod: input
+    await saveShipping({
+      variables: {
+        token: token || "",
+        shippingMethod,
+      },
     });
   };
 
-  // -------Finally Place Order---------------//
-  const { mutateAsync: placeOrder, isPending: isPlaceOrder } = useMutation({
-    mutationFn: ({ token, ...data }: any) =>
-      fetchHandler({
-        url: "/checkout/placeOrder",
-        method: "POST",
-        contentType: true,
-        body: data,
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      }),
-    onSuccess: (response) => {
-      const responseData = response?.data?.createCheckoutOrder?.checkoutOrder;
-
-      if (isObject(responseData)) {
-        showToast("Order Placed Successfully!", "success");
-        setCookie(ORDER_ID, responseData?.orderId as string);
-        dispatch(clearCart())
-        router.replace("/success");
-      }
-      else {
-        showToast(response?.error?.message as string, "warning");
-      }
+  const [savePayment, { loading: isPaymentLoading }] = useMutation(
+    CREATE_CHECKOUT_PAYMENT_METHODS,
+    {
+      onCompleted: (response) => {
+        const responseData =
+          response?.createCheckoutPaymentMethod?.checkoutPaymentMethod;
+        if (responseData?.success) {
+          showToast("Payment method saved successfully", "success");
+          router.replace("/checkout?step=review");
+        } else {
+          showToast(
+            responseData?.message || "Failed to save payment method",
+            "warning",
+          );
+        }
+      },
+      onError: handleMutationError,
     },
-    onError: (error) => {
-      showToast(error?.message as string, "danger");
-    },
-  });
+  );
 
-  const SavePlaceOrder = async () => {
+  const saveCheckoutPayment = async (paymentMethod: string) => {
+    const token = getCartToken();
+    await savePayment({
+      variables: {
+        token: token || "",
+        paymentMethod,
+      },
+    });
+  };
+
+  const [placeOrder, { loading: isPlaceOrder }] = useMutation(
+    CREATE_CHECKOUT_ORDER,
+    {
+      onCompleted: (response) => {
+        const responseData = response?.createCheckoutOrder?.checkoutOrder;
+        if (responseData) {
+          showToast("Order placed successfully!", "success");
+          setCookie(ORDER_ID, responseData?.orderId);
+          dispatch(clearCart());
+          router.replace("/success");
+        } else {
+          showToast(
+            responseData?.message || "Failed to place order",
+            "warning",
+          );
+        }
+      },
+      onError: handleMutationError,
+    },
+  );
+
+  const savePlaceOrder = async () => {
     const token = getCartToken();
     await placeOrder({
-      token: token || ""
+      variables: {
+        token: token || "",
+      },
     });
 
     const isGuest = getCookie(IS_GUEST);
@@ -251,9 +155,7 @@ export const useCheckout = () => {
     saveCheckoutShipping,
     isPaymentLoading,
     saveCheckoutPayment,
-    SavePlaceOrder,
     isPlaceOrder,
-    handleGetShippingRates,
-    isLoadingToGetShippingMethods,
+    savePlaceOrder,
   };
 };

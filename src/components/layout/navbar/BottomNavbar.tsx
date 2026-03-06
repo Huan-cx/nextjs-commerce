@@ -71,8 +71,9 @@ const BottomNavbar = memo(function BottomNavbar({
           {/* Cart */}
           <Cart
             className={itemBase}
-            onClick={() => setActiveTab("cart")}
+            onOpen={() => setActiveTab("cart")}
             onClose={() => setActiveTab(null)}
+            isOpen={activeTab === "cart"}
           >
             <div className={getIconWrapperClass("cart")}>
               <OpenCart quantity={cartDetail?.cart?.itemsQty} />
@@ -84,8 +85,9 @@ const BottomNavbar = memo(function BottomNavbar({
           <Suspense fallback={<IconSkeleton />}>
             <UserAccount
               className={itemBase}
-              onClick={() => setActiveTab("account")}
+              onOpen={() => setActiveTab("account")}
               onClose={() => setActiveTab(null)}
+              isOpen={activeTab === "account"}
             >
               <div className={getIconWrapperClass("account")}>
                 <OpenAuth />

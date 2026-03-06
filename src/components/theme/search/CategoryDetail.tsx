@@ -17,8 +17,8 @@ export const CategoryDetail: FC<{
   if (!categoryItem) return null;
 
   return (
-    <div className="px-4 w-full max-w-screen-2xl mt-8 md:mt-14 mx-auto mb-10">
-      <div className="flex flex-col md:flex-row justify-between gap-8 md:gap-20 items-start">
+    <div className="px-4 w-full max-w-screen-2xl mt-8 md:mt-14 mx-auto mb-0 sm:mb-10">
+      <div className="flex flex-col lg:flex-row justify-between gap-4 md:gap-8 lg:gap-20 items-start">
         <div className=" flex-col gap-3 shrink-0">
           <Link href="/" className="hidden lg:flex w-fit text-sm font-medium text-nowrap relative text-neutral-500 before:absolute before:bottom-0 before:left-0 before:h-px before:w-0 before:bg-current before:transition-all before:duration-300 before:content-[''] hover:text-black hover:before:w-full dark:text-neutral-400 dark:hover:text-neutral-300">
             Home /

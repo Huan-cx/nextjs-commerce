@@ -1,11 +1,13 @@
 import { FC, Suspense } from "react";
 import { safeParse } from "@utils/helper";
-import { ThemeCustomizationResponse } from "@/types/theme/theme-customization";
+import { CategoryCarouselOptions, ProductCarouselOptions, ThemeCustomizationResponse } from "@/types/theme/theme-customization";
 import ImageCarousel from "./ImageCarousel";
 import ProductCarousel from "./ProductCarousel";
 import CategoryCarousel from "./CategoryCarousel";
 import { MobileSearchBar } from "@components/layout/navbar/MobileSearch";
 import { CategoryCarouselSkeleton } from "@components/common/skeleton/CategoryCarouselSkeleton";
+import { ThemeSkeleton } from "@components/common/skeleton/ThemeSkeleton";
+import { ThreeItemGridSkeleton } from "@components/theme/ui/grid/ThreeItemsSkeleton";
 
 interface RenderThemeCustomizationProps {
     themeCustomizations: ThemeCustomizationResponse['themeCustomizations'];
@@ -31,7 +33,6 @@ const RenderThemeCustomization: FC<RenderThemeCustomizationProps> = ({ themeCust
                     const options = safeParse(translation.node.options) || {};
                     if (Object.keys(options).length === 0) {
                         console.error("Error parsing options for", node.type);
-                        // return null; // Or continue
                     }
 
                     switch (node.type) {
@@ -39,15 +40,20 @@ const RenderThemeCustomization: FC<RenderThemeCustomizationProps> = ({ themeCust
                             return <ImageCarousel key={node.id} options={options as any} />;
                         case "product_carousel": {
                             productCarouselIndex++;
-                            const opts = options as any;
-                            const limit = opts?.filters?.limit ? parseInt(opts.filters.limit, 10) : null;
+                            const opts = options as ProductCarouselOptions;
+                            const limit = opts?.filters?.limit ? parseInt(String(opts.filters.limit), 10) : null;
                             const itemCount = limit || (productCarouselIndex === 1 ? 3 : 4);
-                            return <ProductCarousel key={node.id} options={{ ...options, title: node.name } as any} itemCount={itemCount} sortOrder={node?.sortOrder} />;
+                            const fallback = node.sortOrder === 2 ? <ThreeItemGridSkeleton /> : <ThemeSkeleton />;
+                            return (
+                                <Suspense key={node.id} fallback={fallback}>
+                                    <ProductCarousel key={node.id} options={{ ...options, title: node.name } as ProductCarouselOptions} itemCount={itemCount} sortOrder={node?.sortOrder} />
+                                </Suspense>
+                            );
                         }
                         case "category_carousel":
                             return (
                                 <Suspense key={node.id} fallback={<CategoryCarouselSkeleton />}>
-                                    <CategoryCarousel options={options as any} />
+                                    <CategoryCarousel options={options as CategoryCarouselOptions} />
                                 </Suspense>
                             );
                         default:

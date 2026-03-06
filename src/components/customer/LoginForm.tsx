@@ -73,7 +73,7 @@ export default function LoginForm() {
       // Only merge cart if user had a guest cart before login
       if (userToken && guestCartId && guestCartToken) {
         try {
-          await mergeCart(userToken, parseInt(guestCartId, 10));
+          await mergeCart({ variables: { token: userToken, cartId: parseInt(guestCartId, 10) } });
           setCookie(GUEST_CART_TOKEN, userToken);
           setCookie(IS_GUEST, "false");
           await getCartDetail();
@@ -98,7 +98,7 @@ export default function LoginForm() {
   };
 
   return (
-    <div className="flex h-[80vh] w-full items-center max-w-screen-2xl mx-auto px-4  xss:px-7.5 justify-between gap-4 lg:my-16 xl:my-28">
+    <div className="flex w-full items-center max-w-screen-2xl mx-auto px-4  xss:px-7.5 justify-between gap-4 lg:my-16 xl:my-28">
       <div className="flex w-full max-w-[583px] flex-col gap-y-4 lg:gap-y-12">
         <div className="font-outfit">
           <h2 className="py-1 text-2xl font-semibold sm:text-4xl">

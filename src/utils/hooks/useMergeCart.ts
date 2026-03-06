@@ -1,47 +1,21 @@
-
 "use client";
 
-import { useMutation } from "@tanstack/react-query";
-import { useCustomToast } from "./useToast";
+import { useMutation } from "@apollo/client";
 import { useAppDispatch } from "@/store/hooks";
-import { fetchHandler } from "../fetch-handler";
 import { addItem } from "@/store/slices/cart-slice";
+import { CREATE_MERGE_CART } from "@/graphql";
 
-
-interface MergeCartInput {
-  token: string;
-  cartId: number;
-}
 
 export function useMergeCart() {
-  const { showToast } = useCustomToast();
   const dispatch = useAppDispatch();
 
-
-  const {
-    mutateAsync: mergeCartRequest,
-    isPending: isLoading,
-    error,
-  } = useMutation({
-    mutationFn: ({ token, ...input }: MergeCartInput) =>
-      fetchHandler({
-        url: "cart/mergeCart",
-        method: "POST",
-        contentType: true,
-        body: { ...input },
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      }),
-
-    onSuccess: (response) => {
-      const responseData = response?.data?.createMergeCart?.mergeCart
+  const [mergeCart, { loading: isLoading }] = useMutation(CREATE_MERGE_CART, {
+    onCompleted: (response) => {
+      const responseData = response?.createMergeCart?.mergeCart;
       if (!responseData) {
         return;
       }
-
-      const cartId = responseData?.id ?? null;
+       const cartId = responseData?.id ?? null;
 
       const setCookie = (name: string, value: string | number, days = 30) => {
         if (typeof window === "undefined" || !name) return;
@@ -57,19 +31,12 @@ export function useMergeCart() {
 
       dispatch(addItem(responseData));
     },
-
-    onError: (err) => {
-      showToast(err?.message || "Merge cart failed!", "danger");
+    onError: (_error) => {
     },
   });
-
-  const mergeCart = async (token: string, cartId: number) => {
-    await mergeCartRequest({ token, cartId });
-  };
 
   return {
     mergeCart,
     isLoading,
-    error,
   };
 }

@@ -1,44 +1,35 @@
 "use client";
 
 import { CartCheckoutPageSkeleton } from "@/components/common/skeleton/CheckoutSkeleton";
-import { fetchHandler } from "@utils/fetch-handler";
-import { getCartToken } from "@utils/getCartToken";
+import { useQuery } from "@apollo/client";
 import ShippingMethod from "./ShippingMethod";
-import { useQuery } from "@tanstack/react-query";
 import { FC } from "react";
 import { SelectedShippingRateType } from "@/types/checkout/type";
+import { GET_CHECKOUT_SHIPPING_RATES } from "@/graphql";
+import { getCartToken } from "@/utils/getCartToken";
 
 const Shipping: FC<{
   selectedShippingRate?: SelectedShippingRateType;
-}> = ({ selectedShippingRate }) => {
+  currentStep?: string;
+}> = ({ selectedShippingRate, currentStep }) => {
   const token = getCartToken();
 
-  const { data, isLoading } = useQuery({
-    queryKey: ["shippingMethods", token],
-    enabled: !!token,
-    staleTime: 10 * 60 * 1000,
-    refetchOnMount: false,
-    refetchOnWindowFocus: false,
-    queryFn: () =>
-      fetchHandler({
-        url: "checkout/shippingMethods",
-        method: "POST",
-        contentType: true,
-        body: {},
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      }),
+  const { data, loading: isLoading } = useQuery(GET_CHECKOUT_SHIPPING_RATES, {
+    variables: { token: token || "" },
+    skip: !token,
+    fetchPolicy: "cache-first",
+    nextFetchPolicy: "cache-first",
   });
 
-  return isLoading ? (
-    <CartCheckoutPageSkeleton />
-  ) : (
+  if (isLoading && !data) {
+    return <CartCheckoutPageSkeleton />;
+  }
+  return (
     <ShippingMethod
-      shippingMethod={data?.data}
+      shippingMethod={data?.collectionShippingRates}
       selectedShippingRate={selectedShippingRate}
       methodDesc={selectedShippingRate?.methodDescription}
+      currentStep={currentStep}
     />
   );
 };

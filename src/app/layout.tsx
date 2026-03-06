@@ -1,16 +1,10 @@
 import { Outfit } from "next/font/google";
 import "./globals.css";
-import {
-  AppWrapper,
-  ReduxProvider,
-  ThemeProvider,
-  ToastProvider,
-  SessionProvider,
-} from "@/providers";
+import { GlobalProviders } from "@/providers";
 import { generateMetadataForPage } from "@utils/helper";
 import { staticSeo } from "@utils/metadata";
-import { ReactQueryProvider } from "@/providers/ReactQueryProvider";
 import { SpeculationRules } from "@components/theme/SpeculationRules";
+import { ErrorBoundary } from "@/components/error/ErrorBoundary";
 import clsx from "clsx";
 
 export const outfit = Outfit({
@@ -32,54 +26,21 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-        <head>
-        <script
-          type="speculationrules"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
-              prerender: [
-                {
-                  where: {
-                    and: [
-                      { href_matches: "/*" },
-                      { not: { href_matches: "/logout" } },
-                      { not: { href_matches: "/*\\?*(^|&)add-to-cart=*" } },
-                      { not: { selector_matches: ".no-prerender" } },
-                      { not: { selector_matches: "[rel~=nofollow]" } },
-                    ],
-                  },
-                },
-              ],
-              prefetch: [
-                {
-                  urls: ["next.html", "next2.html"],
-                  requires: ["anonymous-client-ip-when-cross-origin"],
-                  referrer_policy: "no-referrer",
-                },
-              ],
-            }),
-          }}
-        />
+      <head>
       </head>
-      <body  className={clsx(
-          "min-h-screen font-outfit text-foreground bg-background antialiased",
-          outfit.variable
-        )}>
+      <body className={clsx(
+        "min-h-screen font-outfit text-foreground bg-background antialiased",
+        outfit.variable
+      )}>
         <main>
-        <ThemeProvider>
-          <SessionProvider>
-            <ToastProvider>
-              <ReactQueryProvider>
-                <ReduxProvider>
-                  <AppWrapper>{children}</AppWrapper>
-                </ReduxProvider>
-              </ReactQueryProvider>
-            </ToastProvider>
-          </SessionProvider>
-           <SpeculationRules />
-        </ThemeProvider>
+          <ErrorBoundary>
+            <GlobalProviders>
+              {children}
+            </GlobalProviders>
+            <SpeculationRules />
+          </ErrorBoundary>
         </main>
-        <span className="dsv-2025.04.19-7e29"/>
+        <span className="dsv-2025.04.19-7e29" />
       </body>
     </html>
   );

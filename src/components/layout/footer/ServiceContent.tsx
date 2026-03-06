@@ -22,14 +22,28 @@ export interface ServiceContenRenderTypes {
 }
 
 const ServiceContent: FC<ServiceContentDataTypes> = ({ serviceData }) => {
-  return serviceData?.slice(0, 1)?.map((service, index: number) => {
-    const options =
-      typeof service.options === "string"
-        ? safeParse(service.options)
-        : service.options;
+  const pathname = usePathname();
 
-    return <ServiceCarouselRender key={index} serviceList={{ options }} />;
-  });
+  if (
+    pathname === "/customer/login" ||
+    pathname === "/customer/register" ||
+    pathname === "/customer/forget-password"
+  ) {
+    return null;
+  }
+
+  return (
+    <div className="mx-auto my-16 mt-16 sm:mt-0 w-full lg:my-12 md:my-20 md:max-w-4xl px-4 py-8">
+      {serviceData?.slice(0, 1)?.map((service, index: number) => {
+        const options =
+          typeof service.options === "string"
+            ? safeParse(service.options)
+            : service.options;
+
+        return <ServiceCarouselRender key={index} serviceList={{ options }} />;
+      })}
+    </div>
+  );
 };
 
 const iconMapping: Record<string, JSX.Element> = {
@@ -44,16 +58,6 @@ const ServiceCarouselRender: FC<ServiceContenRenderTypes> = ({
 }) => {
   const { options } = serviceList;
   const { services } = options;
-  const pathname = usePathname();
-
-  // Don't render service content on customer auth pages
-  if (
-    pathname === "/customer/login" ||
-    pathname === "/customer/register" ||
-    pathname === "/customer/forget-password"
-  ) {
-    return null;
-  }
 
   return (
     <div className="flex items-center justify-center gap-6 max-lg:flex-wrap max-md:grid max-md:grid-cols-2 max-md:gap-x-4 max-md:gap-y-8 max-md:text-center md:gap-10 lg:gap-20">

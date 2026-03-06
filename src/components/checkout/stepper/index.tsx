@@ -25,8 +25,6 @@ interface CheckOutProps {
   currentStep: string;
   selectedPayment?: any;
   selectedPaymentTitle?: string;
-  isOpen: boolean;
-  setIsOpen: (value: boolean) => void;
   selectedShippingRate?: any;
   selectedShippingRateTitle?: string;
 }
@@ -40,8 +38,6 @@ export default function Stepper(
     selectedPayment,
     selectedPaymentTitle,
     currentStep,
-    isOpen,
-    setIsOpen
   }: CheckOutProps
 ) {
 
@@ -63,6 +59,7 @@ export default function Stepper(
           <GuestAddAdressForm
             billingAddress={billingAddress}
             shippingAddress={shippingAddress}
+            currentStep={currentStep}
           />
       },
       {
@@ -72,6 +69,7 @@ export default function Stepper(
         href: "/checkout?step=address",
         component: <Shipping
           selectedShippingRate={selectedShippingRate}
+          currentStep={currentStep}
         />,
       },
       {
@@ -82,8 +80,7 @@ export default function Stepper(
         component: (
           <Payment
             selectedPayment={selectedPayment}
-            isOpen={isOpen}
-            setIsOpen={setIsOpen}
+            currentStep={currentStep}
           />
         ),
       },
@@ -104,14 +101,13 @@ export default function Stepper(
       },
     ];
   }, [
+    currentStep,
     billingAddress,
     shippingAddress,
     selectedShippingRate,
     selectedPayment,
     selectedPaymentTitle,
     selectedShippingRateTitle,
-    isOpen,
-    setIsOpen
   ]);
 
   const currentStepIndex = steps.findIndex((s) => s.key === currentStep);
@@ -162,7 +158,7 @@ export default function Stepper(
       </header>
 
       <div className="scrollbar-thin scrollbar-track-transparent scrollbar-thumb-gray-500 dark:scrollbar-thumb-neutral-300 h-[calc(100dvh-300px)] overflow-y-auto lg:h-[calc(100dvh-124px)]">
-        <div className="flex h-full flex-col gap-y-8 px-2 sm:px-3">
+        <div className="flex h-full flex-col gap-y-8 pl-2 pr-6 sm:px-3 sm:pr-10">
           {steps.map((step) => (
             <StepItem key={step.id} step={step} />
           ))}

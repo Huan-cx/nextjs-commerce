@@ -23,16 +23,11 @@ const eslintConfig = defineConfig([
       "react-hooks/exhaustive-deps": "off",
       "react/no-unescaped-entities": "warn",
       "@typescript-eslint/no-empty-interface": "warn",
-      "prefer-const": "warn",
-      "no-var": "warn",
+      "prefer-const": "error",
+      "no-var": "error",
     },
   },
-  globalIgnores([
-    ".next/**",
-    "out/**",
-    "build/**",
-    "next-env.d.ts",
-  ]),
+  globalIgnores([".next/**", "out/**", "build/**", "next-env.d.ts"]),
 ]);
 
 export default eslintConfig;
