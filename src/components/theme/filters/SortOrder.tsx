@@ -1,20 +1,12 @@
 "use client";
 
-import { SORT, SortOrderTypes } from "@/utils/constants";
-import { createUrl } from "@/utils/helper";
-import { Select, SelectItem } from "@heroui/select";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { FC, useState, useEffect } from "react";
-import {
-  Drawer,
-  DrawerContent,
-  DrawerHeader,
-  DrawerBody,
-  Button,
-  useDisclosure,
-} from "@heroui/react";
-import { SortIcon } from "@components/common/icons/SortIcon";
-
+import {SortOrderTypes} from "@/utils/constants";
+import {createUrl} from "@/utils/helper";
+import {Select, SelectItem} from "@heroui/select";
+import {usePathname, useRouter, useSearchParams} from "next/navigation";
+import {FC, useEffect, useState} from "react";
+import {Button, Drawer, DrawerBody, DrawerContent, DrawerHeader, useDisclosure,} from "@heroui/react";
+import {SortIcon} from "@components/common/icons/SortIcon";
 
 
 const SortOrder: FC<{
@@ -24,7 +16,9 @@ const SortOrder: FC<{
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const router = useRouter();
-  const sort = searchParams.get(SORT) || "name-asc";
+
+  // 使用 sort 参数（如 "newest", "price-asc"）
+  const sort = searchParams.get("sort") || "newest";
 
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
   const [tempSort, setTempSort] = useState(sort);
@@ -36,7 +30,7 @@ const SortOrder: FC<{
   const handleSortChange = (value: string) => {
     const newParams = new URLSearchParams(searchParams.toString());
 
-    if (value) newParams.set(SORT, value);
+    if (value) newParams.set("sort", value);
     const newUrl = createUrl(pathname, newParams);
 
     router.replace(newUrl);

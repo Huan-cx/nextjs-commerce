@@ -1,19 +1,19 @@
 "use client";
-import { useForm } from "react-hook-form";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
-import { EMAIL, getLocalStorage, setLocalStorage } from "@/store/local-storage";
-import Link from "next/link";
+import {useForm} from "react-hook-form";
+import {useRouter} from "next/navigation";
+import {useState} from "react";
+import {useAppDispatch, useAppSelector} from "@/store/hooks";
+import {setEmail} from "@/store/slices/checkout-slice";
+import {delay} from "@utils/helper";
+import {EmailFormProps, EmailFormValues} from "../type";
+import {EMAIL_REGEX} from "@utils/constants";
 import InputText from "@components/common/form/Input";
-import { ProceedToCheckout } from "./ProceedToCheckout";
-import { delay } from "@utils/helper";
-import { EmailFormProps, EmailFormValues } from "../type";
-import { EMAIL_REGEX } from "@utils/constants";
-
-
+import Link from "next/link";
+import {ProceedToCheckout} from "@components/checkout/stepper/ProceedToCheckout";
 
 const Email = () => {
-  const email = getLocalStorage(EMAIL);
+  const dispatch = useAppDispatch();
+  const email = useAppSelector((state) => state.checkout.email);
   const [isOpen, setIsOpen] = useState(false);
   const router = useRouter();
   const isGuest = true;
@@ -23,11 +23,11 @@ const Email = () => {
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm<EmailFormValues>({
-    defaultValues: { email },
+    defaultValues: {email: email || ""},
   });
 
   const onSubmit = async (data: EmailFormValues) => {
-    setLocalStorage(EMAIL, data?.email);
+    dispatch(setEmail(data.email));
     await delay(200);
     router.push("/checkout?step=address");
   };

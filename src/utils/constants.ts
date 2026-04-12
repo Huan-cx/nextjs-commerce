@@ -28,7 +28,7 @@ export const CHECKOUT = {
 };
 export const HIDDEN_PRODUCT_TAG = "nextjs-frontend-hidden";
 export const DEFAULT_OPTION = "Default Title";
-export const BAGISTO_GRAPHQL_API_ENDPOINT = "/api/graphql";
+export const BAGISTO_GRAPHQL_API_ENDPOINT = "/app-api";
 
 /**
  * productJsonLd constant
@@ -40,7 +40,7 @@ export const PRODUCT_OFFER_TYPE = "AggregateOffer";
 /**
  * cookies constant
  */
-export const BAGISTO_SESSION = process.env.BAGISTO_SESSION ?? "bagisto_session";
+export const BAGISTO_SESSION = process.env.BAGISTO_SESSION ?? "app_session";
 export const TOKEN = "token";
 export const BASE_URL = process.env.NEXT_PUBLIC_NEXT_AUTH_URL;
 export const baseUrl = process.env.NEXT_PUBLIC_BAGISTO_ENDPOINT;
@@ -58,7 +58,9 @@ export const PAGE = "page";
 export const LIMIT = "limit";
 export const LOADING = "loading";
 export const QUERY = "q";
-export const SORT = "sort";
+export const SORT = "sortField";
+export const SORT_FIELD = "sortField";
+export const SORT_ASC = "sortAsc";
 
 /**
  * Placeholder Images
@@ -176,15 +178,15 @@ export const imageProtocol = (process.env.NEXT_SERVER_MAGENTO_PROTOCOL ||
   "https") as "http" | "https";
 
 
-
 export function getImageUrl(url?: string, baseUrl?: string, fallback?: string) {
-  if (!url) return fallback;
+  if (!url) return fallback || NOT_IMAGE;
 
   if (url.startsWith("http://") || url.startsWith("https://")) {
     return url;
   }
 
-  return `${baseUrl}${url.startsWith("/") ? url : `/${url}`}`;
+  const base = baseUrl || '';
+  return `${base}${url.startsWith("/") ? url : `/${url}`}`;
 }
 
 
@@ -197,46 +199,46 @@ export type SortOrderTypes = {
 };
 
 export const SortByFields: SortOrderTypes[] = [
-  {
-    key: "name-asc",
-    title: "From A-Z",
-    value: "name-asc",
-    sortKey: "TITLE",
-    reverse: false,
-  },
-  {
-    key: "name-desc",
-    title: "From Z-A",
-    value: "name-desc",
-    sortKey: "TITLE",
-    reverse: true,
-  },
+  // {
+  //   key: "name-asc",
+  //   title: "From A-Z",
+  //   value: "name-asc",
+  //   sortKey: "TITLE",
+  //   reverse: false,
+  // },
+  // {
+  //   key: "name-desc",
+  //   title: "From Z-A",
+  //   value: "name-desc",
+  //   sortKey: "TITLE",
+  //   reverse: true,
+  // },
   {
     key: "newest",
     title: "Newest First",
     value: "newest",
-    sortKey: "CREATED_AT",
+    sortKey: "createTime",
     reverse: true,
   },
   {
     key: "oldest",
     title: "Oldest First",
     value: "oldest",
-    sortKey: "CREATED_AT",
+    sortKey: "createTime",
     reverse: false,
   },
   {
     key: "price-asc",
     title: "Cheapest First",
     value: "price-asc",
-    sortKey: "PRICE",
+    sortKey: "price",
     reverse: false,
   },
   {
     key: "price-desc",
     title: "Expensive First",
     value: "price-desc",
-    sortKey: "PRICE",
+    sortKey: "price",
     reverse: true,
   },
 ];

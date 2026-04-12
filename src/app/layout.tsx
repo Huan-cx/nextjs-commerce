@@ -1,13 +1,13 @@
-import { Outfit } from "next/font/google";
+import {Outfit} from "next/font/google";
 import "./globals.css";
-import { GlobalProviders } from "@/providers";
-import { generateMetadataForPage } from "@utils/helper";
-import { staticSeo } from "@utils/metadata";
-import { SpeculationRules } from "@components/theme/SpeculationRules";
-import { ErrorBoundary } from "@/components/error/ErrorBoundary";
+import {GlobalProviders} from "@/providers";
+import {generateMetadataForPage} from "@utils/helper";
+import {staticSeo} from "@utils/metadata";
+import {SpeculationRules} from "@components/theme/SpeculationRules";
+import {ErrorBoundary} from "@/components/error/ErrorBoundary";
 import clsx from "clsx";
 
-export const outfit = Outfit({
+const outfit = Outfit({
   subsets: ["latin", "latin-ext"],
   weight: ["400", "600"],
   variable: "--font-outfit",
@@ -29,7 +29,7 @@ export default function RootLayout({
       <head>
       </head>
       <body className={clsx(
-        "min-h-screen font-outfit text-foreground bg-background antialiased",
+          "min-h-screen font-outfit text-foreground bg-background antialiased pb-16 lg:pb-0",
         outfit.variable
       )}>
         <main>

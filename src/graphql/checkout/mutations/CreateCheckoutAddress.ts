@@ -1,4 +1,4 @@
-import { gql } from "@apollo/client";
+import {gql} from "@apollo/client";
 
 export const CREATE_CHECKOUT_ADDRESS = gql`
  mutation createCheckoutAddress(
@@ -15,7 +15,7 @@ export const CREATE_CHECKOUT_ADDRESS = gql`
     $useForShipping: Boolean
     $shippingFirstName : String
     $shippingLastName : String
-    $shippingAddress : String
+    $receiverAddress : String
     $shippingCity : String
     $shippingCountry : String
     $shippingState : String
@@ -39,7 +39,7 @@ export const CREATE_CHECKOUT_ADDRESS = gql`
       useForShipping: $useForShipping
       shippingFirstName : $shippingFirstName
       shippingLastName : $shippingLastName
-      shippingAddress : $shippingAddress
+      receiverAddress : $receiverAddress
       shippingCity : $shippingCity
       shippingEmail : $shippingEmail
       shippingCountry : $shippingCountry

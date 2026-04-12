@@ -1,33 +1,24 @@
 "use client";
 
-import { CartCheckoutPageSkeleton } from "@/components/common/skeleton/CheckoutSkeleton";
-import { useQuery } from "@apollo/client";
+import {CartCheckoutPageSkeleton} from "@/components/common/skeleton/CheckoutSkeleton";
 import PaymentMethod from "./PaymentMethod";
-import { FC } from "react";
-import { GET_CHECKOUT_PAYMENT_METHODS } from "@/graphql";
-import { getCartToken } from "@/utils/getCartToken";
+import {FC} from "react";
+import {getPaymentChannels} from "@/utils/api/trade";
+import {useQuery} from "@tanstack/react-query";
 
 const Payment: FC<{
-  selectedPayment?: {
-    method: string;
-    methodTitle?: string;
-  };
   currentStep?: string;
-}> = ({ selectedPayment, currentStep }) => {
-  const token = getCartToken();
-  const { data, loading: isLoading } = useQuery(GET_CHECKOUT_PAYMENT_METHODS, {
-    variables: { token: token || "" },
-    skip: !token,
-    fetchPolicy: "cache-first",
-    nextFetchPolicy: "cache-first",
+}> = ({currentStep}) => {
+  const {data: methods = [], isLoading} = useQuery({
+    queryKey: ["paymentMethods"],
+    queryFn: () => getPaymentChannels({appId: "1"}),
   });
 
-  if (isLoading && !data) return <CartCheckoutPageSkeleton />;
+  if (isLoading) return <CartCheckoutPageSkeleton/>;
 
   return (
     <PaymentMethod
-      methods={data?.collectionPaymentMethods}
-      selectedPayment={selectedPayment as any}
+        methods={methods}
       currentStep={currentStep}
     />
   );

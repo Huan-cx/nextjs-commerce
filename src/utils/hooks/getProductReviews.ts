@@ -1,19 +1,16 @@
-import { GET_PRODUCT_REVIEWS } from "@/graphql";
-import { cachedProductRequest } from "./useCache";
+import {cachedProductReviewRequest} from "@utils/request/useCahceRest";
 
 
-
-export async function getProductReviews(productId: string) {
+export async function getProductReviews(productId: number) {
   try {
-    const variables = { product_id: Number(productId), first: 10 };
-    
-    const response = await cachedProductRequest<any>(
-      productId,
-      GET_PRODUCT_REVIEWS,
-      variables
+    const response = await cachedProductReviewRequest(
+        "product/comment/page",
+        {
+          productId: productId,
+        }
     );
-    
-    return response?.productReviews?.edges || [];
+
+    return response?.list || [];
   } catch (error) {
     if (error instanceof Error) {
       console.error("Error fetching product reviews:", {

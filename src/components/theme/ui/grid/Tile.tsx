@@ -2,11 +2,11 @@
 
 import clsx from "clsx";
 import Image from "next/image";
-import { useState } from "react";
+import {useState} from "react";
 
 import Label from "../Label";
-import { NOT_IMAGE } from "@/utils/constants";
-import { Shimmer } from "@/components/common/Shimmer";
+import {NOT_IMAGE} from "@/utils/constants";
+import {Shimmer} from "@/components/common/Shimmer";
 
 export function GridTileImage({
   active,
@@ -21,7 +21,7 @@ export function GridTileImage({
   label?: {
     title: string;
     page?: string;
-    amount: string;
+    amount: number | string;
     currencyCode: string;
     position?: "bottom" | "center" | "left";
   };

@@ -1,15 +1,13 @@
 import Link from "next/link";
-import { Suspense } from "react";
-import { isObject } from "@/utils/type-guards";
-import { getThemeCustomization } from "@/utils/bagisto";
+import {Suspense} from "react";
 import LogoIcon from "@components/common/icons/LogoIcon";
 import FaceBookIcon from "@components/common/icons/social-icon/FaceBookIcon";
 import InstaGramIcon from "@components/common/icons/social-icon/InstaGramIcon";
 import TwitterIcon from "@components/common/icons/social-icon/TwitterIcon";
 import Subscribe from "./Subscribe";
 import FooterMenu from "./FooterMenu";
-import ServiceContent from "./ServiceContent";
-import { ThemeCustomizationTranslationEdge } from "@/types/theme/theme-customization";
+import {getFooterArticleList} from "@utils/api/footer";
+
 const { COMPANY_NAME, SITE_NAME } = process.env;
 
 export default async function Footer() {
@@ -17,21 +15,21 @@ export default async function Footer() {
   const copyrightDate = 2010 + (currentYear > 2010 ? `-${currentYear}` : "");
   const skeleton =
     "w-full h-6 animate-pulse rounded bg-neutral-200 dark:bg-neutral-700";
-  const menu = await getThemeCustomization();
+  const menu = await getFooterArticleList();
   const copyrightName = COMPANY_NAME || SITE_NAME || "";
-  const services =
-    menu?.services_content?.themeCustomizations?.edges?.[0]?.node;
+  // const services = menu?.services_content?.themeCustomizations?.edges?.[0]?.node;
 
   return (
     <>
-      {isObject(services) && services?.translations?.edges && (
-        <ServiceContent
-          name={services?.name}
-          serviceData={services?.translations?.edges?.map(
-            (edge: ThemeCustomizationTranslationEdge) => edge.node,
-          )}
-        />
-      )}
+      {/* <div className="mx-auto my-16 mt-16 sm:mt-0 w-full lg:my-12 md:my-20 md:max-w-4xl px-4 py-8">
+        {isObject(services) && services?.translations?.edges && (
+
+          <ServiceContent
+            name={services?.name}
+            serviceData={services?.translations?.edges?.map((edge: ThemeCustomizationTranslationEdge) => edge.node)}
+          />
+        )}
+      </div>*/}
       <footer className="hidden lg:block border-t border-neutral-200 text-sm text-neutral-500 dark:border-neutral-700 dark:text-neutral-400">
         <div className="mx-auto flex w-full max-w-screen-2xl flex-col justify-between gap-6 gap-y-6 px-6 py-12 text-sm dark:border-neutral-700 min-[880px]:flex-row min-[880px]:gap-12 min-[880px]:gap-y-20 min-[880px]:px-4">
           <div className="flex flex-col gap-[14px]">
@@ -50,8 +48,7 @@ export default async function Footer() {
                 aria-label="Visit Bagisto Store on Facebook"
                 title="Facebook"
                 target="_blank"
-                className="cursor-pointer"
-              >
+                className="cursor-pointer">
                 <FaceBookIcon />
                 <span className="sr-only">Facebook</span>
               </Link>
@@ -60,8 +57,7 @@ export default async function Footer() {
                 aria-label="Visit Bagisto Store on Instagram"
                 title="Instagram"
                 target="_blank"
-                className="cursor-pointer"
-              >
+                className="cursor-pointer">
                 <InstaGramIcon />
                 <span className="sr-only">Instagram</span>
               </Link>
@@ -70,8 +66,7 @@ export default async function Footer() {
                 aria-label="Visit Bagisto Store on Twitter"
                 title="Twitter"
                 target="_blank"
-                className="cursor-pointer"
-              >
+                className="cursor-pointer">
                 <TwitterIcon />
                 <span className="sr-only">Twitter</span>
               </Link>
@@ -89,9 +84,7 @@ export default async function Footer() {
                 </div>
               }
             >
-              <FooterMenu
-                menu={menu?.footer_links?.themeCustomizations?.edges}
-              />
+              <FooterMenu menu={menu}/>
             </Suspense>
             <Subscribe />
           </div>

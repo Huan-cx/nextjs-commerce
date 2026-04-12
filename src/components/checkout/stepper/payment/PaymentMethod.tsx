@@ -1,200 +1,164 @@
 "use client";
 
-import { Controller, FieldValues, useForm } from "react-hook-form";
-import { cn, Radio, RadioGroup } from "@heroui/react";
-import { useState } from "react";
-import { useCustomToast } from "@utils/hooks/useToast";
-import { useCheckout } from "@utils/hooks/useCheckout";
-import { ProceedToCheckout } from "../ProceedToCheckout";
-import { CustomRadioProps } from "@components/checkout/type";
-import { useDispatch } from "react-redux";
-import { updateCart } from "@/store/slices/cart-slice";
+import {Controller, FieldValues, useForm} from "react-hook-form";
+import {cn, Radio, RadioGroup} from "@heroui/react";
+import {useEffect, useState} from "react";
+import {useCustomToast} from "@utils/hooks/useToast";
+import {ProceedToCheckout} from "../ProceedToCheckout";
+import {CustomRadioProps} from "@components/checkout/type";
+import {useDispatch} from "react-redux";
+import {useRouter} from "next/navigation";
+import {PaymentChannel} from "@utils/api/trade";
+import {useAppSelector} from "@/store/hooks";
+import {setPaymentMethod} from "@/store/slices/checkout-slice";
 
 export default function PaymentMethod({
-  selectedPayment,
   methods,
   currentStep,
 }: {
-  selectedPayment?: string;
-  methods: any;
+  methods: PaymentChannel[];
   currentStep?: string;
 }) {
   const { showToast } = useCustomToast();
-  const { isPaymentLoading, saveCheckoutPayment } = useCheckout();
-  const [isOpen, setIsOpen] = useState(currentStep !== "payment");
+  const [isOpen, setIsOpen] = useState<boolean>(false);
+  const [isPaymentLoading, setIsPaymentLoading] = useState(false);
+  const router = useRouter();
+  const dispatch = useDispatch();
+  const {paymentMethod} = useAppSelector((state) => state.checkout);
 
-  const [prevValues, setPrevValues] = useState({
-    currentStep,
-    selectedPayment,
-  });
-
-  if (
-    currentStep !== prevValues.currentStep ||
-    selectedPayment !== prevValues.selectedPayment
-  ) {
-    setPrevValues({ currentStep, selectedPayment });
+  // 使用 useEffect 处理状态变化
+  useEffect(() => {
     if (currentStep === "payment") {
       setIsOpen(false);
-    } else if (selectedPayment) {
+    } else if (paymentMethod) {
       setIsOpen(true);
     }
-  }
+  }, [currentStep, paymentMethod]);
 
   const { handleSubmit, control } = useForm({
     mode: "onSubmit",
     defaultValues: {
-      method: selectedPayment ?? "",
+      method: paymentMethod ?? "",
     },
   });
 
-  const selectedMethodLabelPrior = methods?.find(
-    (method: any) => method?.method === selectedPayment,
-  )?.title;
+  // 找到当前选中的支付方式
+  const selectedMethod = methods?.find(
+      (method) => method?.code === paymentMethod,
+  );
 
-  const dispatch = useDispatch();
   const onSubmit = async (data: FieldValues) => {
     if (!data?.method) {
       showToast("Please Choose the Payment Method", "warning");
       return;
     }
+    setIsPaymentLoading(true);
     try {
       const selectedMethod = methods?.find(
-        (m: any) => m?.method === data?.method,
+          (m) => m?.code === data?.method,
       );
       if (selectedMethod) {
         dispatch(
-          updateCart({
-            paymentMethod: selectedMethod?.method || "",
-            paymentMethodTitle: selectedMethod?.title || "",
-          }),
+            setPaymentMethod(selectedMethod?.id || 0),
         );
       }
-      await saveCheckoutPayment(data.method);
+
+
+      // 直接跳转到订单 review 页面
+      router.replace("/checkout?step=review");
     } catch {
       showToast("Failed to save payment method. Please try again.");
+    } finally {
+      setIsPaymentLoading(false);
     }
   };
 
-  return (
-    <>
-      {selectedPayment ? (
-        isOpen ? (
-          <>
-            <div className="mt-4  justify-between hidden sm:flex ">
-              <div className="flex">
-                <p className="w-auto text-base font-normal text-black/60 dark:text-white/60 sm:w-[192px]">
-                  Payment Method
-                </p>
-                <p className="text-base font-normal">
-                  {selectedMethodLabelPrior as string}
-                </p>
-              </div>
-
-              <button
-                onClick={() => {
-                  setIsOpen(false);
-                }}
-                className="cursor-pointer text-base font-normal text-black/60 underline dark:text-neutral-300"
-              >
-                Change
-              </button>
-            </div>
-            <div className="mt-4 flex sm:hidden justify-between relative">
-              <div className="flex justify-between justify-between  flex-1 wrap">
-                <p className="w-auto text-base font-normal text-black/60 dark:text-white/60 sm:w-[192px]">
-                  Payment Method
-                </p>
-                <p className="text-base font-normal">
-                  {selectedMethodLabelPrior as string}
-                </p>
-              </div>
-
-              <button
-                onClick={() => {
-                  setIsOpen(false);
-                }}
-                className="cursor-pointer absolute right-0 text-base font-normal text-black/60 underline dark:text-neutral-300"
-                style={{ top: "-36px" }}
-              >
-                Change
-              </button>
-            </div>
-          </>
-        ) : (
-          <div className="mt-6">
-            <form onSubmit={handleSubmit(onSubmit)}>
-              <Controller
-                control={control}
-                name="method"
-                render={({ field }) => (
-                  <RadioGroup
-                    {...field}
-                    label=""
-                    value={field.value ?? ""}
-                    onValueChange={field.onChange}
-                  >
-                    {methods?.map((method: any) => (
-                      <CustomRadio
-                        key={method?.method}
-                        className="my-1 border border-solid border-neutral-300 dark:border-neutral-500"
-                        description={method?.description}
-                        value={method?.method}
-                      >
-                        <span className="text-neutral-700 dark:text-white">
-                          {method?.title}
-                        </span>
-                      </CustomRadio>
-                    ))}
-                  </RadioGroup>
-                )}
-              />
-
-              <div className="my-6 justify-self-end">
-                <ProceedToCheckout
-                  buttonName="Pay Now"
-                  pending={isPaymentLoading}
-                />
-              </div>
-            </form>
-          </div>
-        )
-      ) : (
-        <div className="mt-6">
-          <form onSubmit={handleSubmit(onSubmit)}>
-            <Controller
+  // 渲染支付方式选择表单
+  const renderPaymentForm = () => (
+      <div className="mt-6">
+        <form onSubmit={handleSubmit(onSubmit)}>
+          <Controller
               control={control}
               name="method"
-              render={({ field }) => (
-                <RadioGroup
-                  {...field}
-                  label=""
-                  value={field.value ?? ""}
-                  onValueChange={field.onChange}
-                >
-                  {methods?.map((method: any) => (
-                    <CustomRadio
-                      key={method?.method}
-                      className="my-1 border border-solid border-neutral-300 dark:border-neutral-500"
-                      description={method?.description}
-                      value={method?.method}
-                    >
-                      <span className="text-neutral-700 dark:text-white">
-                        {method?.title}
-                      </span>
-                    </CustomRadio>
-                  ))}
-                </RadioGroup>
+              render={({field}) => (
+                  <RadioGroup
+                      label=""
+                      value={field.value ?? ""}
+                      onValueChange={field.onChange}
+                  >
+                    {methods?.map((method) => (
+                        <CustomRadio
+                            key={method?.id}
+                            className="my-1 border border-solid border-neutral-300 dark:border-neutral-500"
+                            description={method?.remark}
+                            value={method?.code}
+                        >
+                  <span className="text-neutral-700 dark:text-white">
+                    {method?.code}
+                  </span>
+                        </CustomRadio>
+                    ))}
+                  </RadioGroup>
               )}
-            />
+          />
 
-            <div className="my-6 justify-self-end">
-              <ProceedToCheckout
-                buttonName="Pay Now"
+          <div className="my-6 justify-self-end">
+            <ProceedToCheckout
+                buttonName="Next"
                 pending={isPaymentLoading}
-              />
-            </div>
-          </form>
+            />
+          </div>
+        </form>
+      </div>
+  );
+
+  // 渲染已选择的支付方式
+  const renderSelectedPayment = () => (
+      <>
+        <div className="mt-4  justify-between hidden sm:flex ">
+          <div className="flex">
+            <p className="w-auto text-base font-normal text-black/60 dark:text-white/60 sm:w-[192px]">
+              Payment Method
+            </p>
+            <p className="text-base font-normal">
+              {selectedMethod?.code}
+            </p>
+          </div>
+
+          <button
+              onClick={() => setIsOpen(false)}
+              className="cursor-pointer text-base font-normal text-black/60 underline dark:text-neutral-300"
+          >
+            Change
+          </button>
         </div>
+        <div className="mt-4 flex sm:hidden justify-between relative">
+          <div className="flex justify-between justify-between  flex-1 wrap">
+            <p className="w-auto text-base font-normal text-black/60 dark:text-white/60 sm:w-[192px]">
+              Payment Method
+            </p>
+            <p className="text-base font-normal">
+              {selectedMethod?.code}
+            </p>
+          </div>
+
+          <button
+              onClick={() => setIsOpen(false)}
+              className="cursor-pointer absolute right-0 text-base font-normal text-black/60 underline dark:text-neutral-300"
+              style={{top: "-36px"}}
+          >
+            Change
+          </button>
+        </div>
+      </>
+  );
+
+  return (
+      <>
+        {paymentMethod && isOpen ? (
+            renderSelectedPayment()
+        ) : (
+            renderPaymentForm()
       )}
     </>
   );

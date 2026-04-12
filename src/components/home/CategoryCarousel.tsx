@@ -1,11 +1,9 @@
-import { FC } from "react";
+import {FC} from "react";
 import Link from "next/link";
 import clsx from "clsx";
-import { cachedGraphQLRequest } from "@/utils/hooks/useCache";
-import { GridTileImage } from "../theme/ui/grid/Tile";
-import { NOT_IMAGE } from "@/utils/constants";
-import { GET_HOME_CATEGORIES } from "@/graphql";
-import { CategoriesResponse } from "@/types/category/type";
+import {GridTileImage} from "../theme/ui/grid/Tile";
+import {NOT_IMAGE} from "@/utils/constants";
+import {getCategoryPage} from "@utils/api/product";
 
 interface CategoryCarouselProps {
   options: {
@@ -31,20 +29,20 @@ const MobileCategoryItem: FC<MobileCategoryItemProps> = ({
       }
     >
       <Link
-        aria-label={`Shop ${category.translation.name} category`}
+          aria-label={`Shop ${category.name} category`}
         className={clsx(
           "relative block h-full w-full aspect-[380/280]",
           size === "half" && "xxs:aspect-[182/280]"
         )}
-        href={`/search/${category.translation.slug}`}
+          href={`/search/${category.name}`}
       >
         <GridTileImage
           fill
-          alt={`${category.translation.name} category image`}
+          alt={`${category.name} category image`}
           className="relative h-full w-full object-cover transition duration-300 ease-in-out group-hover:scale-105"
           label={{
             position: "center",
-            title: category.translation.name || "",
+            title: category.name || "",
             page: "category",
             amount: "0",
             currencyCode: "USD",
@@ -55,40 +53,25 @@ const MobileCategoryItem: FC<MobileCategoryItemProps> = ({
               ? "100vw"
               : "(min-width: 480px) 50vw, 100vw"
           }
-          src={category.logoUrl || NOT_IMAGE}
+          src={category.picUrl || NOT_IMAGE}
         />
       </Link>
     </div>
   );
 };
 
-interface CategoryCarouselProps {
-  options: {
-    filters: Record<string, string | number | boolean | undefined>;
-  };
-}
-
 const CategoryCarousel: FC<CategoryCarouselProps> = async ({
   options: _options,
 }) => {
-  try {
-    const data = await cachedGraphQLRequest<CategoriesResponse>(
-      "home",
-      GET_HOME_CATEGORIES,
-      {}
-    );
+  const categories = await getCategoryPage({});
 
-    const categories =
-      data?.categories?.edges?.map((edge) => edge.node) || [];
-
-    const topCategories = categories
-      .filter((category) => category.id !== "1")
-      .sort((a, b) => (a.position || 0) - (b.position || 0))
+  // 安全处理 categories.data，确保即使数据不存在也不会报错
+  const topCategories = categories.filter((category: any) => category.id !== "0")
+      // .sort((a: any, b: any) => (a.position || 0) - (b.position || 0))
       .slice(1, 4);
+  if (!topCategories.length) return null;
 
-    if (!topCategories.length) return null;
-
-    return (
+  return (
       <section className="pt-8 sm:pt-12 lg:pt-20">
         <div className="md:max-w-4.5xl mx-auto mb-10 w-auto text-center md:px-36">
           <h2 className="mb-2 text-xl md:text-4xl  font-semibold">
@@ -102,63 +85,59 @@ const CategoryCarousel: FC<CategoryCarouselProps> = async ({
         <div className="w-full overflow-x-auto overflow-y-hidden">
           <div className="grid gap-4 grid-cols-1 xxs:grid-cols-2 lg:max-h-[calc(100vh-200px)] sm:hidden">
             {topCategories.length > 0 && (
-              <MobileCategoryItem
-                category={topCategories[0]}
-                size="half"
-                priority={true}
-              />
+                <MobileCategoryItem
+                    category={topCategories[0]}
+                    size="half"
+                    priority={true}
+                />
             )}
             {topCategories.length > 1 && (
-              <MobileCategoryItem
-                category={topCategories[1]}
-                size="full"
-                priority={true}
-              />
+                <MobileCategoryItem
+                    category={topCategories[1]}
+                    size="full"
+                    priority={true}
+                />
             )}
             {topCategories.length > 2 && (
-              <MobileCategoryItem
-                category={topCategories[2]}
-                size="half"
-              />
+                <MobileCategoryItem
+                    category={topCategories[2]}
+                    size="half"
+                />
             )}
           </div>
 
           <ul className="m-0 hidden grid-cols-1 gap-7 p-0 xxs:grid-cols-2 sm:grid sm:grid-cols-3">
             {topCategories.map((category) => (
-              <li
-                key={category.id}
-                className="relative aspect-498/665 h-full w-full max-w-[498px] flex-none overflow-hidden rounded-[18px]"
-              >
-                <Link
-                  className="relative h-full w-full"
-                  href={`/search/${category.translation.slug}`}
-                  aria-label={`Shop ${category.translation.name} category`}
+                <li
+                    key={category.id}
+                    className="relative aspect-498/665 h-full w-full max-w-[498px] flex-none overflow-hidden rounded-[18px]"
                 >
-                  <GridTileImage
-                    fill
-                    alt={`${category.translation.name} category image`}
-                    className={
-                      "relative rounded-[18px] overflow-hidden object-cover transition duration-300 ease-in-out group-hover:scale-105"
-                    }
-                    label={{
-                      title: category.translation.name || "",
-                      page: "category",
-                      amount: "0",
-                      currencyCode: "USD",
-                    }}
-                    src={category.logoUrl || NOT_IMAGE}
-                  />
-                </Link>
-              </li>
+                  <Link
+                      className="relative h-full w-full"
+                      href={`/search/${category.name}`}
+                      aria-label={`Shop ${category.name} category`}
+                  >
+                    <GridTileImage
+                        fill
+                        alt={`${category.name} category image`}
+                        className={
+                          "relative rounded-[18px] overflow-hidden object-cover transition duration-300 ease-in-out group-hover:scale-105"
+                        }
+                        label={{
+                          title: category.name || "",
+                          page: "category",
+                          amount: "0",
+                          currencyCode: "USD",
+                        }}
+                        src={category.picUrl || NOT_IMAGE}
+                    />
+                  </Link>
+                </li>
             ))}
           </ul>
         </div>
       </section>
-    );
-  } catch (error) {
-    console.error("Error fetching categories:", error);
-    return null;
-  }
+  );
 };
 
 export default CategoryCarousel;

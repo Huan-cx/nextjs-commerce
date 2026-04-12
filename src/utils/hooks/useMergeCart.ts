@@ -1,39 +1,45 @@
 "use client";
 
-import { useMutation } from "@apollo/client";
-import { useAppDispatch } from "@/store/hooks";
-import { addItem } from "@/store/slices/cart-slice";
-import { CREATE_MERGE_CART } from "@/graphql";
-
+import {useRestMutation} from "@utils/hooks/useCustomMutation";
+import {useCartDetail} from "@utils/hooks/useCartDetail";
+import {useAppSelector} from "@/store/hooks";
+import {MergeCartRequest} from "@utils/api/trade";
 
 export function useMergeCart() {
-  const dispatch = useAppDispatch();
+  const {getCartDetail} = useCartDetail();
+  const cartItems = useAppSelector((state) => state.cartDetail.cart?.items);
 
-  const [mergeCart, { loading: isLoading }] = useMutation(CREATE_MERGE_CART, {
-    onCompleted: (response) => {
-      const responseData = response?.createMergeCart?.mergeCart;
-      if (!responseData) {
-        return;
+  const [mutation, {loading: isLoading}] = useRestMutation(
+      "trade/cart/merge",
+      {
+        method: "POST",
+        onCompleted: (success: boolean) => {
+          if (success) {
+            // 合并成功后，强制重新获取购物车详情，以同步服务端最新数据
+            getCartDetail(true);
+          }
+        },
+        onError: (_error: any) => {
+          console.error("Failed to merge cart:", _error);
+        },
       }
-       const cartId = responseData?.id ?? null;
+  );
 
-      const setCookie = (name: string, value: string | number, days = 30) => {
-        if (typeof window === "undefined" || !name) return;
-        const d = new Date();
-        d.setTime(d.getTime() + days * 24 * 60 * 60 * 1000);
-        const expires = "expires=" + d.toUTCString();
-        document.cookie = `${name}=${encodeURIComponent(String(value))};${expires};path=/`;
-      };
+  const mergeCart = async () => {
+    if (!cartItems || cartItems.length === 0) {
+      console.log("No items to merge.");
+      return;
+    }
 
-      if (cartId !== null && typeof cartId !== "undefined") {
-        setCookie("guest_cart_id", String(cartId));
-      }
+    const payload: MergeCartRequest = {
+      items: cartItems.map((item) => ({
+        skuId: item.sku.id,
+        count: item.count,
+      })),
+    };
 
-      dispatch(addItem(responseData));
-    },
-    onError: (_error) => {
-    },
-  });
+    await mutation(payload);
+  };
 
   return {
     mergeCart,

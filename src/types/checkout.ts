@@ -34,11 +34,12 @@ export interface BillingAddress extends CheckoutAddress {
   useForShipping?: boolean;
 }
 
-export type ShippingAddress = CheckoutAddress;
+export type ReceiverAddress = CheckoutAddress;
 
 export interface CheckoutStepperProps {
   billingAddress?: BillingAddress;
-  shippingAddress?: ShippingAddress;
+  receiverAddress?: ReceiverAddress;
+  businessAddress?: CheckoutAddress
   currentStep: string;
   selectedPayment?: string;
   selectedPaymentTitle?: string;

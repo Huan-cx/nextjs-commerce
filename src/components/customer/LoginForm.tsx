@@ -1,23 +1,22 @@
 "use client";
 
 import clsx from "clsx";
-import { getSession, signIn } from "next-auth/react";
+import {getSession, signIn} from "next-auth/react";
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { SubmitHandler, useForm } from "react-hook-form";
-import { Button } from "@components/common/button/Button";
-import { EMAIL_REGEX, SIGNIN_IMG } from "@/utils/constants";
+import {useRouter} from "next/navigation";
+import {SubmitHandler, useForm} from "react-hook-form";
+import {Button} from "@components/common/button/Button";
+import {EMAIL_REGEX, GUEST_CART_ID, GUEST_CART_TOKEN, IS_GUEST, SIGNIN_IMG} from "@/utils/constants";
 import InputText from "@components/common/form/Input";
-import { useCustomToast } from "@/utils/hooks/useToast";
-import { useMergeCart } from "@utils/hooks/useMergeCart";
-import { getCookie } from "@utils/getCartToken";
-import { setCookie } from "@utils/helper";
-import { setLocalStorage } from "@/store/local-storage";
-import { useAppDispatch } from "@/store/hooks";
-import { setUser } from "@/store/slices/user-slice";
-import { useCartDetail } from "@utils/hooks/useCartDetail";
-import { GUEST_CART_ID, GUEST_CART_TOKEN, IS_GUEST } from "@/utils/constants";
+import {useCustomToast} from "@/utils/hooks/useToast";
+import {useMergeCart} from "@utils/hooks/useMergeCart";
+import {getCookie} from "@utils/getCartToken";
+import {setCookie} from "@utils/helper";
+import {setLocalStorage} from "@/store/local-storage";
+import {useAppDispatch} from "@/store/hooks";
+import {setUser} from "@/store/slices/user-slice";
+import {useCartDetail} from "@utils/hooks/useCartDetail";
 
 type LoginFormInputs = {
   username: string;
@@ -73,7 +72,7 @@ export default function LoginForm() {
       // Only merge cart if user had a guest cart before login
       if (userToken && guestCartId && guestCartToken) {
         try {
-          await mergeCart({ variables: { token: userToken, cartId: parseInt(guestCartId, 10) } });
+          await mergeCart();
           setCookie(GUEST_CART_TOKEN, userToken);
           setCookie(IS_GUEST, "false");
           await getCartDetail();

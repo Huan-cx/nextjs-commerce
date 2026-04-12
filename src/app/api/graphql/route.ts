@@ -1,22 +1,22 @@
-import { NextRequest, NextResponse } from "next/server";
-import { bagistoFetch } from "@/utils/bagisto";
-import { isBagistoError } from "@/utils/type-guards";
-import { getAuthToken } from "@/utils/helper";
+import {NextRequest, NextResponse} from "next/server";
+import {bagistoFetch} from "@/utils/bagisto";
+import {isBagistoError} from "@/utils/type-guards";
+import {getAuthToken} from "@/utils/helper";
 import {
     CREATE_ADD_PRODUCT_IN_CART,
+    CREATE_CART_TOKEN,
+    CREATE_CHECKOUT_ADDRESS,
+    CREATE_CHECKOUT_ORDER,
+    CREATE_CHECKOUT_PAYMENT_METHODS,
+    CREATE_CHECKOUT_SHIPPING_METHODS,
+    CREATE_MERGE_CART,
+    CREATE_PRODUCT_REVIEW,
+    GET_CART_ITEM,
+    GET_CHECKOUT_ADDRESSES,
+    GET_CHECKOUT_PAYMENT_METHODS,
+    GET_CHECKOUT_SHIPPING_RATES,
     REMOVE_CART_ITEM,
     UPDATE_CART_ITEM,
-    GET_CART_ITEM,
-    CREATE_CART_TOKEN,
-    CREATE_MERGE_CART,
-    GET_CHECKOUT_ADDRESSES,
-    GET_CHECKOUT_SHIPPING_RATES,
-    GET_CHECKOUT_PAYMENT_METHODS,
-    CREATE_CHECKOUT_ADDRESS,
-    CREATE_CHECKOUT_SHIPPING_METHODS,
-    CREATE_CHECKOUT_PAYMENT_METHODS,
-    CREATE_CHECKOUT_ORDER,
-    CREATE_PRODUCT_REVIEW,
 } from "@/graphql";
 
 const ALLOWED_OPERATIONS: Record<string, any> = {
@@ -83,7 +83,7 @@ export async function POST(req: NextRequest) {
                     shippingFirstName: body.shippingFirstName,
                     shippingLastName: body.shippingLastName,
                     shippingEmail: body.billingEmail,
-                    shippingAddress: body.shippingAddress,
+                  receiverAddress: body.receiverAddress,
                     shippingCity: body.shippingCity,
                     shippingCountry: body.shippingCountry,
                     shippingState: body.shippingState,

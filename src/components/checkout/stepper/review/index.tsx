@@ -1,27 +1,15 @@
-import { FC } from "react";
-import { AddressDataTypes } from "@/types/types";
+import {FC} from "react";
 import OrderReview from "./OrderReview";
+import {OrderSettlement} from "@utils/api/trade";
 
 export const Review: FC<{
-  selectedPaymentTitle?: string;
-  shippingAddress?: AddressDataTypes;
-  billingAddress?: AddressDataTypes;
-  selectedShippingRate?: string;
-  selectedShippingRateTitle?: string;
+  settlementData?: OrderSettlement | null;
 }> = ({
-  selectedPaymentTitle,
-  shippingAddress,
-  billingAddress,
-  selectedShippingRate,
-  selectedShippingRateTitle,
+        settlementData,
 }) => {
   return (
     <OrderReview
-      billingAddress={billingAddress}
-      selectedPaymentTitle={selectedPaymentTitle}
-      selectedShipping={selectedShippingRate}
-      selectedShippingRateTitle={selectedShippingRateTitle}
-      shippingAddress={shippingAddress}
+        settlementData={settlementData}
     />
   );
 };

@@ -1,19 +1,19 @@
 "use client";
 
-import { ReactNode } from "react";
-import { ThemeProvider } from "./ThemeProvider";
-import { ReduxProvider } from "./ReduxProvider";
-import { ToastProvider } from "./ToastProvider";
-import { ApolloWrapper } from "./ApolloWrapper";
+import {ReactNode} from "react";
+import {ThemeProvider} from "./ThemeProvider";
+import {ReduxProvider} from "./ReduxProvider";
+import {ToastProvider} from "./ToastProvider";
+import {QueryClientWrapper} from "./ApolloWrapper";
 
 export function GlobalProviders({ children }: { children: ReactNode }) {
   return (
     <ThemeProvider>
       <ReduxProvider>
         <ToastProvider>
-          <ApolloWrapper>
+          <QueryClientWrapper>
             {children}
-          </ApolloWrapper>
+          </QueryClientWrapper>
         </ToastProvider>
       </ReduxProvider>
     </ThemeProvider>

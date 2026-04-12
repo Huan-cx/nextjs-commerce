@@ -33,7 +33,7 @@ export default function LogoIcon() {
           </svg>
         </div>
         <p className="text-sm font-semibold text-black dark:text-white">
-          Bagisto Store
+          Easy Store
         </p>
       </div>
     </>

@@ -1,30 +1,13 @@
-import { AddressDataTypes } from "@/types/types";
-import { PayloadAction, createSlice } from "@reduxjs/toolkit";
+import {createSlice, PayloadAction} from "@reduxjs/toolkit";
+import {Cart} from "@/types/api/trade/cart";
 
-export interface Cart {
-  id: number;
-  itemsQty: number;
-  taxAmount: number;
-  shippingAmount: number;
-  grandTotal: number;
-  items: any;
-  paymentMethod: string;
-  paymentMethodTitle: string;
-  shippingMethod: string;
-  selectedShippingRate: string;
-  selectedShippingRateTitle: string;
-}
 
-interface CartState {
+export interface CartState {
   cart?: Cart;
-  billingAddress: AddressDataTypes | null;
-  shippingAddress: AddressDataTypes | null;
 }
 
 const initialState: CartState = {
   cart: undefined,
-  billingAddress: null,
-  shippingAddress: null,
 };
 
 const cartSlice = createSlice({
@@ -43,43 +26,7 @@ const cartSlice = createSlice({
     },
     clearCart(state) {
       state.cart = undefined;
-      state.billingAddress = null;
-      state.shippingAddress = null;
     },
-
-    setBillingAddress(state, action: PayloadAction<AddressDataTypes>) {
-      state.billingAddress = action.payload;
-    },
-    clearBillingAddress(state) {
-      state.billingAddress = null;
-    },
-
-    setShippingAddress(state, action: PayloadAction<AddressDataTypes>) {
-      state.shippingAddress = action.payload;
-    },
-    clearShippingAddress(state) {
-      state.shippingAddress = null;
-    },
-
-    setCheckoutAddresses(
-      state,
-      action: PayloadAction<{
-        billing: AddressDataTypes;
-        shipping: AddressDataTypes;
-      }>
-    ) {
-      state.billingAddress = action.payload.billing;
-      state.shippingAddress = action.payload.shipping;
-    },
-
-    resetAddressStep(_state) {
-      // Intentionally kept empty to retain previous selections while allowing re-entry to the step
-    },
-
-    resetShippingStep(_state) {
-      // Intentionally kept empty to retain previous selections while allowing re-entry to the step
-    },
-
   },
 });
 
@@ -87,13 +34,6 @@ export const {
   addItem,
   updateCart,
   clearCart,
-  setBillingAddress,
-  clearBillingAddress,
-  setShippingAddress,
-  clearShippingAddress,
-  setCheckoutAddresses,
-  resetAddressStep,
-  resetShippingStep,
 } = cartSlice.actions;
 
 export default cartSlice.reducer;

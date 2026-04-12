@@ -1,21 +1,21 @@
 "use client";
 
-import { useState } from "react";
-import { Textarea } from "@heroui/react";
-import { AddRatingStar } from "./AddRatingStar";
-import { Button } from "@components/common/button/Button";
-import { useCustomToast } from "@utils/hooks/useToast";
-import { useProductReview } from "@utils/hooks/useProductReview";
+import {useState} from "react";
+import {Textarea} from "@heroui/react";
+import {AddRatingStar} from "./AddRatingStar";
+import {Button} from "@components/common/button/Button";
+import {useCustomToast} from "@utils/hooks/useToast";
+import {useProductReview} from "@utils/hooks/useProductReview";
 import Image from "next/image";
 
-import { CreateProductReviewInput } from "@/types/review";
-import { AddUploadImage } from "@components/common/icons/AddUploadImage";
+import {CreateProductReviewInput} from "@/types/review";
+import {AddUploadImage} from "@components/common/icons/AddUploadImage";
 
 export default function AddProductReview({
   productId,
   onClose,
 }: {
-  productId: string;
+  productId: number;
   onClose: () => void;
 }) {
   const [imageFile, setImageFile] = useState<string | null>(null);
@@ -78,7 +78,7 @@ export default function AddProductReview({
 
     try {
       const input: CreateProductReviewInput = {
-        productId: Number(productId.split("/").pop()),
+        productId: productId,
         title: reviewInfo.title,
         comment: reviewInfo.comment,
         rating: reviewInfo.rating,

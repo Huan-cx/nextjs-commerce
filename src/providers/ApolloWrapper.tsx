@@ -1,13 +1,21 @@
 "use client";
 
-import { ApolloProvider } from "@apollo/client/react";
-import { ReactNode, useMemo } from "react";
-import initializeApollo  from "../lib/apollo-client";
+import {ReactNode} from "react";
+import {QueryClient, QueryClientProvider} from "@tanstack/react-query";
 
-const ApolloWrapper = ({ children }: { children: ReactNode }) => {
-  const client = useMemo(() => initializeApollo(), []);
-  
-  return <ApolloProvider client={client}>{children}</ApolloProvider>;
+
+const QueryClientWrapper = ({children}: { children: ReactNode }) => {
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: {
+        staleTime: 5 * 60 * 1000, // 5分钟
+        retry: 1,
+      },
+    },
+  });
+  return <QueryClientProvider client={queryClient}>
+    {children}
+  </QueryClientProvider>;
 };
 
-export  {ApolloWrapper};
+export {QueryClientWrapper};

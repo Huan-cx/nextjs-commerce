@@ -1,7 +1,6 @@
-import { GET_RELATED_PRODUCTS } from "@/graphql";
-import { ProductsSection } from "./ProductsSection";
-import { SingleProductResponse } from "@/app/(public)/product/[...urlProduct]/page";
-import { cachedProductRequest } from "@/utils/hooks/useCache";
+import {GET_RELATED_PRODUCTS} from "@/graphql";
+import {ProductsSection} from "./ProductsSection";
+import {cachedProductRequest} from "@/utils/hooks/useCache";
 
 export async function RelatedProductsSection({
   fullPath,
@@ -10,7 +9,7 @@ export async function RelatedProductsSection({
 }) {
     async function getRelatedProduct(urlKey: string) {
       try {
-        const dataById = await cachedProductRequest<SingleProductResponse>(
+        const dataById = await cachedProductRequest<any>(
           urlKey,
           GET_RELATED_PRODUCTS,
           {
@@ -35,8 +34,8 @@ export async function RelatedProductsSection({
 
     const fetchRelatedProducts = await getRelatedProduct(fullPath);
 
-    const relatedProducts = (fetchRelatedProducts?.relatedProducts != null ) && fetchRelatedProducts?.relatedProducts?.edges
-    ? fetchRelatedProducts.relatedProducts.edges.map((e) => e.node)
+  const relatedProducts = (fetchRelatedProducts?.relatedProducts != null) && fetchRelatedProducts?.relatedProducts?.length
+      ? fetchRelatedProducts.relatedProducts.map((e: any) => e)
     : [];
   return (
     <ProductsSection

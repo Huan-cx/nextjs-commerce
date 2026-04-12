@@ -1,4 +1,3 @@
-export { ApolloWrapper } from "./ApolloWrapper";
 export { GlobalContextProvider } from "./GlobalContextProvider";
 export { GlobalProviders } from "./GlobalProviders";
 export { NextAuthProvider } from "./NextAuthProvider";

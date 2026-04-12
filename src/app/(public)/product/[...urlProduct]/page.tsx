@@ -1,42 +1,19 @@
-import { notFound } from "next/navigation";
-import { Suspense } from "react";
-import {
-  ProductDetailSkeleton,
-  RelatedProductSkeleton,
-} from "@/components/common/skeleton/ProductSkeleton";
-import {
-  BASE_SCHEMA_URL,
-  baseUrl,
-  getImageUrl,
-  NOT_IMAGE,
-  PRODUCT_TYPE,
-} from "@/utils/constants";
+import {notFound} from "next/navigation";
+import React, {Suspense} from "react";
+import {ProductDetailSkeleton, RelatedProductSkeleton,} from "@/components/common/skeleton/ProductSkeleton";
+import {BASE_SCHEMA_URL, baseUrl, getImageUrl, NOT_IMAGE, PRODUCT_TYPE,} from "@/utils/constants";
 import HeroCarousel from "@/components/common/slider/HeroCarousel";
-import { GET_PRODUCT_BY_URL_KEY } from "@/graphql";
-import { isArray } from "@/utils/type-guards";
-import { cachedProductRequest } from "@/utils/hooks/useCache";
-import {
-  ProductNode,
-  ProductVariantNode,
-  ProductData,
-} from "@/components/catalog/type";
-import { RelatedProductsSection } from "@components/catalog/product/RelatedProductsSection";
+import {isArray} from "@/utils/type-guards";
 import ProductInfo from "@components/catalog/product/ProductInfo";
-import { LRUCache } from "@/utils/LRUCache";
-import { MobileSearchBar } from "@components/layout/navbar/MobileSearch";
-import { HeroCarouselShimmer } from "@components/common/slider";
+import {LRUCache} from "@/utils/LRUCache";
+import {MobileSearchBar} from "@components/layout/navbar/MobileSearch";
+import {HeroCarouselShimmer} from "@components/common/slider";
+import {Spu} from "@/types/api/product/type";
+import {getProductSpu} from "@utils/api/product";
+import ProductTabs from "@components/catalog/product/ProductTabs";
 
-const productCache = new LRUCache<ProductNode>(100, 10);
+const productCache = new LRUCache<Spu>(100, 3);
 export const dynamic = "force-static";
-
-export interface SingleProductResponse {
-  product: ProductNode;
-}
-
-interface VariantImage {
-  baseImageUrl: string;
-  name: string;
-}
 
 async function getSingleProduct(urlKey: string) {
   const cachedProduct = productCache.get(urlKey);
@@ -45,13 +22,7 @@ async function getSingleProduct(urlKey: string) {
   }
 
   try {
-    const dataById = await cachedProductRequest<SingleProductResponse>(
-      urlKey,
-      GET_PRODUCT_BY_URL_KEY,
-      { urlKey: urlKey },
-    );
-
-    const product = dataById?.product || null;
+    const product = await getProductSpu({id: Number(urlKey)});
     if (product) {
       productCache.set(urlKey, product);
     }
@@ -80,25 +51,16 @@ export default async function ProductPage({
   const product = await getSingleProduct(fullPath);
   if (!product) return notFound();
 
-  const imageUrl = getImageUrl(product?.baseImageUrl, baseUrl, NOT_IMAGE);
+  const imageUrl = getImageUrl(product?.picUrl, baseUrl, NOT_IMAGE);
   const productJsonLd = {
     "@context": BASE_SCHEMA_URL,
     "@type": PRODUCT_TYPE,
     name: product?.name,
     description: product?.description,
-    sku: product?.sku,
+    skus: product?.skus,
   };
 
-    const reviews = Array.isArray(product?.reviews?.edges)
-    ? product?.reviews.edges.map((e) => e.node)
-    : [];
-
-  const VariantImages = isArray(product?.variants?.edges)
-    ? product?.variants.edges.map(
-        (edge: { node: ProductVariantNode }) => edge.node,
-      )
-    : [];
-
+  const VariantImages = product?.sliderPicUrls;
   return (
     <>
       <MobileSearchBar />
@@ -114,12 +76,12 @@ export default async function ProductPage({
             {isArray(VariantImages) ? (
               <HeroCarousel
                 images={
-                  (VariantImages as unknown as VariantImage[])?.map(
+                    (VariantImages as unknown as [])?.map(
                     (image) => ({
                       src:
-                        getImageUrl(image.baseImageUrl, baseUrl, NOT_IMAGE) ||
+                          getImageUrl(image, baseUrl, NOT_IMAGE) ||
                         "",
-                      altText: image.name || "",
+                      altText: image || "",
                     }),
                   ) || []
                 }
@@ -139,15 +101,19 @@ export default async function ProductPage({
         <div className="basis-full lg:basis-4/6">
           <Suspense fallback={<ProductDetailSkeleton />}>
             <ProductInfo
-              product={product as ProductData}
+                product={product as Spu}
               slug={fullPath}
-              reviews={reviews as any}
             />
           </Suspense>
         </div>
       </div>
+      <div className="w-full hidden lg:block ">
+        <Suspense fallback={<RelatedProductSkeleton/>}>
+          <ProductTabs product={product as Spu}/>
+        </Suspense>
+      </div>
       <Suspense fallback={<RelatedProductSkeleton />}>
-        <RelatedProductsSection fullPath={fullPath} />
+        {/*<RelatedProductsSection fullPath={fullPath} />*/}
       </Suspense>
     </>
   );

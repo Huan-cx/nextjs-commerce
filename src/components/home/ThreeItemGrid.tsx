@@ -1,36 +1,20 @@
 "use client"
 
-import { FC } from "react";
+import {FC} from "react";
 import Link from "next/link";
 import clsx from "clsx";
-import { GridTileImage } from "@/components/theme/ui/grid/Tile";
+import {GridTileImage} from "@/components/theme/ui/grid/Tile";
+import {Spu} from "@/types/api/product/type";
+import {NOT_IMAGE} from "@/utils/constants"; // 导入 NOT_IMAGE
 
 interface ThreeItemGridProps {
     title: string;
     description: string;
-    products: Array<{
-        id: string;
-        name: string;
-        urlKey: string;
-        baseImageUrl: string;
-        price: string | number;
-        minimumPrice?: string | number;
-        type: string;
-    }>;
-}
-
-interface ProductItem {
-    id: string;
-    name: string;
-    urlKey: string;
-    baseImageUrl: string;
-    price: string | number;
-    minimumPrice?: string | number;
-    type: string;
+  products: Array<Spu>;
 }
 
 function ThreeItemGridItem({ product, size, priority }: {
-    product: ProductItem;
+  product: Spu;
     size: 'full' | 'half';
     priority?: boolean;
 }) {
@@ -44,14 +28,14 @@ function ThreeItemGridItem({ product, size, priority }: {
         >
             <Link
                 className="relative block h-full w-full"
-                href={`/product/${product.urlKey}`}
+                href={`/product/${product.id}`}
                 aria-label={`${product?.name}`}
                 style={{
                     aspectRatio: size === 'full' ? '1018 / 800' : '502 / 393'
                 }}
             >
                 <GridTileImage
-                    src={product.baseImageUrl}
+                    src={product.picUrl || NOT_IMAGE}
                     className="object-cover "
                     fill
                     sizes={
@@ -60,11 +44,11 @@ function ThreeItemGridItem({ product, size, priority }: {
                             : '(min-width: 768px) 33vw, 100vw'
                     }
                     priority={priority}
-                    alt={product.name}
+                    alt={product.name || 'Product Image'}
                     label={{
                         position: size === 'full' ? 'center' : 'bottom',
-                        title: product.name,
-                        amount: String(product.type === 'configurable' ? (product.minimumPrice || '0') : (product.price || '0')),
+                      title: product.name || 'Product Image',
+                      amount: product.price || 0,
                         currencyCode: 'USD',
                     }}
                 />
@@ -75,7 +59,7 @@ function ThreeItemGridItem({ product, size, priority }: {
 
 
 function MobileThreeItemGridItem({ product, size, priority }: {
-    product: ProductItem;
+  product: Spu;
     size: 'full' | 'half';
     priority?: boolean;
 }) {
@@ -91,19 +75,19 @@ function MobileThreeItemGridItem({ product, size, priority }: {
                     "relative block h-full w-full aspect-[380/280]",
                     size === "half" && "xxs:aspect-[182/280]"
                 )}
-                href={`/product/${product.urlKey}`}
+                href={`/product/${product.id}`}
                 aria-label={`${product?.name}`}
             >
                 <GridTileImage
-                    src={product.baseImageUrl}
+                    src={product.picUrl || NOT_IMAGE}
                     className="object-cover "
                     fill
                     priority={priority}
-                    alt={product.name}
+                    alt={product.name || 'Product Image'}
                     label={{
                         position: size === 'full' ? 'center' : 'bottom',
-                        title: product.name,
-                        amount: String(product.type === 'configurable' ? (product.minimumPrice || '0') : (product.price || '0')),
+                      title: product.name || 'Product Image',
+                      amount: product.price || 0,
                         currencyCode: 'USD',
                     }}
                 />

@@ -1,36 +1,27 @@
 "use client";
 import clsx from "clsx";
-import { useDisclosure } from "@heroui/react";
-import { AnimatePresence, motion } from "framer-motion";
-import {
-  Drawer,
-  DrawerBody,
-  DrawerContent,
-  DrawerFooter,
-  DrawerHeader,
-} from "@heroui/drawer";
-import { ShoppingCartIcon } from "@heroicons/react/24/outline";
-import { DEFAULT_OPTION } from "@/utils/constants";
-import { useAppSelector } from "@/store/hooks";
+import {useDisclosure} from "@heroui/react";
+import {AnimatePresence, motion} from "framer-motion";
+import {Drawer, DrawerBody, DrawerContent, DrawerFooter, DrawerHeader,} from "@heroui/drawer";
+import {ShoppingCartIcon} from "@heroicons/react/24/outline";
+import {DEFAULT_OPTION} from "@/utils/constants";
+import {useAppSelector} from "@/store/hooks";
 import OpenCart from "./OpenCart";
-import { Price } from "../theme/ui/Price";
+import {Price} from "../theme/ui/Price";
 import CloseCart from "../common/icons/cart/CloseCart";
-import { DeleteItemButton } from "../common/icons/cart/DeleteItemButton";
-import { EditItemQuantityButton } from "../common/icons/cart/EditItemQuantityButton";
-import { useCartDetail } from "@utils/hooks/useCartDetail";
+import {DeleteItemButton} from "../common/icons/cart/DeleteItemButton";
+import {EditItemQuantityButton} from "../common/icons/cart/EditItemQuantityButton";
+import {useCartDetail} from "@utils/hooks/useCartDetail";
 import Image from "next/image";
-import { NOT_IMAGE } from "@utils/constants";
-import { isObject } from "@utils/type-guards";
-import LoadingDots from "@components/common/icons/LoadingDots";
-import { useFormStatus } from "react-dom";
-import { redirectToCheckout } from "@/utils/actions";
-import { EMAIL, getLocalStorage } from "@/store/local-storage";
+import {NOT_IMAGE} from "@utils/constants";
 import Link from "next/link";
-import { createUrl, isCheckout, safeParse } from "@utils/helper";
-import { useMediaQuery } from "@utils/hooks/useMediaQueryHook";
-import { useBodyScrollLock } from "@utils/hooks/useBodyScrollLock";
-import { useSyncExternalStore } from "react";
-import { useAddressesFromApi } from "@utils/hooks/getAddress";
+import {useMediaQuery} from "@utils/hooks/useMediaQueryHook";
+import {useBodyScrollLock} from "@utils/hooks/useBodyScrollLock";
+import {useSyncExternalStore} from "react";
+import {useFormStatus} from "react-dom";
+import {redirectToCheckout} from "@/utils/actions";
+import {createUrl, isCheckout} from "@utils/helper";
+import LoadingDots from "@components/common/icons/LoadingDots";
 
 type MerchandiseSearchParams = {
   [key: string]: string;
@@ -60,21 +51,21 @@ export default function CartModal({
   const finalOnClose = isControlled ? onClose : internalOnClose;
 
   const { isLoading } = useCartDetail();
+  const {isAuthenticated, user} = useAppSelector((state) => state.user);
   const cartDetail = useAppSelector((state) => state.cartDetail);
-  const { billingAddress } = useAddressesFromApi(false);
-  const cart = Array.isArray(cartDetail?.cart?.items?.edges)
-    ? cartDetail?.cart?.items?.edges
+  const cart = Array.isArray(cartDetail?.cart?.items)
+      ? cartDetail?.cart?.items
     : [];
-  const cartObj: any = cartDetail?.cart ?? {};
+  const grandTotal = cart.reduce((total: number, item: any) => {
+    return total + item.count * item.sku.price;
+  }, 0);
   const isDesktop = useMediaQuery("(min-width: 1024px)");
   const mounted = useSyncExternalStore(
     () => () => { },
     () => true,
     () => false,
   );
-
   useBodyScrollLock(finalIsOpen && !isDesktop);
-
   const handleOpenChange = (open: boolean) => {
     if (!open) {
       finalOnClose?.();
@@ -140,32 +131,35 @@ export default function CartModal({
                           cart?.map((item: any, i: number) => {
                             const merchandiseSearchParams =
                               {} as MerchandiseSearchParams;
+
+                            item.sku.properties.forEach((property: any) => {
+                              merchandiseSearchParams[property.name] = property.valueName;
+                            })
+
                             const merchandiseUrl = createUrl(
-                              `/product/${item?.node.productUrlKey}`,
+                                `/product/${item?.spu.id}`,
                               new URLSearchParams(merchandiseSearchParams),
                             );
-                            const baseImage: any = safeParse(
-                              item?.node?.baseImage,
-                            );
+                            const baseImage: any = item.sku.picUrl;
 
                             return (
                               <li key={i} className="flex w-full flex-col">
                                 <div className="flex w-full flex-row justify-between gap-3 px-1 py-4">
                                   <Link
                                     className="z-30 flex flex-row space-x-4"
-                                    aria-label={`${item?.node?.name}`}
+                                    aria-label={`${item.spu.name}`}
                                     href={merchandiseUrl}
                                     onClick={finalOnClose}
                                   >
                                     <div className="relative h-16 w-16 cursor-pointer overflow-hidden rounded-md border border-neutral-300 bg-neutral-300 dark:border-neutral-700 dark:bg-neutral-900 dark:hover:bg-neutral-800">
                                       <Image
                                         alt={
-                                          item?.node?.baseImage ||
-                                          item?.product?.name
+                                            item?.sku?.picUrl ||
+                                            item?.spu?.name
                                         }
                                         className="h-full w-full object-cover"
                                         height={64}
-                                        src={baseImage?.small_image_url || ""}
+                                        src={baseImage || ""}
                                         width={74}
                                         onError={(e) =>
                                           (e.currentTarget.src = NOT_IMAGE)
@@ -175,11 +169,11 @@ export default function CartModal({
 
                                     <div className="flex flex-1 flex-col text-base">
                                       <span className="line-clamp-1 font-outfit text-base font-medium">
-                                        {item?.node?.name}
+                                        {item?.spu?.name}
                                       </span>
                                       {item.name !== DEFAULT_OPTION && (
                                         <p className="text-sm lowercase line-clamp-1 text-black dark:text-neutral-400">
-                                          {item?.node?.sku}
+                                          {Object.values(merchandiseSearchParams).join(", ")}
                                         </p>
                                       )}
                                     </div>
@@ -187,7 +181,7 @@ export default function CartModal({
 
                                   <div className="flex h-16 flex-col justify-between">
                                     <Price
-                                      amount={item?.node?.price}
+                                        amount={item?.sku?.price}
                                       className="flex justify-end space-y-2 text-right font-outfit text-base font-medium"
                                       currencyCode={"USD"}
                                     />
@@ -200,7 +194,7 @@ export default function CartModal({
                                         />
                                         <p className="w-6 text-center">
                                           <span className="w-full text-sm">
-                                            {item?.node?.quantity}
+                                            {item?.count}
                                           </span>
                                         </p>
                                         <EditItemQuantityButton
@@ -217,24 +211,12 @@ export default function CartModal({
                       </ul>
 
                       <div className="border-0 border-t border-solid border-neutral-200 dark:border-dark-grey py-4 text-sm text-neutral-500 dark:text-neutral-400">
-                        {(cartDetail as any)?.cart?.taxAmount > 0 && (
-                          <div className="mb-3 flex items-center justify-between">
-                            <p className="text-base font-normal text-black/[60%] dark:text-white">
-                              Taxes
-                            </p>
-                            <Price
-                              amount={(cartDetail as any)?.cart?.taxAmount}
-                              className="text-right text-base font-medium text-black dark:text-white"
-                              currencyCode={"USD"}
-                            />
-                          </div>
-                        )}
                         <div className="mb-3 flex items-center justify-between pb-1">
                           <p className="text-base font-normal text-black/[60%] dark:text-white">
                             Total
                           </p>
                           <Price
-                            amount={(cartDetail as any)?.cart?.grandTotal}
+                              amount={String(grandTotal / 100)}
                             className="text-right text-base font-medium text-black dark:text-white"
                             currencyCode={"USD"}
                           />
@@ -243,16 +225,12 @@ export default function CartModal({
 
                       <form action={redirectToCheckout}>
                         <CheckoutButton
-                          cartDetails={cartObj?.items?.edges ?? []}
-                          isGuest={cartObj?.isGuest}
-                          isEmail={
-                            cartObj?.customerEmail ?? getLocalStorage(EMAIL)
-                          }
-                          isSelectShipping={
-                            cartObj?.selectedShippingRate != null
-                          }
-                          isSeclectAddress={isObject(billingAddress)}
-                          isSelectPayment={cartObj?.paymentMethod != null}
+                            cartDetails={cart ?? []}
+                            isGuest={!isAuthenticated}
+                            email={user?.email}
+                            isSelectShipping={false}
+                            isSelectAddress={false}
+                            isSelectPayment={false}
                         />
                       </form>
                     </div>
@@ -339,13 +317,10 @@ export default function CartModal({
                             const merchandiseSearchParams =
                               {} as MerchandiseSearchParams;
                             const merchandiseUrl = createUrl(
-                              `/product/${item?.node.productUrlKey}`,
+                                `/product/${item?.spu.id}`,
                               new URLSearchParams(merchandiseSearchParams),
                             );
-                            const baseImage: any = safeParse(
-                              item?.node?.baseImage,
-                            );
-
+                            const baseImage: any = item?.sku?.picUrl;
                             return (
                               <li key={i} className="flex w-full flex-col">
                                 <div
@@ -356,15 +331,15 @@ export default function CartModal({
                                 >
                                   <Link
                                     className="z-30 flex flex-row space-x-4"
-                                    aria-label={`${item?.node?.name}`}
+                                    aria-label={`${item?.spu?.name}`}
                                     href={merchandiseUrl}
                                     onClick={finalOnClose}
                                   >
                                     <div className="relative h-16 w-16 cursor-pointer overflow-hidden rounded-md border border-neutral-300 bg-neutral-300 dark:border-neutral-700 dark:bg-neutral-900 dark:hover:bg-neutral-800">
                                       <Image
                                         alt={
-                                          item?.node?.baseImage ||
-                                          item?.product?.name
+                                            item?.sku?.picUrl ||
+                                            item?.spu?.name
                                         }
                                         className="h-full w-full object-cover"
                                         height={64}
@@ -377,18 +352,18 @@ export default function CartModal({
                                     </div>
                                     <div className="flex flex-1 flex-col text-base">
                                       <span className="line-clamp-1 font-outfit text-base font-medium">
-                                        {item?.node?.name}
+                                        {item?.spu?.name}
                                       </span>
-                                      {item.name !== DEFAULT_OPTION && (
+                                      {item.spu.name !== DEFAULT_OPTION && (
                                         <p className="text-sm lowercase line-clamp-1 text-black dark:text-neutral-400">
-                                          {item?.node?.sku}
+                                          {item?.sku?.name || "颜色"}
                                         </p>
                                       )}
                                     </div>
                                   </Link>
                                   <div className="flex h-16 flex-col justify-between">
                                     <Price
-                                      amount={item?.node?.price}
+                                        amount={item?.sku?.price}
                                       className="flex justify-end space-y-2 text-right font-outfit text-base font-medium"
                                       currencyCode={"USD"}
                                     />
@@ -401,7 +376,7 @@ export default function CartModal({
                                         />
                                         <p className="w-6 text-center">
                                           <span className="w-full text-sm">
-                                            {item?.node?.quantity}
+                                            {item?.count}
                                           </span>
                                         </p>
                                         <EditItemQuantityButton
@@ -418,24 +393,12 @@ export default function CartModal({
                       </ul>
 
                       <div className="border-0 border-t border-solid border-neutral-200 dark:border-dark-grey py-4 text-sm text-neutral-500 dark:text-neutral-400">
-                        {(cartDetail as any)?.cart?.taxAmount > 0 && (
-                          <div className="mb-3 flex items-center justify-between">
-                            <p className="text-base font-normal text-black/[60%] dark:text-white">
-                              Taxes
-                            </p>
-                            <Price
-                              amount={(cartDetail as any)?.cart?.taxAmount}
-                              className="text-right text-base font-medium text-black dark:text-white"
-                              currencyCode={"USD"}
-                            />
-                          </div>
-                        )}
                         <div className="mb-3 flex items-center justify-between pb-1">
                           <p className="text-base font-normal text-black/[60%] dark:text-white">
                             Total
                           </p>
                           <Price
-                            amount={(cartDetail as any)?.cart?.grandTotal}
+                              amount={String(grandTotal / 100)}
                             className="text-right text-base font-medium text-black dark:text-white"
                             currencyCode={"USD"}
                           />
@@ -443,16 +406,12 @@ export default function CartModal({
 
                         <form action={redirectToCheckout}>
                           <CheckoutButton
-                            cartDetails={cartObj?.items?.edges ?? []}
-                            isGuest={cartObj?.isGuest}
-                            isEmail={
-                              cartObj?.customerEmail ?? getLocalStorage(EMAIL)
-                            }
-                            isSelectShipping={
-                              cartObj?.selectedShippingRate != null
-                            }
-                            isSeclectAddress={isObject(billingAddress)}
-                            isSelectPayment={cartObj?.paymentMethod != null}
+                              cartDetails={cart ?? []}
+                              isGuest={!isAuthenticated}
+                              email={user?.email}
+                              isSelectShipping={false}
+                              isSelectAddress={false}
+                              isSelectPayment={false}
                           />
                         </form>
                       </div>
@@ -473,20 +432,19 @@ export default function CartModal({
 function CheckoutButton({
   cartDetails,
   isGuest,
-  isEmail,
-  isSeclectAddress,
+                          email,
+                          isSelectAddress,
   isSelectShipping,
   isSelectPayment,
 }: {
   cartDetails: Array<any>;
   isGuest: boolean;
-  isEmail: string;
-  isSeclectAddress: boolean;
+  email: string | null | undefined;
+  isSelectAddress: boolean;
   isSelectShipping: boolean;
   isSelectPayment: boolean;
 }) {
   const { pending } = useFormStatus();
-  const email = isEmail;
 
   return (
     <>
@@ -497,7 +455,7 @@ function CheckoutButton({
           cartDetails,
           isGuest,
           email,
-          isSeclectAddress,
+            isSelectAddress,
           isSelectShipping,
           isSelectPayment,
         )}
@@ -507,7 +465,7 @@ function CheckoutButton({
           "block w-full rounded-full bg-blue-600 p-3 text-center text-sm font-medium text-white opacity-90 hover:opacity-100",
           pending ? "cursor-wait" : "cursor-pointer",
         )}
-        disabled={pending}
+        disabled={pending || cartDetails.length === 0}
         type="submit"
       >
         {pending ? <LoadingDots className="bg-white" /> : "Proceed to Checkout"}

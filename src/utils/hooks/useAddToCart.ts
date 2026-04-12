@@ -1,61 +1,69 @@
-import { useCustomToast } from "./useToast";
-import { useAppDispatch } from "@/store/hooks";
-import { addItem, clearCart } from "@/store/slices/cart-slice";
-import { isObject } from "@utils/type-guards";
-import { getCartToken, getCookie } from "@utils/getCartToken";
-import { useGuestCartToken } from "./useGuestCartToken";
-import { IS_GUEST } from "@/utils/constants";
-import { useMutation } from "@apollo/client";
-import {
-  CREATE_ADD_PRODUCT_IN_CART,
-  REMOVE_CART_ITEM,
-  UPDATE_CART_ITEM,
-} from "@/graphql";
-
-
-
+// src/utils/hooks/useAddToCart.ts
+import {useCallback} from "react";
+import {useCustomToast} from "./useToast";
+import {useAppDispatch} from "@/store/hooks";
+import {addItem, clearCart} from "@/store/slices/cart-slice";
+import {getCartToken} from "@utils/getCartToken";
+import {useGuestCartToken} from "./useGuestCartToken";
+import {useRestMutation} from "@utils/hooks/useCustomMutation";
+import {getCartInfo} from "@utils/api/cart";
 
 export const useAddProduct = () => {
   const dispatch = useAppDispatch();
   const { createGuestToken, resetGuestToken } = useGuestCartToken();
   const { showToast } = useCustomToast();
 
-  const [mutateAsync, { loading: isCartLoading }] = useMutation(
-    CREATE_ADD_PRODUCT_IN_CART,
-    {
-      onCompleted: (res) => {
-        const responseData = res?.createAddProductInCart?.addProductInCart;
+  // 通用的购物车操作成功处理函数
+  const handleCartSuccess = useCallback(async (
+      successMessage: string,
+      warningMessage: string,
+      checkEmptyCart: boolean = false
+  ) => {
+    try {
+      const cartInfo = await getCartInfo();
+      dispatch(addItem(cartInfo));
+      showToast(successMessage, "success");
 
-        if (!responseData?.success) {
-          showToast(responseData?.message || "Error adding to cart", "danger");
-          return;
-        }
-        if (responseData) {
-          if (responseData.success) {
-            dispatch(addItem(responseData as any));
-            showToast("Product added to cart successfully", "success");
-          }
-        }
-      },
+      // 检查购物车是否为空
+      if (checkEmptyCart && !cartInfo?.itemsQty) {
+        dispatch(clearCart());
+        // TODO  清空购物车? 这里AI排查说会导致SKU 被清空，是否需要处理?
+        // const isGuest = getCookie(IS_GUEST);
+        // if (isGuest === "true") {
+        //   resetGuestToken();
+        // }
+      }
+    } catch (error) {
+      console.error("Error fetching cart info:", error);
+      showToast(warningMessage, "warning");
+    }
+  }, [dispatch, resetGuestToken, showToast]);
 
-      onError: (err) => {
-        showToast(err?.message ?? "Error", "danger");
-      },
-    },
+  const [mutateAsync, {loading: isCartLoading}] = useRestMutation(
+      "trade/cart/add",
+      {
+        method: "POST",
+        onCompleted: () => {
+          // 只要走到 onCompleted，就说明请求成功了
+          handleCartSuccess(
+              "Product added to cart successfully",
+              "Product added, but failed to update cart"
+          );
+        },
+        onError: (error) => {
+          showToast((error as Error)?.message ?? "Error", "danger");
+        },
+      }
   );
 
-  const onAddToCart = async ({
-    productId,
-    quantity,
-  }: {
-    productId: string;
-    quantity: number;
+  const onAddToCart = useCallback(async ({skuId, count}: {
+    skuId: string;
+    count: number;
     token?: string;
     cartId?: number | string;
   }) => {
     // Ensure token exists - create if needed
-    let token = getCartToken();
-
+    let token = await getCartToken();
     if (!token) {
       token = await createGuestToken();
 
@@ -66,89 +74,68 @@ export const useAddProduct = () => {
     }
 
     await mutateAsync({
-      variables: {
-        productId: parseInt(productId),
-        quantity,
-      },
+      skuId: parseInt(skuId),
+      count,
     });
-  };
+  }, [createGuestToken, mutateAsync, showToast]);
 
   //--------Remove Cart Product Quantity--------//
-  const [removeFromCart, { loading: isRemoveLoading }] = useMutation(
-    REMOVE_CART_ITEM,
-    {
-      onCompleted: async (response) => {
-        const responseData = response?.createRemoveCartItem?.removeCartItem;
-        if (isObject(responseData)) {
-          const message = "Cart item removed successfully";
-          dispatch(addItem(responseData as any));
-          showToast(message as string, "warning");
-
-          if (!responseData?.itemsQty) {
-            dispatch(clearCart());
-
-            const isGuest = getCookie(IS_GUEST);
-            if (isGuest === "true") {
-              resetGuestToken();
-            }
-          }
-        } else {
-          showToast("Something went wrong", "warning");
-        }
+  const [removeFromCart, {loading: isRemoveLoading}] = useRestMutation(
+      "trade/cart/delete",
+      {
+        method: "DELETE",
+        onCompleted: () => {
+          handleCartSuccess(
+              "Cart item removed successfully",
+              "Item removed, but failed to update cart",
+              true // 检查购物车是否为空
+          );
+        },
+        onError: (error) => {
+          showToast((error as Error)?.message ?? "Error", "danger");
+        },
       },
-      onError: (error) => {
-        showToast(error?.message as string, "danger");
-      },
-    },
   );
 
-  const onAddToRemove = async (productId: string) => {
+  const onAddToRemove = useCallback(async (id: number) => {
     await removeFromCart({
-      variables: {
-        cartItemId: parseInt(productId),
-      },
+      ids: [id],
     });
-  };
+  }, [removeFromCart]);
 
   //---------Update Cart Product Quantity--------//
-  const [updateCartItem, { loading: isUpdateLoading }] = useMutation(
-    UPDATE_CART_ITEM,
-    {
-      onCompleted: (response: any) => {
-        const responseData = response?.createUpdateCartItem?.updateCartItem;
-
-        if (isObject(responseData)) {
-          dispatch(addItem(responseData as any));
-        } else {
-          showToast("Something went wrong!", "warning");
-        }
+  const [updateCartItem, {loading: isUpdateLoading}] = useRestMutation(
+      "trade/cart/update-count",
+      {
+        method: "PUT",
+        onCompleted: () => {
+          handleCartSuccess(
+              "Quantity updated successfully",
+              "Quantity updated, but failed to update cart"
+          );
+        },
+        onError: (error) => {
+          showToast((error as Error)?.message ?? "Error", "danger");
+        },
       },
-
-      onError: (error) => {
-        showToast(error?.message as string, "danger");
-      },
-    },
   );
 
-  const onUpdateCart = async ({
-    cartItemId,
-    quantity,
-  }: {
-    cartItemId: number;
-    quantity: number;
+  const onUpdateCart = useCallback(async ({
+                                            id,
+                                            count,
+                                          }: {
+    id: number;
+    count: number;
   }) => {
-    if (quantity < 1) {
+    if (count < 1) {
       showToast("Quantity must be at least 1", "warning");
       return;
     }
-
     await updateCartItem({
-      variables: {
-        cartItemId: cartItemId,
-        quantity,
-      },
+      id,
+      count,
     });
-  };
+  }, [updateCartItem, showToast]);
 
   return {
     isCartLoading,

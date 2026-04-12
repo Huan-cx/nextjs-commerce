@@ -1,7 +1,6 @@
-import NextAuth, { NextAuthOptions } from "next-auth";
+import NextAuth, {NextAuthOptions} from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-import { bagistoFetch } from "@/utils/bagisto";
-import { CUSTOMER_LOGIN } from "@/graphql/customer/mutations";
+import {fetchHandler} from "./fetch-handler";
 
 export const authOptions: NextAuthOptions = {
   session: {
@@ -23,30 +22,26 @@ export const authOptions: NextAuthOptions = {
           throw new Error("Email and password are required.");
         }
 
-        const input = {
-          email: credentials.username,
-          password: credentials.password,
-        };
-
-
-        const res = await bagistoFetch<any>({
-          query: CUSTOMER_LOGIN,
-          variables: { input },
-          cache: "no-store",
+        const response = await fetchHandler({
+          url: "member/auth/login",
+          method: "POST",
+          body: {
+            loginAccount: credentials.username,
+            password: credentials.password,
+          },
         });
-
-        const data = res?.body?.data?.createCustomerLogin?.customerLogin;
-
-        if (!data || !data.success || !data.token) {
-          throw new Error(data?.message || "Invalid credentials.");
+        if (response.code !== 0 || !response.data) {
+          throw new Error(response.msg || "Invalid credentials.");
         }
 
+        const {userId, accessToken} = response.data;
+
         return {
-          id: data.id, // required by NextAuth
-          email: credentials.username,
-          name: credentials.username, // Using email as name since firstName/lastName are missing in response
-          apiToken: data.apiToken,
-          accessToken: data.token, // Sanctum token
+          id: userId.toString(),
+          email: credentials.username, // Keep email for display/compatibility
+          name: credentials.username,   // Keep name for display/compatibility
+          apiToken: accessToken, // For compatibility with existing code that might use apiToken
+          accessToken: accessToken,
           role: "customer",
         };
       },

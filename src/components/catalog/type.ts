@@ -1,6 +1,5 @@
-export interface SingleProductResponse {
-  product: ProductNode;
-}
+import {Spu} from "@/types/api/product/type";
+
 
 export interface ProductSectionNode {
   isSaleable: string | undefined;
@@ -109,7 +108,7 @@ export interface ProductSectionNode {
 export type ProductsSectionProps = {
   title: string;
   description: string;
-  products: ProductSectionNode[];
+  products: Spu[];
 };
 
 export interface ProductFilterAttributeResponse {

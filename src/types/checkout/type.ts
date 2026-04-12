@@ -242,7 +242,7 @@ export interface CreateCheckoutAddressVariables {
   shippingFirstName?: string;
   shippingLastName?: string;
   shippingEmail?: string;
-  shippingAddress?: string;
+  receiverAddress?: string;
   shippingCity?: string;
   shippingCountry?: string;
   shippingState?: string;

@@ -1,8 +1,8 @@
-import { FC } from "react";
-import { cachedGraphQLRequest } from "@/utils/hooks/useCache";
-import { ThreeItemGrid } from "./ThreeItemGrid";
+import {FC} from "react";
+import {ThreeItemGrid} from "./ThreeItemGrid";
 import Theme from "./ProductCarouselTheme";
-import { GET_PRODUCTS } from "@/graphql";
+import {getSpuPage} from "@utils/api/product";
+
 
 interface ProductCarouselProps {
   options: {
@@ -14,10 +14,10 @@ interface ProductCarouselProps {
 }
 
 const ProductCarousel: FC<ProductCarouselProps> = async ({
-  options,
-  itemCount = 4,
-  sortOrder,
-}) => {
+                                                           options,
+                                                           itemCount = 4,
+                                                           sortOrder,
+                                                         }) => {
   const { filters, title } = options;
   try {
     const { sort, limit, ...rest } = filters || {};
@@ -28,34 +28,27 @@ const ProductCarousel: FC<ProductCarouselProps> = async ({
       }
     });
     const filterInput =
-      Object.keys(filterObject).length > 0
-        ? JSON.stringify(filterObject)
-        : undefined;
+        Object.keys(filterObject).length > 0
+            ? filterObject
+            : undefined;
 
-    let sortKey = "CREATED_AT";
-    let reverse = true;
+    let sortAsc = false; // 默认降序
 
     if (sort === "created_at-desc") {
-      sortKey = "CREATED_AT";
-      reverse = true;
+      sortAsc = false;
     } else if (sort === "price-desc") {
-      sortKey = "PRICE";
-      reverse = true;
+      sortAsc = false;
     }
 
-    const data = await cachedGraphQLRequest<any>(
-      "home",
-      GET_PRODUCTS,
-      {
-        sortKey,
-        filter: filterInput,
-        first: limit ? parseInt(limit, 10) : itemCount,
-        reverse,
-      }
-    );
-
+    const data = await getSpuPage({
+      ...filterInput,
+      // sortField,
+      sortAsc,
+      pageSize: limit ? parseInt(limit, 10) : itemCount,
+      pageNo: 1,
+    });
     const products =
-      data?.products?.edges?.slice(0, 8).map((edge: any) => edge.node) || [];
+        data?.list?.slice(0, 8) || [];
 
     if (!products.length) {
       return null;
@@ -63,20 +56,20 @@ const ProductCarousel: FC<ProductCarouselProps> = async ({
 
     if (sortOrder === 2) {
       return (
-        <ThreeItemGrid
-          title={title || "Products"}
-          description="Discover the latest trends! Fresh products just added—shop new styles, tech, and essentials before they're gone."
-          products={products.slice(0, 3)}
-        />
+          <ThreeItemGrid
+              title={title || "Products"}
+              description="Discover the latest trends! Fresh products just added—shop new styles, tech, and essentials before they're gone."
+              products={products.slice(0, 3)}
+          />
       );
     }
 
     return (
-      <Theme
-        title={title || "Products"}
-        description="Discover the latest trends! Fresh products just added—shop new styles, tech, and essentials before they're gone."
-        products={products}
-      />
+        <Theme
+            title={title || "Products"}
+            description="Discover the latest trends! Fresh products just added—shop new styles, tech, and essentials before they're gone."
+            products={products}
+        />
     );
   } catch (error) {
     console.error("Error fetching products for carousel:", {

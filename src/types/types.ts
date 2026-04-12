@@ -1,5 +1,6 @@
-import { SVGProps } from "react";
-import { Session } from "next-auth";
+import {SVGProps} from "react";
+import {Session} from "next-auth";
+import {Address} from "@/types/api/address/type";
 
 
 export interface BagistoSession extends Session {
@@ -335,8 +336,8 @@ export type BagistoCart = {
     price: string;
     method: string;
   };
-  shippingAddress: AddressDataTypes;
-  billingAddress: AddressDataTypes;
+  receiverAddress: Address;
+  billingAddress: Address;
 };
 
 export type BagistoCollection = {
@@ -531,36 +532,16 @@ export type BagistoAddressDataTypes = {
     checkoutAddresses: {
       isGuest: boolean;
       customer: {
-        addresses?: AddressDataTypes[];
+        addresses?: Address[];
       };
     };
   };
 };
 
-export type AddressDataTypes = {
-  id: string;
-  firstName: string;
-  lastName: string;
-  companyName: string;
-  address: string;
-  city: string;
-  state: string;
-  countryName: string;
-  postcode: string;
-  email: string;
-  country: string;
-  addressType: string;
-  vatId: string;
-  phone: string;
-  stateName: string;
-  defaultAddress: boolean;
-  useForShipping: boolean;
-};
-
 export type EditItemTypes = {
   state: boolean;
   type: string;
-  address?: AddressDataTypes;
+  address?: Address;
   label: string;
 };
 
@@ -706,7 +687,7 @@ export type FilterDataTypes = {
 };
 
 export type ThemeOptions = {
-  url: string;
+  picUrl: string;
   title: string;
   sortOrder: string;
 };

@@ -1,31 +1,24 @@
-
-import { getAverageRating } from "@utils/helper";
-import { ProductData } from "../type";
-import { ProductDescription } from "./ProductDescription";
-import { getProductWithSwatchAndReview } from "@/utils/hooks/getProductSwatchAndReview";
-import { ProductReview } from "@/types/category/type";
-import { getProductReviews } from "@utils/hooks/getProductReviews";
+import {getAverageRating} from "@utils/helper";
+import {ProductDescription} from "./ProductDescription";
+import {getProductReviews} from "@utils/hooks/getProductReviews";
+import {Spu} from "@/types/api/product/type";
 
 export default async function ProductInfo({
-  product,
-  slug,
-  reviews,
-}: {
-  product: ProductData;
+                                            product,
+                                            slug,
+                                          }: {
+  product: Spu;
   slug: string;
-  reviews: ProductReview[];
 }) {
-  const productSwatchReview = await getProductWithSwatchAndReview(slug);
-  const getAllreviews = await getProductReviews(product?.id?.split("/").pop() || '')
-  
+  const reviews = await getProductReviews(product.id || 0);
+
   return (
-    <ProductDescription
-      product={product}
-      productSwatchReview={productSwatchReview}
-      slug={slug}
-      reviews={getAllreviews}
-      totalReview={reviews.length}
-      avgRating = {getAverageRating(reviews)}
-    />
+      <ProductDescription
+          product={product}
+          slug={slug}
+          reviews={reviews}
+          totalReview={reviews.length}
+          avgRating={getAverageRating(reviews)}
+      />
   );
 }

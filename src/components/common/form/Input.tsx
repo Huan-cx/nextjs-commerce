@@ -1,7 +1,8 @@
-import { ExclamationCircleIcon } from "@heroicons/react/24/outline";
+import {ExclamationCircleIcon} from "@heroicons/react/24/outline";
 import clsx from "clsx";
-import { forwardRef } from "react";
-import { isArray } from '@/utils/type-guards';
+import {forwardRef} from "react";
+import {isArray} from '@/utils/type-guards';
+
 interface InputTextProps
   extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "size"> {
   className?: string;
@@ -40,7 +41,7 @@ const InputText = forwardRef<HTMLInputElement, InputTextProps>(
       typeName = "text",
       placeholder,
       size = "sm",
-      labelPlacement = "inside",
+      labelPlacement = "outside",
       rounded = "sm",
       required,
       showAsterisk = true,

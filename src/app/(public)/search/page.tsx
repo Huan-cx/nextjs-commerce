@@ -1,21 +1,15 @@
 import dynamicImport from "next/dynamic";
 import Grid from "@/components/theme/ui/grid/Grid";
 import NotFound from "@/components/theme/search/not-found";
-import { isArray } from "@/utils/type-guards";
-import { GET_FILTER_PRODUCTS } from "@/graphql";
-import { GET_PRODUCTS, GET_PRODUCTS_PAGINATION } from "@/graphql";
-import { cachedGraphQLRequest } from "@/utils/hooks/useCache";
-import {
-  generateMetadataForPage,
-  getFilterAttributes,
-  buildProductFilters,
-} from "@/utils/helper";
+import {isArray} from "@/utils/type-guards";
+import {getSpuPage} from "@/utils/api/product";
+import {generateMetadataForPage, getFilterAttributes,} from "@/utils/helper";
 import SortOrder from "@/components/theme/filters/SortOrder";
-import { SortByFields } from "@/utils/constants";
+import {SortByFields} from "@/utils/constants";
 import MobileFilter from "@/components/theme/filters/MobileFilter";
 import FilterList from "@/components/theme/filters/FilterList";
-import { ProductsResponse } from "@/components/catalog/type";
-import { MobileSearchBar } from "@components/layout/navbar/MobileSearch";
+import {MobileSearchBar} from "@components/layout/navbar/MobileSearch";
+
 const Pagination = dynamicImport(
   () => import("@/components/catalog/Pagination"),
 );
@@ -31,43 +25,23 @@ export async function generateStaticParams() {
     const commonSearches = [""];
     const params = [];
     for (const query of commonSearches) {
-      const data = await cachedGraphQLRequest<ProductsResponse>(
-        "search",
-        GET_PRODUCTS,
-        {
-          query: query,
-          first: 1,
-          sortKey: "CREATED_AT",
-          reverse: true,
-        },
-      );
+      // 使用 getSpuPage 获取商品列表和总数量
+      const response = await getSpuPage({
+        pageNo: 1,
+        pageSize: 1,
+        keyword: query,
+        sortField: "createTime",
+        sortAsc: false,
+      });
 
-      const totalCount = data?.products?.totalCount || 0;
+      const totalCount = response.total || 0;
       const totalPages = Math.ceil(totalCount / itemsPerPage);
-      let cursor: string | undefined;
 
       for (let i = 0; i < totalPages; i++) {
-        const pageParams: { page: string; cursor?: string } = {
+        const pageParams: { page: string } = {
           page: String(i + 1),
         };
-        if (i > 0 && cursor) {
-          pageParams.cursor = cursor;
-        }
         params.push(pageParams);
-        if (i < totalPages - 1) {
-          const pageData = await cachedGraphQLRequest<ProductsResponse>(
-            "search",
-            GET_PRODUCTS,
-            {
-              query: query,
-              first: itemsPerPage,
-              sortKey: "CREATED_AT",
-              reverse: true,
-              ...(cursor && { after: cursor }),
-            },
-          );
-          cursor = pageData?.products?.pageInfo?.endCursor;
-        }
       }
     }
 
@@ -104,73 +78,50 @@ export default async function SearchPage({
   const {
     q: searchValue,
     page,
-    cursor,
-    before,
   } = (params || {}) as {
     [key: string]: string;
   };
 
-  const itemsPerPage = 12;
+  const itemsPerPage = 6;
   const currentPage = page ? parseInt(page) - 1 : 0;
-  const sortValue = params?.sort || "name-asc";
-  const selectedSort =
-    SortByFields.find((s) => s.key === sortValue) || SortByFields[0];
-  const afterCursor: string | undefined = cursor;
-  const beforeCursor: string | undefined = before;
 
-  const { filterInput, isFilterApplied } = buildProductFilters(params || {});
+  // 从 URL 获取排序参数（使用 sort 参数，如 "newest", "price-asc"）
+  const sortValue = (params?.sort as string) || "newest";
+  const selectedSort = SortByFields.find((s) => s.key === sortValue) || SortByFields[0];
 
-  let dataPromise;
-  if (isFilterApplied) {
-    dataPromise = cachedGraphQLRequest<ProductsResponse>(
-      "search",
-      GET_FILTER_PRODUCTS,
-      {
-        query: searchValue,
-        filter: filterInput,
-        ...(beforeCursor
-          ? { last: itemsPerPage, before: beforeCursor }
-          : { first: itemsPerPage, after: afterCursor }),
-        sortKey: selectedSort.sortKey,
-        reverse: selectedSort.reverse,
-      },
-    );
-  } else {
-    dataPromise = (async () => {
-      let currentAfterCursor = afterCursor;
-      if (currentPage > 0 && !afterCursor) {
-        const cursorData = await cachedGraphQLRequest<ProductsResponse>(
-          "search",
-          GET_PRODUCTS_PAGINATION,
-          {
-            query: searchValue,
-            first: currentPage * itemsPerPage,
-            sortKey: selectedSort.sortKey,
-            reverse: selectedSort.reverse,
-          },
-        );
-        currentAfterCursor = cursorData?.products?.pageInfo?.endCursor;
-      }
+  // 根据选择的排序配置构建 sortField 和 sortAsc
+  let sortField = "id";
+  let sortAsc = false;
 
-      return cachedGraphQLRequest<ProductsResponse>("search", GET_PRODUCTS, {
-        query: searchValue,
-        ...(beforeCursor
-          ? { last: itemsPerPage, before: beforeCursor }
-          : { first: itemsPerPage, after: currentAfterCursor }),
-        sortKey: selectedSort.sortKey,
-        reverse: selectedSort.reverse,
-      });
-    })();
+  switch (selectedSort.sortKey) {
+    case "createTime":
+      sortField = "createTime";
+      sortAsc = !selectedSort.reverse;
+      break;
+    case "price":
+      sortField = "price";
+      sortAsc = !selectedSort.reverse;
+      break;
+    default:
+      sortField = "id";
+      sortAsc = false;
   }
 
-  const [data, filterAttributes] = await Promise.all([
-    dataPromise,
-    getFilterAttributes(),
-  ]);
+  // TODO: 构建筛选参数
+  // const { filterInput, isFilterApplied } = buildProductFilters(params || {});
 
-  const products = data?.products?.edges?.map((e) => e.node) || [];
-  const pageInfo = data?.products?.pageInfo;
-  const totalCount = data?.products?.totalCount;
+  const response = await getSpuPage({
+    keyword: searchValue,
+    sortField,
+    sortAsc,
+    pageSize: itemsPerPage,
+    pageNo: currentPage + 1,
+  });
+
+  const filterAttributes = await getFilterAttributes();
+
+  const products = response?.list || [];
+  const totalCount = response?.total || 0;
 
   return (
     <>
@@ -205,7 +156,7 @@ export default async function SearchPage({
         </Grid>
       ) : null}
 
-      {!isFilterApplied && isArray(products) && totalCount > itemsPerPage && (
+      {isArray(products) && totalCount > itemsPerPage && (
         <nav
           aria-label="Collection pagination"
           className="my-10 block items-center sm:flex"
@@ -214,23 +165,6 @@ export default async function SearchPage({
             itemsPerPage={itemsPerPage}
             itemsTotal={totalCount || 0}
             currentPage={currentPage}
-            nextCursor={pageInfo?.endCursor}
-            prevCursor={pageInfo?.startCursor}
-          />
-        </nav>
-      )}
-
-      {isFilterApplied && isArray(products) && pageInfo?.hasNextPage && (
-        <nav
-          aria-label="Filtered pagination"
-          className="my-10 block items-center sm:flex"
-        >
-          <Pagination
-            itemsPerPage={itemsPerPage}
-            itemsTotal={totalCount || 0}
-            currentPage={currentPage}
-            nextCursor={pageInfo?.endCursor}
-            prevCursor={pageInfo?.startCursor}
           />
         </nav>
       )}

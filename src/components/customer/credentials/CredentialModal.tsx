@@ -1,26 +1,26 @@
 "use client";
 
-import { Popover, PopoverTrigger, PopoverContent } from "@heroui/popover";
-import { useDisclosure } from "@heroui/react";
-import { AnimatePresence, motion } from "framer-motion";
+import {Popover, PopoverContent, PopoverTrigger} from "@heroui/popover";
+import {useDisclosure} from "@heroui/react";
+import {AnimatePresence, motion} from "framer-motion";
 import clsx from "clsx";
-import { signOut } from "next-auth/react";
+import {signOut} from "next-auth/react";
 import Link from "next/link";
-import { Avatar } from "@heroui/avatar";
-import { useForm } from "react-hook-form";
-import { usePathname, useRouter } from "next/navigation";
-import { useCustomToast } from '@/utils/hooks/useToast';
-import { useMediaQuery } from "@utils/hooks/useMediaQueryHook";
-import { useBodyScrollLock } from "@utils/hooks/useBodyScrollLock";
+import {Avatar} from "@heroui/avatar";
+import {useForm} from "react-hook-form";
+import {usePathname, useRouter} from "next/navigation";
+import {useCustomToast} from '@/utils/hooks/useToast';
+import {useMediaQuery} from "@utils/hooks/useMediaQueryHook";
+import {useBodyScrollLock} from "@utils/hooks/useBodyScrollLock";
 import OpenAuth from "../OpenAuth";
-import { isObject } from '@/utils/type-guards';
-import { useGuestCartToken } from "@utils/hooks/useGuestCartToken";
+import {isObject} from '@/utils/type-guards';
+import {useGuestCartToken} from "@utils/hooks/useGuestCartToken";
 import LoadingDots from "@components/common/icons/LoadingDots";
-import { logoutAction } from "@utils/actions";
-import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import { clearUser } from "@/store/slices/user-slice";
-import { clearCart } from "@/store/slices/cart-slice";
-import { EMAIL, removeFromLocalStorage } from "@/store/local-storage";
+import {logoutAction} from "@utils/actions";
+import {useAppDispatch, useAppSelector} from "@/store/hooks";
+import {clearUser} from "@/store/slices/user-slice";
+import {clearCart} from "@/store/slices/cart-slice";
+import {resetCheckoutState} from "@/store/slices/checkout-slice";
 
 
 export default function CredentialModal({
@@ -91,12 +91,12 @@ export default function CredentialModal({
       await resetGuestToken();
       dispatch(clearUser());
       dispatch(clearCart());
+      dispatch(resetCheckoutState());
       showToast("You are logged out successfully!", "success");
       setTimeout(() => {
         router.push("/customer/login");
         router.refresh();
       }, 100);
-      removeFromLocalStorage(EMAIL)
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Logout failed";
       showToast(message, "danger");

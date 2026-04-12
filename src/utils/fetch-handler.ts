@@ -1,6 +1,8 @@
+import {GRAPHQL_URL} from "@/utils/constants";
+
 type Method = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
 
-interface FetchHandlerOptions<TBody = unknown> {
+export interface FetchHandlerOptions<TBody = unknown> {
   url: string; // API route, e.g., "addToCart"
   method?: Method;
   body?: TBody;
@@ -19,16 +21,16 @@ export async function fetchHandler({
   try {
     const defaultHeaders: Record<string, string> = {
       ...(contentType ? { "Content-Type": "application/json" } : {}),
+      'tenant-id': "1",
       ...headers,
     };
-
-    const response = await fetch(`/api/${url}`, {
+    const response = await fetch(`${GRAPHQL_URL}/${url}`, {
       method,
       headers: defaultHeaders,
       body: body ? JSON.stringify(body) : undefined,
     });
-   
-     
+
+
     const result = await response.json();
     if (!response.ok) {
       return {

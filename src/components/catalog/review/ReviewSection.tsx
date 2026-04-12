@@ -1,13 +1,13 @@
 "use client";
 
-import { useState } from "react";
-import { Modal, ModalContent } from "@heroui/react";
+import {useState} from "react";
+import {Modal, ModalContent} from "@heroui/react";
 import AddProductReview from "./AddProductReview";
-import { ReviewButton } from "@components/common/button/ReviewButton";
-import { NoReview } from "./NoReview";
+import {ReviewButton} from "@components/common/button/ReviewButton";
+import {NoReview} from "./NoReview";
 
 interface ReviewSectionProps {
-  productId: string;
+  productId: number;
   className?: string;
   totalReview: number;
 }

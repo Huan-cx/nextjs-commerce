@@ -1,5 +1,5 @@
-import { baseUrl, getImageUrl, NOT_IMAGE } from "@/utils/constants";
-import { ProductCard } from "./ProductCard";
+import {baseUrl, getImageUrl, NOT_IMAGE} from "@/utils/constants";
+import {ProductCard} from "./ProductCard";
 
 export default function ProductGridItems({
   products,
@@ -10,9 +10,9 @@ export default function ProductGridItems({
 
     const imageUrl = getImageUrl(product?.baseImageUrl, baseUrl, NOT_IMAGE);
     const price =
-      product?.type === "configurable"
-        ? product?.minimumPrice ?? "0"
-        : product?.price ?? "0";
+        product?.type === "configurable"
+            ? product?.minimumPrice ?? "0"
+            : product?.price ?? "0";
     const currency = product?.priceHtml?.currencyCode;
     return (
       <ProductCard
@@ -22,7 +22,6 @@ export default function ProductGridItems({
         price={price}
         specialPrice={product?.minimumPrice}
         product={product}
-        priority={index < 4}
       />
     );
   });

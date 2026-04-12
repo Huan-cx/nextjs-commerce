@@ -1,5 +1,5 @@
-import { GUEST_CART_TOKEN, IS_GUEST } from "@/utils/constants";
-import { decodeJWT } from "@/utils/jwt-cookie";
+import {GUEST_CART_TOKEN, IS_GUEST} from "@/utils/constants";
+import {decodeJWT} from "@/utils/jwt-cookie";
 
 export const getNativeCookie = (name: string): string | null => {
   if (typeof document === "undefined") return null;
@@ -9,13 +9,39 @@ export const getNativeCookie = (name: string): string | null => {
   return found ? decodeURIComponent(found.split("=")[1]) : null;
 };
 
+interface TokenData {
+  sessionToken: string;
+  refreshToken: string;
+  cartId: number;
+  isGuest: boolean;
+  expiresTime?: string;
+}
+
+/**
+ * 检查 Token 是否过期
+ */
+const checkTokenExpiration = (expiresTime?: string): boolean => {
+  if (!expiresTime) return false;
+
+  const now = new Date();
+  const expiry = new Date(expiresTime);
+  // 提前 5 分钟检查过期
+  const bufferTime = 5 * 60 * 1000;
+  return now.getTime() + bufferTime >= expiry.getTime();
+};
+
 export const getCartToken = (): string | null => {
   const raw = getNativeCookie(GUEST_CART_TOKEN);
   if (!raw) return null;
-
   const isGuest = getNativeCookie(IS_GUEST) !== "false";
 
-  const decoded = decodeJWT<{ sessionToken: string }>(raw, isGuest);
+  const decoded = decodeJWT<TokenData>(raw, isGuest);
+
+  // 检查 Token 是否过期
+  if (decoded && checkTokenExpiration(decoded.expiresTime)) {
+    return null; // Token 已过期，返回 null 触发重新获取
+  }
+
   return decoded?.sessionToken ?? null;
 };
 

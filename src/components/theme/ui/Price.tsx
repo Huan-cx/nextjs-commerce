@@ -4,7 +4,7 @@ export const Price = ({
   currencyCode = "USD",
   ...rest
 }: {
-  amount: string;
+  amount: number | string;
   className?: string;
   currencyCode: string;
 } & React.ComponentProps<"p">) => (
@@ -13,6 +13,6 @@ export const Price = ({
       style: "currency",
       currency: currencyCode,
       currencyDisplay: "narrowSymbol",
-    }).format(parseFloat(amount))}`}
+    }).format(parseFloat(String(amount)))}`}
   </p>
 );

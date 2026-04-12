@@ -1,13 +1,11 @@
-import { ReadonlyURLSearchParams } from "next/navigation";
-import { Metadata } from "next";
-import { CartItem, FilterDataTypes } from "@/types/types";
-import { isArray } from "./type-guards";
-import { BASE_URL, baseUrl } from "./constants";
-import { ProductData } from "@components/catalog/type";
-import { CategoryNode } from "@/types/theme/category-tree";
-import { cachedGraphQLRequest } from "./hooks/useCache";
-import { GET_FILTER_ATTRIBUTES } from "@/graphql";
-import { ProductReview } from "@/types/category/type";
+import {ReadonlyURLSearchParams} from "next/navigation";
+import {Metadata} from "next";
+import {CartItem, FilterDataTypes} from "@/types/types";
+import {isArray} from "./type-guards";
+import {BASE_URL, baseUrl} from "./constants";
+import {cachedGraphQLRequest} from "./hooks/useCache";
+import {GET_FILTER_ATTRIBUTES} from "@/graphql";
+import {Category, Comment, Spu} from "@/types/api/product/type";
 
 export const createUrl = (
   pathname: string,
@@ -132,8 +130,8 @@ export function formatDate(dateStr: string): string {
 export const isCheckout = (
   items: Array<CartItem>,
   isGuest: boolean,
-  email: string,
-  isSeclectAddress: boolean,
+  email: string | undefined | null,
+  isSelectAddress: boolean,
   isSelectShipping: boolean,
   isSelectPayment: boolean,
 ): string => {
@@ -150,38 +148,27 @@ export const isCheckout = (
     if (hasRestrictedProduct) {
       return "/customer/login";
     }
-
-    if (isSelectPayment) {
-      return "/checkout?step=review";
-    }
-
-    if (isSelectShipping) {
-      return "/checkout?step=payment";
-    }
-
-    if (isSeclectAddress) {
-      return "/checkout?step=shipping";
-    }
-
-    if (!email || typeof email === "object") {
-      return "/checkout";
-    }
-
-    return "/checkout?step=address";
-  } else {
-    if (isSelectPayment) {
-      return "/checkout?step=review";
-    }
-
-    if (isSelectShipping) {
-      return "/checkout?step=payment";
-    }
-
-    if (!email || typeof email === "object") {
-      return "/checkout";
-    }
-    return "/checkout?step=address";
   }
+
+  if (!email) {
+    return "/checkout?step=email";
+  }
+
+  // Navigate based on the current step of the checkout process
+  if (isSelectPayment) {
+    return "/checkout?step=review";
+  }
+
+  if (isSelectShipping) {
+    return "/checkout?step=payment";
+  }
+
+  if (isSelectAddress) {
+    return "/checkout?step=shipping";
+  }
+
+  // Default entry point to the checkout process
+  return "/checkout";
 };
 
 export const delay = (ms: number) => {
@@ -312,13 +299,13 @@ export const getValidTitle = (text: string) => {
   return text?.toLowerCase()?.replaceAll("_", " ") ?? "";
 };
 
-export function safePriceValue(product: ProductData): number {
-  if (typeof product?.price === "string") {
-    const priceValue =
-      product?.type === "configurable"
-        ? (product?.minimumPrice ?? "0")
-        : (product?.price ?? "0");
-    return parseFloat(priceValue) || 0;
+export function safePriceValue(product: Spu): number {
+  if (typeof product?.price === "number") {
+    // const priceValue =
+    //   product?.type === "configurable"
+    //     ? (product?.minimumPrice ?? "0")
+    //     : (product?.price ?? "0");
+    return product?.price || 0;
   }
   if (
     typeof product?.price === "object" &&
@@ -330,8 +317,8 @@ export function safePriceValue(product: ProductData): number {
   return 0;
 }
 
-export function safeCurrencyCode(product: ProductData): string {
-  if (product?.priceHtml?.currencyCode) return product.priceHtml.currencyCode;
+export function safeCurrencyCode(product: Spu): string {
+  /*if (product?.priceHtml?.currencyCode) return product.priceHtml.currencyCode;
 
   if (
     typeof product?.price === "object" &&
@@ -340,9 +327,9 @@ export function safeCurrencyCode(product: ProductData): string {
     typeof product.price.currencyCode === "string"
   ) {
     return product.price.currencyCode;
-  }
+  }*/
 
-  return "USD";
+  return "EUR";
 }
 
 /**
@@ -368,11 +355,12 @@ export function throttle<T extends (...args: any[]) => any>(
 }
 
 export function findCategoryBySlug(
-  categories: CategoryNode[],
+    categories: Category[],
   slug: string,
-): CategoryNode | null {
+): Category | null {
   for (const category of categories) {
-    if (category.translation?.slug === slug) return category;
+    // REST API返回的分类直接使用name作为标识，没有translation节点
+    if (category.name === slug) return category;
 
     if (category.children && isArray(category.children)) {
       const found = findCategoryBySlug(category.children, slug);
@@ -501,9 +489,9 @@ export function buildProductFilters(params: {
   };
 }
 
-export function getAverageRating(reviews: ProductReview[]): number {
+export function getAverageRating(reviews: Comment[]): number {
   if (!reviews.length) return 0;
 
-  const total = reviews.reduce((sum, review) => sum + review.rating, 0);
+  const total = reviews.reduce((sum, review) => sum + review.scores, 0);
   return total / reviews.length;
 }

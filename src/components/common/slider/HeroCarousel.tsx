@@ -2,13 +2,10 @@
 
 import * as React from "react";
 import Image from "next/image";
-import { ArrowLeftIcon, ArrowRightIcon } from "@heroicons/react/24/outline";
-import { GridTileImage } from "@/components/theme/ui/grid/Tile";
-import { Shimmer } from "@/components/common/Shimmer";
-import {
-  HeroCarouselShimmer,
-  HeroCarouselThumbnailShimmer,
-} from "./HeroCarouselShimmer";
+import {ArrowLeftIcon, ArrowRightIcon} from "@heroicons/react/24/outline";
+import {GridTileImage} from "@/components/theme/ui/grid/Tile";
+import {Shimmer} from "@/components/common/Shimmer";
+import {HeroCarouselShimmer, HeroCarouselThumbnailShimmer,} from "./HeroCarouselShimmer";
 
 export default function HeroCarousel({
   images,
@@ -65,7 +62,7 @@ export default function HeroCarousel({
               priority={true}
               sizes="(max-width: 1024px) 100vw, (max-width: 1536px) 66vw, 1000px"
               src={images[current]?.src as string}
-              onLoadingComplete={() => setIsLoading(false)}
+              onLoad={() => setIsLoading(false)}
               onError={() => setIsLoading(false)}
             />
           </div>

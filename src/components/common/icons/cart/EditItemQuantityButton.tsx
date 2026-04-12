@@ -1,8 +1,9 @@
 import LoadingDots from "@components/common/icons/LoadingDots";
-import { MinusIcon, PlusIcon } from "@heroicons/react/24/outline";
-import { throttle } from "@utils/helper";
-import { useAddProduct } from "@utils/hooks/useAddToCart";
+import {MinusIcon, PlusIcon} from "@heroicons/react/24/outline";
+import {throttle} from "@utils/helper";
+import {useAddProduct} from "@utils/hooks/useAddToCart";
 import clsx from "clsx";
+import {CartItem} from "@/types/api/trade/cart";
 
 function SubmitButton({
   type,
@@ -40,27 +41,18 @@ function SubmitButton({
   );
 }
 
-interface CartItemEdge {
-  node: {
-    id: string;
-    quantity: number;
-    name: string;
-    price: number;
-  };
-}
-
 export function EditItemQuantityButton({
   item,
   type,
 }: {
-  item: CartItemEdge;
+  item: CartItem;
   type: "plus" | "minus";
 }) {
   const { onUpdateCart, isUpdateLoading } = useAddProduct();
 
   
   const handleUpdateCart = throttle((type: "plus" | "minus") => {
-    let qty = item?.node?.quantity;
+    let qty = item?.count;
     if(!isUpdateLoading){
       if (type === "plus") {
         qty += 1;
@@ -68,8 +60,8 @@ export function EditItemQuantityButton({
         qty -= 1;
       }
       onUpdateCart({
-        cartItemId: Number(item?.node?.id),
-        quantity: qty,
+        id: Number(item?.id),
+        count: qty,
       });
     }
   }, 200);

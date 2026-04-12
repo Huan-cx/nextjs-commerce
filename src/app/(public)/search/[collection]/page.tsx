@@ -1,27 +1,19 @@
-import { Metadata } from "next";
-import { notFound } from "next/navigation";
-import { isArray } from "@/utils/type-guards";
+import {Metadata} from "next";
+import {notFound} from "next/navigation";
+import {isArray} from "@/utils/type-guards";
 import Grid from "@components/theme/ui/grid/Grid";
 import FilterList from "@components/theme/filters/FilterList";
 import SortOrder from "@components/theme/filters/SortOrder";
 import MobileFilter from "@components/theme/filters/MobileFilter";
 import ProductGridItems from "@components/catalog/product/ProductGridItems";
 import Pagination from "@components/catalog/Pagination";
-import {
-  ProductsResponse,
-} from "@components/catalog/type";
-import {
-  GET_FILTER_PRODUCTS,
-  GET_TREE_CATEGORIES,
-} from "@/graphql";
-import { cachedGraphQLRequest, cachedCategoryRequest } from "@/utils/hooks/useCache";
-import { SortByFields } from "@utils/constants";
-import { CategoryDetail } from "@components/theme/search/CategoryDetail";
-import { Suspense } from "react";
+import {getCategoryTree, getSpuPage} from "@/utils/api/product";
+import {SortByFields} from "@utils/constants";
+import {CategoryDetail} from "@components/theme/search/CategoryDetail";
+import {Suspense} from "react";
 import FilterListSkeleton from "@components/common/skeleton/FilterSkeleton";
-import { TreeCategoriesResponse } from "@/types/theme/category-tree";
-import { MobileSearchBar } from "@components/layout/navbar/MobileSearch";
-import { extractNumericId, findCategoryBySlug, getFilterAttributes, buildProductFilters } from "@utils/helper";
+import {MobileSearchBar} from "@components/layout/navbar/MobileSearch";
+import {buildProductFilters, extractNumericId, findCategoryBySlug, getFilterAttributes} from "@utils/helper";
 
 
 export async function generateMetadata({
@@ -31,22 +23,15 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { collection: categorySlug } = await params;
 
-  const treeData = await cachedGraphQLRequest<TreeCategoriesResponse>(
-    "category",
-    GET_TREE_CATEGORIES,
-    { parentId: 1 }
-  );
-
-  const categories = treeData?.treeCategories || [];
+  // 使用新的REST API获取分类树
+  const categories = await getCategoryTree();
   const categoryItem = findCategoryBySlug(categories, categorySlug);
 
   if (!categoryItem) return notFound();
 
-  const translation = categoryItem.translation;
-
   return {
-    title: translation?.metaTitle || translation?.name,
-    description: translation?.description || `${translation?.name} products`,
+    title: categoryItem.name,
+    description: categoryItem.description || `${categoryItem.name} products`,
   };
 }
 
@@ -60,36 +45,28 @@ export default async function CategoryPage({
   const { collection: categorySlug } = await params;
   const resolvedParams = await searchParams;
 
-  const [treeData, filterAttributes] = await Promise.all([
-    cachedGraphQLRequest<TreeCategoriesResponse>(
-      "category",
-      GET_TREE_CATEGORIES,
-      { parentId: 1 }
-    ),
+  // 使用新的REST API获取分类树和筛选属性
+  const [categories, filterAttributes] = await Promise.all([
+    getCategoryTree(),
     getFilterAttributes(),
   ]);
 
-  const categories = treeData?.treeCategories || [];
   const categoryItem = findCategoryBySlug(categories, categorySlug);
 
   if (!categoryItem) return notFound();
 
-  const numericId = extractNumericId(categoryItem.id);
+  const numericId = extractNumericId(String(categoryItem.id));
 
   const {
     q: searchValue,
     page,
-    cursor,
-    before,
+    sort: sortValue,
   } = (resolvedParams || {}) as {
     [key: string]: string;
   };
 
   const itemsPerPage = 12;
   const currentPage = page ? parseInt(page) - 1 : 0;
-  const sortValue = resolvedParams?.sort || "name-asc";
-  const selectedSort =
-    SortByFields.find((s) => s.key === sortValue) || SortByFields[0];
 
   const { filterObject: baseFilterObject } = buildProductFilters(resolvedParams || {});
 
@@ -101,28 +78,39 @@ export default async function CategoryPage({
     filterObject.category_id = numericId;
   }
 
-  const filterInput = JSON.stringify(filterObject);
-  
-  const [data] = await Promise.all([
-    cachedCategoryRequest<ProductsResponse>(
-      categorySlug,
-      GET_FILTER_PRODUCTS,
-      {
-        query: searchValue || "",
-        filter: filterInput,
-        ...(before
-          ? { last: itemsPerPage, before: before }
-          : { first: itemsPerPage, after: cursor }),
-        sortKey: selectedSort.sortKey,
-        reverse: selectedSort.reverse,
-      }
-    ),
-  ]);
+  // 根据 sort 参数构建排序字段
+  const selectedSort = SortByFields.find((s) => s.key === (sortValue || "newest")) || SortByFields[0];
+  let sortField = "id";
+  let sortAsc = false;
 
-  const products = data?.products?.edges?.map((e) => e.node) || [];
-  const pageInfo = data?.products?.pageInfo;
-  const totalCount = data?.products?.totalCount;
-  const translation = categoryItem.translation;
+  switch (selectedSort.sortKey) {
+    case "createTime":
+      sortField = "createTime";
+      sortAsc = !selectedSort.reverse;
+      break;
+    case "price":
+      sortField = "price";
+      sortAsc = !selectedSort.reverse;
+      break;
+    default:
+      sortField = "id";
+      sortAsc = false;
+  }
+
+  // 使用新的REST API获取数据
+  const response = await getSpuPage({
+    keyword: searchValue,
+
+    // filter: filterObject,
+    sortField,
+    sortAsc,
+    pageSize: itemsPerPage,
+    pageNo: currentPage + 1,
+  });
+
+  const products = response?.list || [];
+  const totalCount = response?.total || 0;
+  // const translation = categoryItem.translation;
 
   return (
     <>
@@ -130,8 +118,10 @@ export default async function CategoryPage({
       <section>
         <Suspense fallback={<FilterListSkeleton />}>
           <CategoryDetail
-            categoryItem={{ description: translation?.description ?? "", name: translation?.name ?? "" }}
-
+              categoryItem={{
+                description: categoryItem.description ?? "",
+                name: categoryItem.name ?? ""
+              }}
           />
         </Suspense>
         <div className="my-10 hidden gap-4 md:flex md:items-baseline md:justify-between w-full max-w-screen-2xl mx-auto px-4">
@@ -157,7 +147,7 @@ export default async function CategoryPage({
           </div>
         )}
 
-        {isArray(products) && (totalCount > itemsPerPage || pageInfo?.hasNextPage) && (
+        {isArray(products) && totalCount > itemsPerPage && (
           <nav
             aria-label="Collection pagination"
             className="my-10 block items-center sm:flex"
@@ -166,8 +156,6 @@ export default async function CategoryPage({
               itemsPerPage={itemsPerPage}
               itemsTotal={totalCount || 0}
               currentPage={currentPage}
-              nextCursor={pageInfo?.endCursor}
-              prevCursor={pageInfo?.startCursor}
             />
           </nav>
         )}

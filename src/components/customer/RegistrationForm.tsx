@@ -2,13 +2,13 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { SubmitHandler, useForm } from "react-hook-form";
+import {SubmitHandler, useForm} from "react-hook-form";
 import InputText from "@components/common/form/Input";
-import { useCustomToast } from "@/utils/hooks/useToast";
-import { useRouter } from "next/navigation";
-import { EMAIL_REGEX, SIGNUP_IMG, IS_VALID_INPUT } from "@utils/constants";
-import { createUser } from "@utils/actions";
-import { Button } from "@components/common/button/Button";
+import {useCustomToast} from "@/utils/hooks/useToast";
+import {useRouter} from "next/navigation";
+import {EMAIL_REGEX, IS_VALID_INPUT, SIGNUP_IMG} from "@utils/constants";
+import {RegisterRequest, registerUser} from "@utils/api/member";
+import {Button} from "@components/common/button/Button";
 
 export type RegisterInputs = {
   firstName: string;
@@ -33,23 +33,29 @@ export default function RegistrationForm() {
   const { showToast } = useCustomToast();
 
   const onSubmit: SubmitHandler<RegisterInputs> = async (data) => {
-    if (data.password !== data.passwordConfirmation) {
-      showToast("The Passwords do not match.", "warning");
-      return;
-    }
+    try {
+      const payload: RegisterRequest = {
+        firstName: data.firstName,
+        lastName: data.lastName,
+        email: data.email,
+        password: data.password,
+        confirmPassword: data.passwordConfirmation,
+      };
 
-    await createUser(data)
-      .then((res) => {
-        if (res?.success) {
-          showToast("User created successfully", "success");
-          router.replace("/customer/login");
-        } else {
-          showToast(res?.error?.message || "Failed to create user", "warning");
-        }
-      })
-      .catch((error) => {
-        showToast(error.message || "An error occurred", "warning");
-      });
+      const success = await registerUser(payload);
+
+      if (success) {
+        showToast("User created successfully", "success");
+        router.replace("/customer/login");
+      } else {
+        // 如果 API 返回 false，但没有抛出错误，也视为失败
+        throw new Error("Failed to create user. Please try again.");
+      }
+    } catch (error: any) {
+      // 捕获 API 调用中抛出的错误
+      const message = error?.message || "An error occurred during registration.";
+      showToast(message, "danger");
+    }
   };
 
   return (

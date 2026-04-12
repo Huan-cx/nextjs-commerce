@@ -1,41 +1,23 @@
-import { cookies, headers } from "next/headers";
-import { revalidatePath } from "next/cache";
-import { NextRequest, NextResponse } from "next/server";
-import {
-  BagistoCreateUserOperation,
-  BagistoProductInfo,
-  BagistoSession,
-  BagistoUser,
-  ImageInfo,
-} from "@/types/types";
-import {
-  BAGISTO_SESSION,
-  HIDDEN_PRODUCT_TAG,
-  STOREFRONT_KEY,
-} from "../constants";
-import { getServerSession } from "next-auth";
-import {
-  CUSTOMER_LOGOUT,
-  CUSTOMER_REGISTRATION,
-  FORGET_PASSWORD,
-} from "@/graphql/customer/mutations";
-import { DocumentNode } from "graphql";
-import { GRAPHQL_URL } from "@/utils/constants";
-import {
-  GET_FOOTER,
-  GET_THEME_CUSTOMIZATION,
-  PAGE_BY_URL_KEY,
-} from "@/graphql";
-import { SUBSCRIBE_TO_NEWSLETTER } from "@/graphql/theme/mutations";
-import { cachedGraphQLRequest } from "@/utils/hooks/useCache";
-import { authOptions } from "@utils/auth";
-import { RegisterInputs } from "@components/customer/RegistrationForm";
-import {
-  GetFooterResponse,
-  ThemeCustomizationResult,
-  ThemeCustomizationResponse,
-  PageData,
-} from "@/types/theme/theme-customization";
+import {cookies, headers} from "next/headers";
+import {revalidatePath} from "next/cache";
+import {NextRequest, NextResponse} from "next/server";
+import {BagistoCreateUserOperation, BagistoProductInfo, BagistoSession, BagistoUser, ImageInfo,} from "@/types/types";
+import {BAGISTO_SESSION, HIDDEN_PRODUCT_TAG, STOREFRONT_KEY,} from "../constants";
+import {getServerSession} from "next-auth";
+import {CUSTOMER_LOGOUT, CUSTOMER_REGISTRATION, FORGET_PASSWORD,} from "@/graphql/customer/mutations";
+import {DocumentNode} from "graphql";
+import {GRAPHQL_URL} from "@/utils/constants";
+import {GET_FOOTER, PAGE_BY_URL_KEY,} from "@/graphql";
+import {SUBSCRIBE_TO_NEWSLETTER} from "@/graphql/theme/mutations";
+import {cachedGraphQLRequest} from "@/utils/hooks/useCache";
+import {authOptions} from "@utils/auth";
+import {RegisterInputs} from "@components/customer/RegistrationForm";
+import {GetFooterResponse, PageData, ThemeCustomizationResult,} from "@/types/theme/theme-customization";
+import {loadDevMessages, loadErrorMessages} from "@apollo/client/dev";
+
+
+loadDevMessages();
+loadErrorMessages();
 
 
 type ExtractVariables<T> = T extends { variables: object }
@@ -403,19 +385,19 @@ export async function revalidate(req: NextRequest): Promise<NextResponse> {
   });
 }
 
-export async function getHomePageData(): Promise<ThemeCustomizationResponse> {
-  const res = await bagistoFetch<{
-    data: ThemeCustomizationResponse;
-    variables: { first: number };
-  }>({
-    query: GET_THEME_CUSTOMIZATION,
-    variables: { first: 20 },
-    tags: ["theme-customization"],
-    revalidate: 60,
-  });
-
-  return res.body.data;
-}
+// export async function getHomePageData(): Promise<ThemeCustomizationResponse> {
+//   const res = await bagistoFetch<{
+//     data: ThemeCustomizationResponse;
+//     variables: { first: number };
+//   }>({
+//     query: GET_THEME_CUSTOMIZATION,
+//     variables: { first: 20 },
+//     tags: ["theme-customization"],
+//     revalidate: 60,
+//   });
+//
+//   return res.body.data;
+// }
 
 export async function getPage(input: { urlKey: string }): Promise<PageData[]> {
   const res = await bagistoFetch<{
