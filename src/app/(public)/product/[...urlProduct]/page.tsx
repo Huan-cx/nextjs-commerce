@@ -32,8 +32,6 @@ async function getSingleProduct(urlKey: string) {
       console.error("Error fetching product:", {
         message: error.message,
         urlKey,
-        graphQLErrors: (error as unknown as Record<string, unknown>)
-          .graphQLErrors,
       });
     }
     return null;
@@ -113,6 +111,7 @@ export default async function ProductPage({
         </Suspense>
       </div>
       <Suspense fallback={<RelatedProductSkeleton />}>
+        /* TODO 相关商品 */
         {/*<RelatedProductsSection fullPath={fullPath} />*/}
       </Suspense>
     </>

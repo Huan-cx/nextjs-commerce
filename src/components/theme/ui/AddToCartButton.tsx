@@ -3,7 +3,7 @@
 import ShoppingCartIcon from "@components/common/icons/ShoppingCartIcon";
 import clsx from "clsx";
 import Link from "next/link";
-import {useAddProduct} from "@utils/hooks/useAddToCart";
+import {useCart} from "@utils/hooks/useAddToCart";
 import LoadingDots from "@components/common/icons/LoadingDots";
 import {useCustomToast} from "@utils/hooks/useToast";
 
@@ -18,7 +18,7 @@ export default function AddToCartButton({
   productUrlKey: string;
   isSaleable?: string;
 }) {
-  const { isCartLoading, onAddToCart } = useAddProduct();
+  const {isCartLoading, onAddToCart} = useCart();
   const { showToast } = useCustomToast();
 
   const handleAddToCart = () => {

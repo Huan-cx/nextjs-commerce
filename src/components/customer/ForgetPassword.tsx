@@ -1,17 +1,14 @@
 "use client";
-import { useState } from "react";
-import { useForm, SubmitHandler } from "react-hook-form";
+import {useState} from "react";
+import {SubmitHandler, useForm} from "react-hook-form";
 import clsx from "clsx";
 import Image from "next/image";
 import Link from "next/link";
-
-import { recoverPassword } from "@utils/actions";
-
-import { Button } from "@components/common/button/Button";
-
-import { EMAIL_REGEX, FORGET_PASSWORD_IMG } from '@/utils/constants';
+import {Button} from "@components/common/button/Button";
+import {EMAIL_REGEX, FORGET_PASSWORD_IMG} from '@/utils/constants';
 import InputText from '@components/common/form/Input';
-import { useCustomToast } from '@/utils/hooks/useToast';
+import {useCustomToast} from '@/utils/hooks/useToast';
+import {sendResetPasswordMail} from "@utils/api/member";
 
 type ForgetPasswordInputs = {
   email: string;
@@ -30,38 +27,25 @@ export default function ForgetPasswordForm() {
     reValidateMode: "onChange",
   });
 
-  const onSubmit: SubmitHandler<ForgetPasswordInputs> = async (data: {
-    email: string;
-  }) => {
+  const onSubmit: SubmitHandler<ForgetPasswordInputs> = async (data) => {
     setLoading(true);
-
-    const formData = new FormData();
-
-    formData.append("email", data.email);
-
     try {
-      const result = await recoverPassword({
-        email: data?.email,
-      });
-
-      // Show success/error API response
-      if (result.success) {
-        showToast(result.success.msg, "success");
-      } else if (result.errors?.apiRes) {
-        showToast(result.errors.apiRes?.msg, "danger");
-      }
-
-      // Field-specific errors
-      if (result.errors?.email) {
+      await sendResetPasswordMail({
+        email: data.email,
+      }).then(() => {
         showToast(
-          Array.isArray(result.errors.email)
-            ? result.errors.email[0]
-            : result.errors.email,
-          "danger"
+            "Reset password email sent. Please check your inbox.",
+            "success"
         );
-      }
-    } catch {
-      showToast("Something went wrong. Please try again later.", "danger");
+      })
+          .catch(() => {
+            showToast("Failed to send email.", "danger");
+          });
+    } catch (error) {
+      showToast(
+          error instanceof Error ? error.message : "An unknown error occurred.",
+          "danger"
+      );
     } finally {
       setLoading(false);
     }

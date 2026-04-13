@@ -15,12 +15,12 @@ import {useBodyScrollLock} from "@utils/hooks/useBodyScrollLock";
 import OpenAuth from "../OpenAuth";
 import {isObject} from '@/utils/type-guards';
 import {useGuestCartToken} from "@utils/hooks/useGuestCartToken";
-import LoadingDots from "@components/common/icons/LoadingDots";
-import {logoutAction} from "@utils/actions";
+import {logout} from "@utils/api/member";
 import {useAppDispatch, useAppSelector} from "@/store/hooks";
 import {clearUser} from "@/store/slices/user-slice";
 import {clearCart} from "@/store/slices/cart-slice";
 import {resetCheckoutState} from "@/store/slices/checkout-slice";
+import LoadingDots from "@components/common/icons/LoadingDots";
 
 
 export default function CredentialModal({
@@ -77,28 +77,30 @@ export default function CredentialModal({
 
   const onSubmit = async () => {
     try {
-      const res = await logoutAction();
+      // Call the backend API to invalidate the token
+      await logout();
 
-      if (!res.success) {
-        showToast(res.message, "danger");
-      }
-
+      // Sign out from the frontend session
       await signOut({
         callbackUrl: "/customer/login",
         redirect: false,
       });
 
+      // Clean up local state and tokens
       await resetGuestToken();
       dispatch(clearUser());
       dispatch(clearCart());
       dispatch(resetCheckoutState());
+
       showToast("You are logged out successfully!", "success");
+
+      // Redirect to login page
       setTimeout(() => {
         router.push("/customer/login");
         router.refresh();
       }, 100);
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : "Logout failed";
+      const message = err instanceof Error ? err.message : "Logout failed. Please try again.";
       showToast(message, "danger");
     }
   };

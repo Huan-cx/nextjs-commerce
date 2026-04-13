@@ -1,31 +1,30 @@
 "use client";
 
-import {useRestMutation} from "@utils/hooks/useCustomMutation";
-import {useCartDetail} from "@utils/hooks/useCartDetail";
+import {useMutation, useQueryClient} from "@tanstack/react-query";
 import {useAppSelector} from "@/store/hooks";
-import {MergeCartRequest} from "@utils/api/trade";
+import {mergeCart, MergeCartRequest} from "@utils/api/trade";
+import {useCustomToast} from "./useToast";
 
 export function useMergeCart() {
-  const {getCartDetail} = useCartDetail();
+  const queryClient = useQueryClient();
   const cartItems = useAppSelector((state) => state.cartDetail.cart?.items);
+  const {showToast} = useCustomToast();
 
-  const [mutation, {loading: isLoading}] = useRestMutation(
-      "trade/cart/merge",
-      {
-        method: "POST",
-        onCompleted: (success: boolean) => {
-          if (success) {
-            // 合并成功后，强制重新获取购物车详情，以同步服务端最新数据
-            getCartDetail(true);
-          }
-        },
-        onError: (_error: any) => {
-          console.error("Failed to merge cart:", _error);
-        },
-      }
-  );
+  const {mutateAsync: mergeCartMutation, isPending: isLoading} = useMutation({
+    mutationFn: (payload: MergeCartRequest) => mergeCart(payload),
+    onSuccess: () => {
+      // On successful merge, invalidate the cart query to refetch the latest cart data.
+      queryClient.invalidateQueries({queryKey: ['cart']});
+      showToast("Cart merged successfully", "success");
+    },
+    onError: (error: unknown) => {
+      const message = error instanceof Error ? error.message : "Failed to merge cart";
+      showToast(message, "danger");
+      console.error("Failed to merge cart:", error);
+    },
+  });
 
-  const mergeCart = async () => {
+  const handleMergeCart = async () => {
     if (!cartItems || cartItems.length === 0) {
       console.log("No items to merge.");
       return;
@@ -38,11 +37,11 @@ export function useMergeCart() {
       })),
     };
 
-    await mutation(payload);
+    await mergeCartMutation(payload);
   };
 
   return {
-    mergeCart,
+    mergeCart: handleMergeCart,
     isLoading,
   };
 }

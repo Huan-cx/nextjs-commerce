@@ -5,17 +5,14 @@ import Search from "./Search";
 import Cart from "@/components/cart";
 import {SearchSkeleton} from "@/components/common/skeleton/SearchSkeleton";
 import {IconSkeleton} from "@/components/common/skeleton/IconSkeleton";
-import {fetchHandler} from "@utils/fetch-handler";
 import ThemeSwitcherWrapper from "@components/theme/theme-switch";
 import LogoIcon from "@components/common/icons/LogoIcon";
 import UserAccount from "@components/customer/credentials";
+import {get} from "@utils/request/request";
 
 export default async function Navbar() {
   // 调用接口获取所有分类
-  const response = await fetchHandler({
-    url: "product/category/list",
-    method: "GET",
-  });
+  const response = await get("product/category/list");
 
   const allCategories = response?.data || [];
 

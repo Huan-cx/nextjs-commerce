@@ -1,8 +1,8 @@
 import LoadingDots from "@components/common/icons/LoadingDots";
 import {TrashIcon} from "@heroicons/react/24/outline";
-import {useAddProduct} from "@utils/hooks/useAddToCart";
 import clsx from "clsx";
 import {CartItem} from "@/types/api/trade/cart";
+import {useCart} from "@utils/hooks/useAddToCart";
 
 
 function SubmitButton({
@@ -35,10 +35,10 @@ function SubmitButton({
 }
 
 export function DeleteItemButton({item}: { item: CartItem }) {
-  const { onAddToRemove, isRemoveLoading } = useAddProduct();
+  const {onRemoveItem, isRemoveLoading} = useCart();
   const itemId = item?.id;
   const handleRemoveCart = () => {
-    onAddToRemove(itemId);
+    onRemoveItem(itemId);
   };
 
   return (

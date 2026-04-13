@@ -1,86 +1,60 @@
 "use client";
 
-import {useRestMutation} from "@utils/hooks/useCustomMutation";
+import {useQuery} from "@tanstack/react-query";
 import {useAppDispatch, useAppSelector} from "@/store/hooks";
 import {addItem} from "@/store/slices/cart-slice";
-import {useCallback, useEffect, useRef, useState} from "react";
-import {getCartToken} from "@/utils/getCartToken";
-import {Cart} from "@/types/api/trade/cart";
-
+import {getCartInfo} from "@/utils/api/cart";
+import {getCartToken, getCookie} from "@/utils/getCartToken";
+import {useEffect} from "react";
+import {IS_GUEST} from "@/utils/constants";
 
 export function useCartDetail() {
   const dispatch = useAppDispatch();
   const cart = useAppSelector((state) => state.cartDetail.cart);
-  const [isInFlight, setIsInFlight] = useState(false);
-  const isInFlightRef = useRef(false);
-  const hasFetchedRef = useRef(false); // 跟踪是否已经获取过数据
 
-  const [getCartDetailMutation, {loading: isLoading, error}] =
-      useRestMutation("trade/cart/list", {
-        method: "GET",
-        onCompleted: (response) => {
+  const {data, isLoading, error, refetch, isSuccess} = useQuery({
+    queryKey: ["cart"],
+    queryFn: async () => {
+      const isGuest = getCookie(IS_GUEST) === "true";
+      if (isGuest) {
+        return null; // Do not fetch for guest users
+      }
+      const token = await getCartToken();
+      if (!token) {
+        return null;
+      }
+      return getCartInfo();
+    },
+    // We control when to fetch manually, so disable automatic refetching behaviors
+    enabled: false,
+  });
 
-          // 转换新的响应结构为旧的 Cart 类型
-          const validItems = response.validList || [];
-          const itemsQty = validItems.reduce((total: number, item: { count: number; }) => total + item.count, 0);
-
-          // 构建符合 Cart 类型的对象
-          const cart: Cart = {
-            itemsQty: itemsQty,
-            items: validItems,
-          };
-
-          if (cart) {
-            dispatch(addItem(cart));
-          }
-        },
-        onError: (error) => {
-          console.error("Cart detail error:", error);
-        },
-      });
-
-  // 使用 ref 跟踪最新的 getCartDetailMutation
-  const getCartDetailMutationRef = useRef(getCartDetailMutation);
-
+  // Effect to sync query data to Redux store on success
   useEffect(() => {
-    getCartDetailMutationRef.current = getCartDetailMutation;
-  }, [getCartDetailMutation]);
-
-
-  const getCartDetail = useCallback(async (force: boolean = false) => {
-    // 防止重复请求，除非强制刷新
-    if (isInFlightRef.current || (!force && hasFetchedRef.current)) return;
-    isInFlightRef.current = true;
-
-    const token = await getCartToken();
-    if (!token) {
-      isInFlightRef.current = false;
-      return;
+    if (isSuccess && data) {
+      dispatch(addItem(data));
     }
+  }, [isSuccess, data, dispatch]);
 
-    setIsInFlight(true);
-    try {
-      await getCartDetailMutationRef.current();
-      hasFetchedRef.current = true; // 标记已获取数据
-    } catch (e) {
-      throw e;
-    } finally {
-      isInFlightRef.current = false;
-      setIsInFlight(false);
-    }
-  }, []);
-
+  // Effect to log errors
   useEffect(() => {
-    // 在组件首次渲染时执行，或当 cart 变为 null 时重新执行
-    if (!cart && !isInFlightRef.current) {
-      getCartDetail();
+    if (error) {
+      console.error("Cart detail error:", error);
     }
-  }, [cart, getCartDetail]);
+  }, [error]);
+
+  // Effect to fetch cart details on initial load if not already present
+  useEffect(() => {
+    const isGuest = getCookie(IS_GUEST) === "true";
+    if (!cart && !isGuest) {
+      refetch();
+    }
+  }, [cart, refetch]);
 
   return {
-    cartData: cart,
-    getCartDetail,
-    isLoading: isLoading || (isInFlight && !cart),
+    cartData: cart, // Continue providing the cart data from Redux for consistency
+    getCartDetail: refetch, // Expose the refetch function as getCartDetail
+    isLoading,
     error,
   };
 }

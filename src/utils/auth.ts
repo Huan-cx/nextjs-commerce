@@ -1,6 +1,6 @@
 import NextAuth, {NextAuthOptions} from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-import {fetchHandler} from "./fetch-handler";
+import {post} from "./request/request";
 
 export const authOptions: NextAuthOptions = {
   session: {
@@ -22,13 +22,9 @@ export const authOptions: NextAuthOptions = {
           throw new Error("Email and password are required.");
         }
 
-        const response = await fetchHandler({
-          url: "member/auth/login",
-          method: "POST",
-          body: {
-            loginAccount: credentials.username,
-            password: credentials.password,
-          },
+        const response = await post<any>("member/auth/login", {
+          loginAccount: credentials.username,
+          password: credentials.password,
         });
         if (response.code !== 0 || !response.data) {
           throw new Error(response.msg || "Invalid credentials.");

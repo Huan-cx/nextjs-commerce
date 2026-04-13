@@ -1,6 +1,15 @@
 import {createSlice, PayloadAction} from "@reduxjs/toolkit";
-import {Cart} from "@/types/api/trade/cart";
+import {Cart, CartItem} from "@/types/api/trade/cart";
 
+// Helper function to recalculate cart totals
+const recalculateCart = (cart: Cart): Cart => {
+  const itemsQty = cart.items.reduce((total, item) => total + item.count, 0);
+  const totalPrice = cart.items.reduce(
+      (total, item) => total + item.sku.price * item.count,
+      0,
+  );
+  return {...cart, itemsQty, totalPrice};
+};
 
 export interface CartState {
   cart?: Cart;
@@ -27,6 +36,49 @@ const cartSlice = createSlice({
     clearCart(state) {
       state.cart = undefined;
     },
+    // Reducer to add an item to the local cart (for guests)
+    addItemLocal: (state, action: PayloadAction<CartItem>) => {
+      const newItem = action.payload;
+      if (!state.cart) {
+        state.cart = {items: [newItem], itemsQty: 0, totalPrice: 0};
+      } else {
+        const existingItem = state.cart.items.find(
+            (item) => item.sku.id === newItem.sku.id,
+        );
+        if (existingItem) {
+          existingItem.count += newItem.count;
+        } else {
+          state.cart.items.push(newItem);
+        }
+      }
+      state.cart = recalculateCart(state.cart);
+    },
+    // Reducer to remove an item from the local cart (for guests)
+    removeItemLocal: (state, action: PayloadAction<number>) => {
+      const skuIdToRemove = action.payload;
+      if (state.cart) {
+        state.cart.items = state.cart.items.filter(
+            (item) => item.sku.id !== skuIdToRemove,
+        );
+        state.cart = recalculateCart(state.cart);
+      }
+    },
+    // Reducer to update an item's quantity in the local cart (for guests)
+    updateItemQuantityLocal: (
+        state,
+        action: PayloadAction<{ skuId: number; count: number }>,
+    ) => {
+      const {skuId, count} = action.payload;
+      if (state.cart) {
+        const itemToUpdate = state.cart.items.find(
+            (item) => item.sku.id === skuId,
+        );
+        if (itemToUpdate) {
+          itemToUpdate.count = count;
+        }
+        state.cart = recalculateCart(state.cart);
+      }
+    },
   },
 });
 
@@ -34,6 +86,9 @@ export const {
   addItem,
   updateCart,
   clearCart,
+  addItemLocal,
+  removeItemLocal,
+  updateItemQuantityLocal,
 } = cartSlice.actions;
 
 export default cartSlice.reducer;

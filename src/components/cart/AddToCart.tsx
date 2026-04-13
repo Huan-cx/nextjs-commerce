@@ -4,10 +4,10 @@ import {MinusIcon, PlusIcon} from "@heroicons/react/24/outline";
 import clsx from "clsx";
 import {useSearchParams} from "next/navigation";
 import {useForm} from "react-hook-form";
-import {useAddProduct} from "@utils/hooks/useAddToCart";
 import LoadingDots from "@components/common/icons/LoadingDots";
 import {getVariantInfo} from "@utils/hooks/useSkuInfo";
 import {Spu} from "@/types/api/product/type";
+import {useCart} from "@utils/hooks/useAddToCart";
 
 interface AddToCartFormData {
   quantity: number;
@@ -87,7 +87,7 @@ export function AddToCart({
 }) {
   // 检查是否有库存/是否可销售，临时采用全部可销售
   // const isSaleable = product?.skus && product.skus.length > 0 ||  "";
-  const { onAddToCart, isCartLoading } = useAddProduct();
+  const {onAddToCart, isCartLoading} = useCart();
   const {handleSubmit, setValue, register, getValues} = useForm<AddToCartFormData>({
     defaultValues: {
       quantity: 1,

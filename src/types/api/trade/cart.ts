@@ -1,6 +1,7 @@
 export interface Cart {
   id?: number;
   itemsQty: number;
+  totalPrice: number;
   items: CartItem[];
 }
 

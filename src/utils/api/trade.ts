@@ -118,3 +118,20 @@ export async function mergeCart(request: MergeCartRequest): Promise<boolean> {
     contentType: true
   });
 }
+
+// 创建商品评价请求类型
+export interface CreateProductReviewRequest {
+  anonymous: boolean;
+  orderItemId: number;
+  descriptionScores: number;
+  benefitScores: number;
+  content: string;
+  picUrls: string[];
+}
+
+// 创建商品评价
+export async function createProductReview(request: CreateProductReviewRequest): Promise<number> {
+  return await post<number>('trade/order/item/create-comment', request, {
+    contentType: true
+  });
+}

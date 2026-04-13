@@ -5,10 +5,10 @@ import {get, post} from "@utils/request/request";
 /**
  * 发送重置密码邮件请求
  */
-export async function sendResetPasswordMail(email: string): Promise<boolean> {
+export async function sendResetPasswordMail(params: { email: string }): Promise<boolean> {
   return await post<boolean>(
       "member/auth/send-reset-password-mail",
-      {email},
+      {params},
       {contentType: "urlencoded"}
   );
 }
@@ -37,6 +37,13 @@ export async function resetPassword(
   return await post<boolean>("member/auth/reset-password", request, {
     contentType: true,
   });
+}
+
+/**
+ * 退出登录
+ */
+export async function logout(): Promise<boolean> {
+  return await post<boolean>("member/auth/logout");
 }
 
 // ======================= 注册 API =======================

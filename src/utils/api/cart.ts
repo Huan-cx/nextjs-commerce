@@ -1,5 +1,5 @@
 // src/utils/api/cart.ts
-import {get, post} from "@utils/request/request";
+import {del, get, post, put} from "@utils/request/request";
 import {Cart, CartItem} from "@/types/api/trade/cart";
 
 
@@ -47,16 +47,16 @@ export async function addToCart(skuId: number, count: number): Promise<{ code: n
 }
 
 // 从购物车移除商品
-export async function removeFromCart(cartItemId: number): Promise<any> {
-  return post<any>("trade/cart/remove", {
-    cartItemId
+export async function removeFromCart(ids: number[]): Promise<boolean> {
+  return await del<boolean>("trade/cart/delete", {
+    ids
   });
 }
 
 // 更新购物车商品数量
-export async function updateCartItem(cartItemId: number, quantity: number): Promise<any> {
-  return post<any>("trade/cart/update", {
-    cartItemId,
-    quantity
+export async function updateCartItem(id: number, count: number): Promise<boolean> {
+  return await put<boolean>("trade/cart/update-count", {
+    id,
+    count
   });
 }

@@ -1,44 +1,30 @@
 "use client";
 
-import { useMutation } from "@apollo/client";
-import { CREATE_PRODUCT_REVIEW } from "@/graphql";
-import { useCustomToast } from "./useToast";
-import { CreateProductReviewInput, ProductReviewResponse } from "@/types/review";
+import {useMutation} from "@tanstack/react-query";
+import {useCustomToast} from "./useToast";
+import {createProductReview, CreateProductReviewRequest} from "@/utils/api/trade";
 
 export function useProductReview() {
-    const { showToast } = useCustomToast();
+  const {showToast} = useCustomToast();
 
-    const [mutateAsync, { loading: isLoading, error }] = useMutation<ProductReviewResponse>(CREATE_PRODUCT_REVIEW, {
-        onCompleted: (response) => {
-            const responseData = response?.createProductReview;
-            if (responseData) {
-                showToast("Product review created successfully", "success");
-            }
-        },
-        onError: (error) => {
-            showToast(error.message, "danger");
-        },
-    });
+  const {
+    mutateAsync: createReview,
+    isPending: isLoading,
+    error,
+  } = useMutation({
+    mutationFn: (reviewData: CreateProductReviewRequest) => createProductReview(reviewData),
+    onSuccess: () => {
+      showToast("Product review created successfully", "success");
+    },
+    onError: (error) => {
+      const message = error instanceof Error ? error.message : "An unknown error occurred";
+      showToast(message, "danger");
+    },
+  });
 
-    const createProductReview = async (input: CreateProductReviewInput) => {
-        return await mutateAsync({
-            variables: {
-                input: {
-                    productId: input.productId,
-                    title: input.title,
-                    comment: input.comment,
-                    rating: input.rating,
-                    name: input.name,
-                    email: input.email,
-                    attachments: input.attachments || "",
-                },
-            },
-        });
-    };
-
-    return {
-        createProductReview,
-        isLoading,
-        error
-    };
+  return {
+    createReview,
+    isLoading,
+    error,
+  };
 }

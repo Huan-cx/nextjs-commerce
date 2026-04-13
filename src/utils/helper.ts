@@ -3,8 +3,6 @@ import {Metadata} from "next";
 import {CartItem, FilterDataTypes} from "@/types/types";
 import {isArray} from "./type-guards";
 import {BASE_URL, baseUrl} from "./constants";
-import {cachedGraphQLRequest} from "./hooks/useCache";
-import {GET_FILTER_ATTRIBUTES} from "@/graphql";
 import {Category, Comment, Spu} from "@/types/api/product/type";
 
 export const createUrl = (
@@ -328,6 +326,9 @@ export function safeCurrencyCode(product: Spu): string {
   ) {
     return product.price.currencyCode;
   }*/
+  if (!product) {
+    return "EUR";
+  }
 
   return "EUR";
 }
@@ -401,23 +402,23 @@ export function safeParse<T = any>(value: string | null | undefined): T | null {
  * @returns Promise with formatted filter attributes
  */
 export async function getFilterAttributes() {
-  const filterData = await cachedGraphQLRequest<{
-    color: any;
-    size: any;
-    brand: any;
-  }>("static", GET_FILTER_ATTRIBUTES, { locale: "en" });
+  /* const filterData = await cachedGraphQLRequest<{
+     color: any;
+     size: any;
+     brand: any;
+   }>("static", GET_FILTER_ATTRIBUTES, { locale: "en" });
 
-  const attributes = [filterData?.color, filterData?.size, filterData?.brand];
+   const attributes = [filterData?.color, filterData?.size, filterData?.brand];
 
-  return attributes.filter(Boolean).map((attr) => ({
-    id: attr.id,
-    code: attr.code,
-    adminName: attr.code.toUpperCase(),
-    options: attr.options.edges.map((o: any) => ({
-      id: o.node.id,
-      adminName: o.node.adminName,
-    })),
-  }));
+   return attributes.filter(Boolean).map((attr) => ({
+     id: attr.id,
+     code: attr.code,
+     adminName: attr.code.toUpperCase(),
+     options: attr.options.edges.map((o: any) => ({
+       id: o.node.id,
+       adminName: o.node.adminName,
+     })),
+   }));*/
 }
 
 /**
