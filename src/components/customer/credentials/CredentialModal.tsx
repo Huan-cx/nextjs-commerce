@@ -14,7 +14,6 @@ import {useMediaQuery} from "@utils/hooks/useMediaQueryHook";
 import {useBodyScrollLock} from "@utils/hooks/useBodyScrollLock";
 import OpenAuth from "../OpenAuth";
 import {isObject} from '@/utils/type-guards';
-import {useGuestCartToken} from "@utils/hooks/useGuestCartToken";
 import {logout} from "@utils/api/member";
 import {useAppDispatch, useAppSelector} from "@/store/hooks";
 import {clearUser} from "@/store/slices/user-slice";
@@ -53,7 +52,6 @@ export default function CredentialModal({
   const dispatch = useAppDispatch();
   const { showToast } = useCustomToast();
   const isDesktop = useMediaQuery("(min-width: 1024px)");
-  const { resetGuestToken } = useGuestCartToken();
 
   useBodyScrollLock(finalIsOpen && !isDesktop);
 
@@ -74,7 +72,6 @@ export default function CredentialModal({
 
   const { user } = useAppSelector((state) => state.user);
   const session = { user };
-
   const onSubmit = async () => {
     try {
       // Call the backend API to invalidate the token
@@ -85,9 +82,6 @@ export default function CredentialModal({
         callbackUrl: "/customer/login",
         redirect: false,
       });
-
-      // Clean up local state and tokens
-      await resetGuestToken();
       dispatch(clearUser());
       dispatch(clearCart());
       dispatch(resetCheckoutState());

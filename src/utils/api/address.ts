@@ -6,7 +6,8 @@ import {Address, AddressAddRequest, AddressUpdateRequest, Geo,} from "@/types/ap
  */
 export async function getAddressList(): Promise<Address[]> {
   const response = await get<Address[]>("member/address/list", undefined, {
-    contentType: 'urlencoded'
+    contentType: 'urlencoded',
+    requiresAuth: true
   });
   return response;
 }
@@ -17,7 +18,8 @@ export async function getAddressList(): Promise<Address[]> {
  */
 export async function addAddress(params: AddressAddRequest): Promise<Address> {
   const response = await post<Address>("member/address/add", params, {
-    contentType: 'urlencoded'
+    contentType: 'urlencoded',
+    requiresAuth: true
   });
   return response;
 }
@@ -28,7 +30,8 @@ export async function addAddress(params: AddressAddRequest): Promise<Address> {
  */
 export async function updateAddress(params: AddressUpdateRequest): Promise<Address> {
   const response = await put<Address>("member/address/update", params, {
-    contentType: 'urlencoded'
+    contentType: 'urlencoded',
+    requiresAuth: true
   });
   return response;
 }
@@ -39,7 +42,8 @@ export async function updateAddress(params: AddressUpdateRequest): Promise<Addre
  */
 export async function deleteAddress(id: number): Promise<boolean> {
   const response = await del<boolean>("member/address/delete", {id}, {
-    contentType: 'urlencoded'
+    contentType: 'urlencoded',
+    requiresAuth: true
   });
   return response;
 }
@@ -49,6 +53,7 @@ export async function deleteAddress(id: number): Promise<boolean> {
  */
 export async function getGeoList(): Promise<Geo[]> {
   return await get<Geo[]>("system/area/tree", {}, {
-    contentType: 'urlencoded'
+    contentType: 'urlencoded',
+    requiresAuth: false
   });
 }

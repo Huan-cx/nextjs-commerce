@@ -44,7 +44,7 @@ export default function PaymentMethod({
 
   // 找到当前选中的支付方式
   const selectedMethod = methods?.find(
-      (method) => method?.code === paymentMethod,
+      (method) => method?.id === paymentMethod,
   );
 
   const onSubmit = async (data: FieldValues) => {
@@ -55,11 +55,11 @@ export default function PaymentMethod({
     setIsPaymentLoading(true);
     try {
       const selectedMethod = methods?.find(
-          (m) => m?.code === data?.method,
+          (m) => m?.id === Number(data?.method),
       );
       if (selectedMethod) {
         dispatch(
-            setPaymentMethod(selectedMethod?.id || 0),
+            setPaymentMethod(Number(selectedMethod?.id || 0)),
         );
       }
 
@@ -83,7 +83,7 @@ export default function PaymentMethod({
               render={({field}) => (
                   <RadioGroup
                       label=""
-                      value={field.value ?? ""}
+                      value={String(field.value) ?? ""}
                       onValueChange={field.onChange}
                   >
                     {methods?.map((method) => (

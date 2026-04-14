@@ -1,8 +1,8 @@
-import { PayloadAction, createSlice } from "@reduxjs/toolkit";
-import { BagistoUser } from "@/types/types";
+import {createSlice, PayloadAction} from "@reduxjs/toolkit";
+import {User} from "next-auth";
 
 interface UserState {
-    user: BagistoUser | null;
+    user: User | null;
     isAuthenticated: boolean;
 }
 
@@ -15,7 +15,7 @@ const userSlice = createSlice({
     name: "user",
     initialState,
     reducers: {
-        setUser: (state, action: PayloadAction<BagistoUser>) => {
+        setUser: (state, action: PayloadAction<User>) => {
             state.user = action.payload;
             state.isAuthenticated = true;
         },

@@ -64,7 +64,7 @@ export interface Sku {
   id?: number; // 商品 SKU 编号
   name?: string; // 商品 SKU 名称
   spuId?: number; // SPU 编号
-  properties?: Property[]; // 属性数组
+  properties: Property[]; // 属性数组
   price?: number | string; // 商品价格
   marketPrice?: number | string; // 市场价
   costPrice?: number | string; // 成本价
@@ -80,10 +80,10 @@ export interface Sku {
 
 /** 商品属性 */
 export interface Property {
-  propertyId?: number; // 属性编号
-  propertyName?: string; // 属性名称
-  valueId?: number; // 属性值编号
-  valueName?: string; // 属性值名称
+  propertyId: number; // 属性编号
+  propertyName: string; // 属性名称
+  valueId: number; // 属性值编号
+  valueName: string; // 属性值名称
 }
 
 /** 商品状态更新请求 */

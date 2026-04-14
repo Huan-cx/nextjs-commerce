@@ -42,3 +42,13 @@ export async function getProductSpu(params: {
 export async function getCategoryTree(): Promise<Category[]> {
   return get<Category[]>("product/category/tree");
 }
+
+/**
+ * 根据 SKU ID 获取完整的产品信息（包括 SPU 和 SKU）
+ * @param skuId SKU 的 ID
+ */
+export async function getProductInfoBySkuId(skuId: number): Promise<{ spu: Spu; sku: any }> {
+  // 注意：我们假设后端提供了这样一个端点。
+  // 'any' 类型应替换为实际的 ProductSku 类型。
+  return get<{ spu: Spu; sku: any }>(`product/sku/get-detail?id=${skuId}`);
+}

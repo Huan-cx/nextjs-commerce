@@ -2,20 +2,23 @@
 
 import {ReactNode} from "react";
 import {ThemeProvider} from "./ThemeProvider";
-import {ReduxProvider} from "./ReduxProvider";
 import {ToastProvider} from "./ToastProvider";
 import {QueryClientWrapper} from "./ReactQueryWrapper";
+import {StoreProvider} from "./StoreProvider";
+import {NextAuthProvider} from "@/providers/NextAuthProvider";
 
 export function GlobalProviders({ children }: { children: ReactNode }) {
   return (
     <ThemeProvider>
-      <ReduxProvider>
+      <StoreProvider>
         <ToastProvider>
-          <QueryClientWrapper>
-            {children}
-          </QueryClientWrapper>
+          <NextAuthProvider>
+            <QueryClientWrapper>
+              {children}
+            </QueryClientWrapper>
+          </NextAuthProvider>
         </ToastProvider>
-      </ReduxProvider>
+      </StoreProvider>
     </ThemeProvider>
   );
 }

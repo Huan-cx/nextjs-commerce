@@ -1,11 +1,13 @@
 import NextAuth, {NextAuthOptions} from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-import {post} from "./request/request";
+import {login, refreshAccessToken} from "@utils/api/auth";
 
 export const authOptions: NextAuthOptions = {
   session: {
     strategy: "jwt",
-    maxAge: 30 * 24 * 60 * 60,
+    // 移除 maxAge，完全依赖 API 返回的 expiresTime 控制 session 过期
+    // 这样可以确保 session 过期与 API token 过期完全同步
+    maxAge: 60,
   },
 
   providers: [
@@ -16,29 +18,18 @@ export const authOptions: NextAuthOptions = {
         password: { label: "Password", type: "password" },
       },
 
-
       authorize: async (credentials): Promise<any> => {
         if (!credentials?.username || !credentials?.password) {
           throw new Error("Email and password are required.");
         }
 
-        const response = await post<any>("member/auth/login", {
+        const response = await login({
           loginAccount: credentials.username,
           password: credentials.password,
         });
-        if (response.code !== 0 || !response.data) {
-          throw new Error(response.msg || "Invalid credentials.");
-        }
-
-        const {userId, accessToken} = response.data;
-
         return {
-          id: userId.toString(),
-          email: credentials.username, // Keep email for display/compatibility
-          name: credentials.username,   // Keep name for display/compatibility
-          apiToken: accessToken, // For compatibility with existing code that might use apiToken
-          accessToken: accessToken,
-          role: "customer",
+          ...response,
+          id: response.userId?.toString(),
         };
       },
     }),
@@ -47,24 +38,32 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        token.id = user.id;
-        token.apiToken = user.apiToken;
-        token.accessToken = user.accessToken;
-        token.role = "customer";
+        return {
+          ...token,
+          accessToken: user.accessToken,
+          refreshToken: user.refreshToken,
+          expiresTime: user.expiresTime, // 后端返回的绝对过期时间戳
+        };
       }
-      return token;
+
+      // 如果当前时间小于过期时间，说明 accessToken 仍然有效，直接返回
+      if (Date.now() < (token.expiresTime as number)) {
+        return token;
+      }
+      console.log("accessToken 过期，尝试刷新");
+      // 如果 accessToken 已过期，尝试刷新它
+      return await refreshAccessToken(token.refreshToken);
     },
 
     async session({ session, token }) {
-      session.user = {
-        ...session.user,
-        id: token.id || "",
-        apiToken: token.apiToken,
-        accessToken: token.accessToken,
-        role: token.role,
+      // 将 Token 数据传递给客户端 Session
+      return {
+        ...session,
+        user: {
+          ...token,
+          name: token.nickname,
+        },
       };
-
-      return session;
     },
   },
 

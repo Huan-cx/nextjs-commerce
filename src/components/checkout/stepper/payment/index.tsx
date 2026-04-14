@@ -10,10 +10,10 @@ const Payment: FC<{
   currentStep?: string;
 }> = ({currentStep}) => {
   const {data: methods = [], isLoading} = useQuery({
-    queryKey: ["paymentMethods"],
+    queryKey: ["paymentMethods1"],
     queryFn: () => getPaymentChannels({appId: "1"}),
   });
-
+  console.log("methods", methods);
   if (isLoading) return <CartCheckoutPageSkeleton/>;
 
   return (

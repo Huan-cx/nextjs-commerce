@@ -7,16 +7,15 @@ import Link from "next/link";
 import {useRouter} from "next/navigation";
 import {SubmitHandler, useForm} from "react-hook-form";
 import {Button} from "@components/common/button/Button";
-import {EMAIL_REGEX, GUEST_CART_ID, GUEST_CART_TOKEN, IS_GUEST, SIGNIN_IMG} from "@/utils/constants";
+import {EMAIL_REGEX, SIGNIN_IMG} from "@/utils/constants";
 import InputText from "@components/common/form/Input";
 import {useCustomToast} from "@/utils/hooks/useToast";
-import {useMergeCart} from "@utils/hooks/useMergeCart";
-import {getCookie} from "@utils/getCartToken";
-import {setCookie} from "@utils/helper";
 import {setLocalStorage} from "@/store/local-storage";
-import {useAppDispatch} from "@/store/hooks";
+import {useAppDispatch, useAppSelector} from "@/store/hooks";
 import {setUser} from "@/store/slices/user-slice";
 import {useCartDetail} from "@utils/hooks/useCartDetail";
+import {mergeCart} from "@/utils/api/cart";
+
 
 type LoginFormInputs = {
   username: string;
@@ -27,8 +26,9 @@ export default function LoginForm() {
   const router = useRouter();
   const dispatch = useAppDispatch();
   const { showToast } = useCustomToast();
-  const { getCartDetail } = useCartDetail()
-  const { mergeCart } = useMergeCart();
+  const {getCartDetail} = useCartDetail();
+  const localCart = useAppSelector((state) => state.cartDetail.cart);
+
 
   const {
     register,
@@ -38,19 +38,14 @@ export default function LoginForm() {
     mode: "onSubmit",
     reValidateMode: "onChange",
   });
-
   const onSubmit: SubmitHandler<LoginFormInputs> = async (data) => {
     try {
-      // First, handle cart merging before sign in
-      const guestCartId = getCookie(GUEST_CART_ID);
-      const guestCartToken = getCookie(GUEST_CART_TOKEN);
-
+      // const {isGuest} = useAuthStatus();
       const result = await signIn("credentials", {
         redirect: false,
         ...data,
         callbackUrl: "/",
       });
-
       if (!result?.ok) {
         showToast(result?.error || "Invalid login credentials.", "warning");
         return;
@@ -59,42 +54,39 @@ export default function LoginForm() {
       setLocalStorage("email", data?.username)
 
       const session = await getSession();
-      const userToken: string | undefined = session?.user?.accessToken;
-
-      if (!userToken) {
-        console.warn("No API token available in session after login");
-      }
-
+      console.log("login session", session);
       if (session?.user) {
         dispatch(setUser(session.user as any));
       }
-
-      // Only merge cart if user had a guest cart before login
-      if (userToken && guestCartId && guestCartToken) {
+      console.log("login session", session);
+      // Merge local guest cart to server cart
+      if (localCart && localCart.items.length > 0) {
+        const mergeItems = localCart.items.map(item => ({
+          skuId: item.sku.id,
+          count: item.count,
+        }));
         try {
-          await mergeCart();
-          setCookie(GUEST_CART_TOKEN, userToken);
-          setCookie(IS_GUEST, "false");
-          await getCartDetail();
+          await mergeCart(mergeItems);
         } catch (err) {
           console.error("mergeCart failed:", err);
+          showToast("Could not merge your cart. Please contact support.", "danger");
         }
-      } else if (userToken) {
-        // User logged in without a guest cart, just set the token
-        setCookie(GUEST_CART_TOKEN, userToken);
-        setCookie(IS_GUEST, "false");
       }
+
+      // Finalize session and update UI
+      await getCartDetail(); // Fetch the latest cart state from the server
+
       setTimeout(() => {
         router.push("/");
         router.refresh();
       }, 100);
-
 
     } catch (error) {
       console.error(error);
       showToast("Something went wrong. Please try again.", "danger");
     }
   };
+
 
   return (
     <div className="flex w-full items-center max-w-screen-2xl mx-auto px-4  xss:px-7.5 justify-between gap-4 lg:my-16 xl:my-28">
@@ -142,7 +134,8 @@ export default function LoginForm() {
                   message: "Be at least 2 characters long",
                 },
                 validate: (value) => {
-                  if (!/[0-2]/.test(value))
+                  // Correctly check for any digit, not just 0-2.
+                  if (!/[0-9]/.test(value))
                     return "Contain at least one number.";
 
                   return true;

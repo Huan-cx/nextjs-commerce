@@ -64,7 +64,6 @@ const CategoryCarousel: FC<CategoryCarouselProps> = async ({
   options: _options,
 }) => {
   const categories = await getCategoryPage({});
-
   // 安全处理 categories.data，确保即使数据不存在也不会报错
   const topCategories = categories.filter((category: any) => category.id !== "0")
       // .sort((a: any, b: any) => (a.position || 0) - (b.position || 0))

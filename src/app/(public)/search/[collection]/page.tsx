@@ -19,7 +19,7 @@ import {buildProductFilters, extractNumericId, findCategoryBySlug, getFilterAttr
 export async function generateMetadata({
   params,
 }: {
-  params: Promise<{ collection: string }>;
+  params: Promise<{ collection: number }>;
 }): Promise<Metadata> {
   const { collection: categorySlug } = await params;
 
@@ -39,7 +39,7 @@ export default async function CategoryPage({
   searchParams,
   params,
 }: {
-  params: Promise<{ collection: string }>;
+  params: Promise<{ collection: number }>;
   searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
   const { collection: categorySlug } = await params;
@@ -77,7 +77,6 @@ export default async function CategoryPage({
   if (numericId) {
     filterObject.category_id = numericId;
   }
-
   // 根据 sort 参数构建排序字段
   const selectedSort = SortByFields.find((s) => s.key === (sortValue || "newest")) || SortByFields[0];
   let sortField = "id";
@@ -100,13 +99,14 @@ export default async function CategoryPage({
   // 使用新的REST API获取数据
   const response = await getSpuPage({
     keyword: searchValue,
-
+    categoryId: Number(categorySlug),
     // filter: filterObject,
     sortField,
     sortAsc,
     pageSize: itemsPerPage,
     pageNo: currentPage + 1,
   });
+
 
   const products = response?.list || [];
   const totalCount = response?.total || 0;

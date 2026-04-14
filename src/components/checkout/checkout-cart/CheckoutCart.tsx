@@ -78,7 +78,7 @@ export default function CheckoutCart({
                         </span>
                           <div className="block h-16 xl:hidden">
                             <Price
-                                amount={String(item?.sku?.price / 100)}
+                                amount={item?.sku?.price}
                                 className="space-y-2 text-start font-outfit text-lg font-medium xl:text-right"
                                 currencyCode={currencyCode}
                             />
@@ -87,7 +87,7 @@ export default function CheckoutCart({
                       </Link>
                       <div className="hidden h-16 xl:block">
                         <Price
-                            amount={String(item?.sku?.price / 100)}
+                            amount={item?.sku?.price}
                             className="space-y-2 text-start font-outfit text-lg font-medium xl:text-right"
                             currencyCode={currencyCode}
                         />
@@ -104,7 +104,7 @@ export default function CheckoutCart({
               Subtotal
             </p>
             <Price
-                amount={String((settlementData?.price.totalPrice ?? preSettlementSubtotal) / 100)}
+                amount={(settlementData?.price.totalPrice ?? preSettlementSubtotal)}
                 className="text-right text-base text-black dark:text-white"
                 currencyCode={currencyCode}
             />
@@ -115,7 +115,7 @@ export default function CheckoutCart({
             </p>
             {settlementData?.price.deliveryPrice != null ? (
                 <Price
-                    amount={String(settlementData.price.deliveryPrice / 100)}
+                    amount={settlementData.price.deliveryPrice}
                     className="text-right text-base text-black dark:text-white"
                     currencyCode={currencyCode}
                 />
@@ -130,7 +130,7 @@ export default function CheckoutCart({
               Discount
             </p>
             <Price
-                amount={String((settlementData?.price.discountPrice ?? 0) / 100)}
+                amount={(settlementData?.price.discountPrice ?? 0)}
                 className="text-right text-base text-black dark:text-white"
                 currencyCode={currencyCode}
             />
@@ -140,7 +140,7 @@ export default function CheckoutCart({
               Grand Total
             </p>
             <Price
-                amount={String((settlementData?.price.payPrice ?? preSettlementSubtotal) / 100)}
+                amount={(settlementData?.price.payPrice ?? preSettlementSubtotal)}
                 className="text-right font-outfit text-2xl font-normal text-black dark:text-white"
                 currencyCode={currencyCode}
             />

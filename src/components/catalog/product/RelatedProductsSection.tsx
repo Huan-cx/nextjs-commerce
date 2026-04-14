@@ -1,42 +1,18 @@
-import {GET_RELATED_PRODUCTS} from "@/graphql";
 import {ProductsSection} from "./ProductsSection";
-import {cachedProductRequest} from "@/utils/hooks/useCache";
+import {Spu} from "@/types/api/product/type";
 
 export async function RelatedProductsSection({
   fullPath,
 }: {
   fullPath: string;
 }) {
-    async function getRelatedProduct(urlKey: string) {
-      try {
-        const dataById = await cachedProductRequest<any>(
-          urlKey,
-          GET_RELATED_PRODUCTS,
-          {
-            urlKey: urlKey,
-            first: 4,
-          }
-        );
-    
-        return dataById?.product || null;
-      } catch (error) {
-        if (error instanceof Error) {
-          console.error("Error fetching product:", {
-            message: error.message,
-            urlKey,
-            graphQLErrors: (error as unknown as Record<string, unknown>)
-              .graphQLErrors,
-          });
-        }
-        return null;
-      }
-    }
+  // async function getRelatedProduct(urlKey: string) {
+  //  return null;
+  // }
 
-    const fetchRelatedProducts = await getRelatedProduct(fullPath);
+  // const fetchRelatedProducts = await getRelatedProduct(fullPath);
 
-  const relatedProducts = (fetchRelatedProducts?.relatedProducts != null) && fetchRelatedProducts?.relatedProducts?.length
-      ? fetchRelatedProducts.relatedProducts.map((e: any) => e)
-    : [];
+  const relatedProducts: Spu[] = [];
   return (
     <ProductsSection
       title="Related Products"

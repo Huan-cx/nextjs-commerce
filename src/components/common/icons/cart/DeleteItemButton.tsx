@@ -3,6 +3,7 @@ import {TrashIcon} from "@heroicons/react/24/outline";
 import clsx from "clsx";
 import {CartItem} from "@/types/api/trade/cart";
 import {useCart} from "@utils/hooks/useAddToCart";
+import {useAuthStatus} from "@utils/hooks/useAuthStatus";
 
 
 function SubmitButton({
@@ -36,9 +37,9 @@ function SubmitButton({
 
 export function DeleteItemButton({item}: { item: CartItem }) {
   const {onRemoveItem, isRemoveLoading} = useCart();
-  const itemId = item?.id;
+  const {isGuest} = useAuthStatus();
   const handleRemoveCart = () => {
-    onRemoveItem(itemId);
+    onRemoveItem(item, isGuest);
   };
 
   return (

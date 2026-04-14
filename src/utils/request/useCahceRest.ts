@@ -282,15 +282,16 @@ export async function cachedProductRequest<T = any>(
 export async function cachedProductReviewRequest(
     url: string,
     params: {
-      productId: number,
+      spuId: number,
+      type: number,
     },
     options?: Partial<RequestOptions>,
 ): Promise<PageResult<Comment>> {
-  const config = getProductReviewCacheConfig(params.productId);
+  const config = getProductReviewCacheConfig(params.spuId);
 
   return createCachedRequest<PageResult<Comment>>(
       config,
-      `rest:review:${params.productId}:${url}`,
+      `rest:review:${params.spuId}:${params.type}:${url}`,
       () => get<PageResult<Comment>>(url, params, options),
       params,
       options

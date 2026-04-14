@@ -111,7 +111,7 @@ export default async function ProductPage({
         </Suspense>
       </div>
       <Suspense fallback={<RelatedProductSkeleton />}>
-        /* TODO 相关商品 */
+        {/* TODO 相关商品 */}
         {/*<RelatedProductsSection fullPath={fullPath} />*/}
       </Suspense>
     </>

@@ -1,14 +1,17 @@
 import {post} from "@utils/request/request";
-import {OAuth2Token} from "@/types/api/auth";
+import {JWT} from "next-auth/jwt";
 
-export async function createGuestAccessToken(): Promise<OAuth2Token> {
-  return post<OAuth2Token>(`member/auth/guest-token`, {}, {
-    contentType: 'urlencoded'
+
+export async function login(password: { loginAccount: any; password: any }): Promise<JWT> {
+  return post<JWT>(`member/auth/login`,
+      password
+      , {
+        contentType: true
   });
 }
 
-export async function refreshAccessToken(refreshToken: string): Promise<OAuth2Token> {
-  return post<OAuth2Token>(`member/auth/refresh-token`, {
+export async function refreshAccessToken(refreshToken: string): Promise<JWT> {
+  return post<JWT>(`member/auth/refresh-token`, {
     refreshToken
   }, {
     contentType: 'urlencoded'

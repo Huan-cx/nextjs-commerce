@@ -1,9 +1,10 @@
 import {ReadonlyURLSearchParams} from "next/navigation";
 import {Metadata} from "next";
-import {CartItem, FilterDataTypes} from "@/types/types";
+import {FilterDataTypes} from "@/types/types";
 import {isArray} from "./type-guards";
 import {BASE_URL, baseUrl} from "./constants";
 import {Category, Comment, Spu} from "@/types/api/product/type";
+import {CartItem} from "@/types/api/trade/cart";
 
 export const createUrl = (
   pathname: string,
@@ -136,17 +137,17 @@ export const isCheckout = (
   if (!isArray(items) || items.length === 0) {
     return "/";
   }
+  /*
+    if (isGuest) {
+      const hasRestrictedProduct = items.some(
+        ({ product }) =>
+          product?.guestCheckout === false || product?.guestCheckout === null,
+      );
 
-  if (isGuest) {
-    const hasRestrictedProduct = items.some(
-      ({ product }) =>
-        product?.guestCheckout === false || product?.guestCheckout === null,
-    );
-
-    if (hasRestrictedProduct) {
-      return "/customer/login";
-    }
-  }
+      if (hasRestrictedProduct) {
+        return "/customer/login";
+      }
+    }*/
 
   if (!email) {
     return "/checkout?step=email";
@@ -162,6 +163,10 @@ export const isCheckout = (
   }
 
   if (isSelectAddress) {
+    return "/checkout?step=shipping";
+  }
+
+  if (email && !isSelectAddress) {
     return "/checkout?step=shipping";
   }
 
@@ -357,12 +362,11 @@ export function throttle<T extends (...args: any[]) => any>(
 
 export function findCategoryBySlug(
     categories: Category[],
-  slug: string,
+    slug: number,
 ): Category | null {
   for (const category of categories) {
     // REST API返回的分类直接使用name作为标识，没有translation节点
-    if (category.name === slug) return category;
-
+    if (category.id === Number(slug)) return category;
     if (category.children && isArray(category.children)) {
       const found = findCategoryBySlug(category.children, slug);
       if (found) return found;

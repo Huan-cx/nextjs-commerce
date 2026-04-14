@@ -1,9 +1,10 @@
 import LoadingDots from "@components/common/icons/LoadingDots";
 import {MinusIcon, PlusIcon} from "@heroicons/react/24/outline";
 import {throttle} from "@utils/helper";
-import {useAddProduct} from "@utils/hooks/useAddToCart";
+import {useCart} from "@utils/hooks/useAddToCart";
 import clsx from "clsx";
 import {CartItem} from "@/types/api/trade/cart";
+import {useAuthStatus} from "@utils/hooks/useAuthStatus";
 
 function SubmitButton({
   type,
@@ -48,22 +49,15 @@ export function EditItemQuantityButton({
   item: CartItem;
   type: "plus" | "minus";
 }) {
-  const { onUpdateCart, isUpdateLoading } = useAddProduct();
 
+  const {onUpdateItem, isUpdateLoading} = useCart();
+  const {isGuest} = useAuthStatus();
   
   const handleUpdateCart = throttle((type: "plus" | "minus") => {
-    let qty = item?.count;
-    if(!isUpdateLoading){
-      if (type === "plus") {
-        qty += 1;
-      } else if (type === "minus") {
-        qty -= 1;
-      }
-      onUpdateCart({
-        id: Number(item?.id),
-        count: qty,
-      });
-    }
+    if (isUpdateLoading) return;
+
+    const newCount = type === "plus" ? item.count + 1 : item.count - 1;
+    onUpdateItem(item, newCount, isGuest);
   }, 200);
 
 

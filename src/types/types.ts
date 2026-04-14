@@ -1,21 +1,6 @@
 import {SVGProps} from "react";
-import {Session} from "next-auth";
 import {Address} from "@/types/api/address/type";
 
-
-export interface BagistoSession extends Session {
-  user: {
-    id: string;
-    email?: string | null;
-    name?: string | null;
-    image?: string | null;
-    accessToken?: string;
-    apiToken?: string;
-    role?: string;
-  };
-}
-
-export type Maybe<T> = T | null;
 
 export type Connection<T> = {
   edges: Array<Edge<T>>;
@@ -135,21 +120,6 @@ export type ProductVariant = {
 export type SEO = {
   title: string;
   description: string;
-};
-
-
-export type BagistoCollection = {
-  handle: string;
-  title: string;
-  description: string;
-  seo: SEO;
-  urlPath?: string;
-  updatedAt: string;
-  id: string;
-  logoPath?: string;
-  logoUrl?: string;
-  name: string;
-  slug: string;
 };
 
 export type BagistoCollectionMenus = {

@@ -2,39 +2,20 @@ import {useCallback} from "react";
 import {useCustomToast} from "./useToast";
 import {useAppDispatch} from "@/store/hooks";
 import {addItem, addItemLocal, removeItemLocal, updateItemQuantityLocal,} from "@/store/slices/cart-slice";
-import {getCartToken, getCookie} from "@utils/getCartToken";
 import {useMutation, useQueryClient} from "@tanstack/react-query";
 import {addToCart, getCartInfo, removeFromCart, updateCartItem,} from "@utils/api/cart";
-import {IS_GUEST} from "@/utils/constants";
 import {CartItem} from "@/types/api/trade/cart";
-
-// A simplified product type for adding to the cart, containing only essential info.
-type ProductInfo = Pick<CartItem, "spu" | "sku">;
-
-interface AddToCartParams {
-  product: ProductInfo;
-  count: number;
-}
-
-interface UpdateCartParams {
-  cartItemId: number; // Required for logged-in user API
-  skuId: number; // Required for guest user local state
-  count: number;
-}
-
-interface RemoveCartParams {
-  cartItemId: number; // Required for logged-in user API
-  skuId: number; // Required for guest user local state
-}
+import {useAuthStatus} from "@utils/hooks/useAuthStatus";
 
 export const useCart = () => {
+
   const dispatch = useAppDispatch();
   const { showToast } = useCustomToast();
   const queryClient = useQueryClient();
+  const {isGuest} = useAuthStatus();
 
   const handleSuccess = useCallback(
-      async (message: string) => {
-        const isGuest = getCookie(IS_GUEST) === "true";
+      async (message: string, isGuest: boolean = false) => {
         // For logged-in users, refetch the cart from the server to ensure consistency.
         if (!isGuest) {
           try {
@@ -60,98 +41,88 @@ export const useCart = () => {
   };
 
   // --- Mutations for Logged-In Users ---
-
-  const {mutateAsync: addToCartMutation, isPending: isAddingToCart} =
+  const {mutateAsync: addToCartMutation, isPending: isCartLoading} =
       useMutation({
         mutationFn: (variables: { skuId: number; count: number }) =>
             addToCart(variables.skuId, variables.count),
-        onSuccess: () => handleSuccess("Product added to cart successfully"),
+        onSuccess: () => handleSuccess("Product added to cart successfully", isGuest),
         onError: handleError,
       });
 
   const {
     mutateAsync: removeFromCartMutation,
-    isPending: isRemovingFromCart,
+    isPending: isRemoveLoading,
   } = useMutation({
     mutationFn: (ids: number[]) => removeFromCart(ids),
-    onSuccess: () => handleSuccess("Cart item removed successfully"),
+    onSuccess: () => handleSuccess("Cart item removed successfully", isGuest),
     onError: handleError,
   });
 
   const {
     mutateAsync: updateCartItemMutation,
-    isPending: isUpdatingCart,
+    isPending: isUpdateLoading,
   } = useMutation({
     mutationFn: (variables: { id: number; count: number }) =>
         updateCartItem(variables.id, variables.count),
-    onSuccess: () => handleSuccess("Quantity updated successfully"),
+    onSuccess: () => handleSuccess("Quantity updated successfully", isGuest),
     onError: handleError,
   });
 
   // --- Unified Cart Operation Handlers ---
 
   const onAddToCart = useCallback(
-      async ({product, count}: AddToCartParams) => {
-        const isGuest = getCookie(IS_GUEST) === "true";
-
-        if (isGuest) {
-          const localCartItem: CartItem = {
-            ...product,
-            id: product.sku.id, // Use sku.id as a temporary unique ID for local state
-            count,
-            selected: true, // Default to selected
-          };
-          dispatch(addItemLocal(localCartItem));
-          showToast("Product added to cart successfully", "success");
-        } else {
-          const token = await getCartToken();
-          if (!token) {
-            showToast("Please log in to add items to your cart.", "warning");
-            return;
+      async (product: CartItem, isGuest: boolean = false) => {
+        const skuId = product.sku.id;
+        if (skuId) {
+          if (isGuest) {
+            const localCartItem: CartItem = {
+              ...product,
+            };
+            dispatch(addItemLocal(localCartItem));
+            showToast("Product added to cart successfully", "success");
+          } else {
+            await addToCartMutation({skuId: skuId, count: product.count});
           }
-          await addToCartMutation({skuId: product.sku.id, count});
         }
       },
       [dispatch, showToast, addToCartMutation],
   );
 
   const onRemoveItem = useCallback(
-      async ({cartItemId, skuId}: RemoveCartParams) => {
-        const isGuest = getCookie(IS_GUEST) === "true";
+      async (item: CartItem, isGuest: boolean) => {
 
         if (isGuest) {
-          dispatch(removeItemLocal(skuId));
+          dispatch(removeItemLocal(item.sku.id));
           showToast("Cart item removed successfully", "success");
         } else {
-          await removeFromCartMutation([cartItemId]);
+          await removeFromCartMutation([item.id]);
         }
       },
       [dispatch, showToast, removeFromCartMutation],
   );
 
   const onUpdateItem = useCallback(
-      async ({cartItemId, skuId, count}: UpdateCartParams) => {
-        if (count < 1) {
+      async (item: CartItem, newCount: number, isGuest: boolean) => {
+        if (newCount < 1) {
           // If count drops to 0, it's a removal.
-          await onRemoveItem({cartItemId, skuId});
+          await onRemoveItem(item, isGuest);
           return;
         }
-        const isGuest = getCookie(IS_GUEST) === "true";
-
         if (isGuest) {
-          dispatch(updateItemQuantityLocal({skuId, count}));
+          dispatch(updateItemQuantityLocal({skuId: item.sku.id, count: newCount}));
           showToast("Quantity updated successfully", "success");
         } else {
-          await updateCartItemMutation({id: cartItemId, count});
+          await updateCartItemMutation({id: item.id, count: newCount});
         }
       },
       [dispatch, showToast, updateCartItemMutation, onRemoveItem],
   );
 
+
   return {
-    isCartLoading: isAddingToCart,
-    isRemoveLoading: isRemovingFromCart,
-    isUpdateLoading: isUpdatingCart,
+    isCartLoading,
+    isRemoveLoading,
+    isUpdateLoading,
     onAddToCart,
     onRemoveItem,
     onUpdateItem,

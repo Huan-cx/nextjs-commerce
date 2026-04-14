@@ -52,6 +52,7 @@ export default function CartModal({
 
   const { isLoading } = useCartDetail();
   const {isAuthenticated, user} = useAppSelector((state) => state.user);
+  const email = useAppSelector((state) => state.checkout.email);
   const cartDetail = useAppSelector((state) => state.cartDetail);
   const cart = Array.isArray(cartDetail?.cart?.items)
       ? cartDetail?.cart?.items
@@ -216,7 +217,7 @@ export default function CartModal({
                             Total
                           </p>
                           <Price
-                              amount={String(grandTotal / 100)}
+                              amount={grandTotal}
                             className="text-right text-base font-medium text-black dark:text-white"
                             currencyCode={"USD"}
                           />
@@ -227,7 +228,7 @@ export default function CartModal({
                         <CheckoutButton
                             cartDetails={cart ?? []}
                             isGuest={!isAuthenticated}
-                            email={user?.email}
+                            email={email || user?.email}
                             isSelectShipping={false}
                             isSelectAddress={false}
                             isSelectPayment={false}

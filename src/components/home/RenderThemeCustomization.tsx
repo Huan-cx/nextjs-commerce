@@ -34,37 +34,36 @@ const RenderThemeCustomization: FC<RenderThemeCustomizationProps> = ({ themeCust
                     if (!translation) return null;
 
                 const options = translation.options || {};
-
                 if (!options || (Array.isArray(options) && options.length === 0) || (typeof options === 'object' && Object.keys(options).length === 0)) {
                         console.error("Error parsing options for", node.type);
-                    }
+                }
 
-                    switch (node.type) {
-                        case "image_carousel":
-                            return <ImageCarousel key={node.id} options={options as any} />;
-                        case "product_carousel": {
-                            productCarouselIndex++;
-                            const opts = options as ProductCarouselOptions;
-                            const limit = opts?.filters?.limit ? parseInt(String(opts.filters.limit), 10) : null;
-                            const itemCount = limit || (productCarouselIndex === 1 ? 3 : 4);
-                            const fallback = node.sortOrder === 2 ? <ThreeItemGridSkeleton /> : <ThemeSkeleton />;
+                switch (node.type) {
+                  case "image_carousel":
+                    return <ImageCarousel key={node.id} options={options as any}/>;
+                  case "product_carousel": {
+                    productCarouselIndex++;
+                    const opts = options as ProductCarouselOptions;
+                    const limit = opts?.filters?.limit ? parseInt(String(opts.filters.limit), 10) : null;
+                    const itemCount = limit || (productCarouselIndex === 1 ? 3 : 4);
+                    const fallback = node.sortOrder === 2 ? <ThreeItemGridSkeleton/> : <ThemeSkeleton/>;
 
-                            return (
-                                <Suspense key={node.id} fallback={fallback}>
-                                  <ProductCarousel options={{...options, title: node.name} as ProductCarouselOptions}
-                                                   itemCount={itemCount} sortOrder={node?.sortOrder}/>
-                                </Suspense>
-                            );
-                        }
-                        case "category_carousel":
-                            return (
-                                <Suspense key={node.id} fallback={<CategoryCarouselSkeleton />}>
-                                    <CategoryCarousel options={options as CategoryCarouselOptions} />
-                                </Suspense>
-                            );
-                        default:
-                            return null;
-                    }
+                    return (
+                        <Suspense key={node.id} fallback={fallback}>
+                          <ProductCarousel options={{...options, title: node.name} as ProductCarouselOptions}
+                                           itemCount={itemCount} sortOrder={node?.sortOrder}/>
+                        </Suspense>
+                    );
+                  }
+                  case "category_carousel":
+                    return (
+                        <Suspense key={node.id} fallback={<CategoryCarouselSkeleton/>}>
+                          <CategoryCarousel options={options as CategoryCarouselOptions}/>
+                        </Suspense>
+                    );
+                  default:
+                    return null;
+                }
                 })}
             </section>
         </>

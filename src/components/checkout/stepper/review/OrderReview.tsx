@@ -121,7 +121,7 @@ export default function OrderReview({
             <tr className="">
               <td className="py-2">Payment</td>
               <th className="break-all px-6 py-2 font-medium text-gray-900 dark:text-white" scope="row">
-                {selectedPayment?.name}
+                {selectedPayment?.code}
               </th>
             </tr>
             </tbody>

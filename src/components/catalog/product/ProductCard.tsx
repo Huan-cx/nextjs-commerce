@@ -1,11 +1,10 @@
-// src/components/catalog/product/ProductCard.tsx
 import Link from "next/link";
 import {FC} from "react";
 import Grid from "@/components/theme/ui/grid/Grid";
 import AddToCartButton from "@/components/theme/ui/AddToCartButton";
 import {NextImage} from "@/components/common/NextImage";
 import {Price} from "@/components/theme/ui/Price";
-import {Spu} from "@/types/api/product/type";
+import {Sku, Spu} from "@/types/api/product/type";
 import {getImageUrl, NOT_IMAGE} from "@utils/constants";
 
 type ProductCardProps = {
@@ -29,10 +28,14 @@ export const ProductCard: FC<ProductCardProps> = ({
       process.env.NEXT_PUBLIC_BAGISTO_ENDPOINT,
       NOT_IMAGE
   );
-  const isSaleable = product.skus && product.skus.length > 0 ? "1" : "0";
+  const isSaleable = product.skus && product.skus.length > 0;
 
-  // 获取第一个 SKU 的 ID（对于简单产品）
-  const firstSkuId = product.skus && product.skus.length > 0 ? product.skus[0].id?.toString() || "" : "";
+  // For simple products, we can construct the full product info for the cart button.
+  // For configurable products, the button will act as a link, so we pass the data anyway.
+  const cartProductInfo = {
+    spu: product,
+    sku: product.skus && product.skus.length > 0 ? product.skus[0] : ({} as Sku), // Provide a default or handle appropriately
+  };
 
   return (
       <Grid.Item
@@ -58,9 +61,7 @@ export const ProductCard: FC<ProductCardProps> = ({
               className={`hidden lg:block absolute bottom-4 left-1/2 flex -translate-x-1/2 items-center gap-x-4 rounded-full border-[1.5px] border-white bg-white/70 px-4 py-1.5 text-xs font-semibold text-black opacity-0 shadow-2xl backdrop-blur-md duration-300 group-hover:opacity-100 dark:text-white`}
           >
             <AddToCartButton
-                productType={productType}
-                productId={firstSkuId}
-                productUrlKey={product.id?.toString() || ""}
+                product={cartProductInfo}
                 isSaleable={isSaleable}
             />
           </div>
@@ -68,9 +69,7 @@ export const ProductCard: FC<ProductCardProps> = ({
               className={`block lg:hidden absolute bottom-[10px] left-1/2 flex -translate-x-1/2 items-center gap-x-4 rounded-full border-[1.5px] border-white bg-white/70 px-3 py-0.5 md:px-4 md:py-1.5 text-xs font-semibold text-black opacity-100 shadow-2xl backdrop-blur-md duration-300 group-hover:opacity-100 dark:text-white`}
           >
             <AddToCartButton
-                productType={productType}
-                productId={firstSkuId}
-                productUrlKey={product.id?.toString() || ""}
+                product={cartProductInfo}
                 isSaleable={isSaleable}
             />
           </div>
@@ -80,6 +79,7 @@ export const ProductCard: FC<ProductCardProps> = ({
           <h3 className="mb-2.5 text-sm font-medium md:text-lg">
             {product?.name}
           </h3>
+
 
           <div className="flex items-center gap-2">
             {productType === "configurable" && (

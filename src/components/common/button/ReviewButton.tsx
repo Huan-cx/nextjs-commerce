@@ -1,12 +1,11 @@
-import { IS_GUEST } from "@utils/constants";
-import { getCookie } from "@utils/getCartToken";
-import { useRouter } from "next/navigation";
+import {useRouter} from "next/navigation";
+import {useAuthStatus} from "@utils/hooks/useAuthStatus";
 
 export const ReviewButton = ({ setShowForm, className }: { setShowForm: (show: boolean) => void, className?: string }) => {
-    const IsGuest = getCookie(IS_GUEST);
+  const {isGuest} = useAuthStatus();
     const router = useRouter();
     const handleAddReview = () => {
-        if (IsGuest === "true" || IsGuest === null) {
+      if (isGuest) {
             router.push("/customer/login");
         } else {
             setShowForm(true);

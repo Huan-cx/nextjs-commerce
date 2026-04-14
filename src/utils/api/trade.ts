@@ -38,7 +38,8 @@ export interface OrderSettlement {
 // 获得订单结算信息
 export async function getOrderSettlement(request: SubmitOrderRequest): Promise<OrderSettlement> {
   return await post<OrderSettlement>('trade/order/settlement', request, {
-    contentType: true
+    contentType: true,
+    requiresAuth: true
   });
 }
 
@@ -72,7 +73,8 @@ export interface SubmitOrderResponse {
 // 提交订单
 export async function submitOrder(request: SubmitOrderRequest): Promise<SubmitOrderResponse> {
   return await post<SubmitOrderResponse>('trade/order/create', request, {
-    contentType: true
+    contentType: true,
+    requiresAuth: true
   });
 }
 
@@ -86,7 +88,8 @@ export interface PaymentChannel {
 // 获取支付方式
 export async function getPaymentChannels(params: { appId: string }): Promise<PaymentChannel[]> {
   return await get<PaymentChannel[]>('pay/channel/get-enable-code-list', params, {
-    contentType: 'urlencoded'
+    contentType: 'urlencoded',
+    requiresAuth: true,
   });
 }
 
@@ -100,7 +103,7 @@ export interface ShippingChannel {
 // 获取配送方式
 export async function getShippingChannels(): Promise<ShippingChannel[]> {
   return await get<ShippingChannel[]>('trade/delivery/express/list', undefined, {
-    contentType: 'urlencoded'
+    contentType: 'urlencoded',
   });
 }
 
@@ -132,6 +135,7 @@ export interface CreateProductReviewRequest {
 // 创建商品评价
 export async function createProductReview(request: CreateProductReviewRequest): Promise<number> {
   return await post<number>('trade/order/item/create-comment', request, {
-    contentType: true
+    contentType: true,
+    requiresAuth: true,
   });
 }

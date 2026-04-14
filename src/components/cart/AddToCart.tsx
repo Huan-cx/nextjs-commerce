@@ -6,8 +6,9 @@ import {useSearchParams} from "next/navigation";
 import {useForm} from "react-hook-form";
 import LoadingDots from "@components/common/icons/LoadingDots";
 import {getVariantInfo} from "@utils/hooks/useSkuInfo";
-import {Spu} from "@/types/api/product/type";
+import {Sku, Spu} from "@/types/api/product/type";
 import {useCart} from "@utils/hooks/useAddToCart";
+import {useAuthStatus} from "@utils/hooks/useAuthStatus";
 
 interface AddToCartFormData {
   quantity: number;
@@ -88,6 +89,7 @@ export function AddToCart({
   // 检查是否有库存/是否可销售，临时采用全部可销售
   // const isSaleable = product?.skus && product.skus.length > 0 ||  "";
   const {onAddToCart, isCartLoading} = useCart();
+  const {isGuest} = useAuthStatus();
   const {handleSubmit, setValue, register, getValues} = useForm<AddToCartFormData>({
     defaultValues: {
       quantity: 1,
@@ -124,11 +126,27 @@ export function AddToCart({
         : product.skus && product.skus.length > 0
             ? String(product.skus[0].id)
             : String(product.id);
-
-    onAddToCart({
-      skuId,
+    const sku = product.skus?.find((item: Sku) => item.id === Number(selectedVariantId));
+    await onAddToCart({
+      id: Number(skuId),
       count: data.quantity,
-    });
+      selected: true,
+        sku: {
+          id: Number(skuId),
+          price: Number(sku?.price) || 0,
+          stock: sku?.stock || 0,
+          picUrl: sku?.picUrl || "",
+          properties: sku?.properties || [],
+        },
+        spu: {
+          id: product.id || 0,
+          name: product.name || "",
+          picUrl: product.picUrl || "",
+          stock: product.stock || 0,
+          categoryId: product.categoryId || 0,
+          status: product.status || 0,
+        },
+    }, isGuest);
   };
 
   return (

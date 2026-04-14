@@ -11,8 +11,10 @@ import InputText from "@components/common/form/Input";
 import Link from "next/link";
 import {ProceedToCheckout} from "@components/checkout/stepper/ProceedToCheckout";
 
-const Email = () => {
+const
+    Email = () => {
   const dispatch = useAppDispatch();
+      const {user} = useAppSelector((state) => state.user);
   const email = useAppSelector((state) => state.checkout.email);
   const [isOpen, setIsOpen] = useState(false);
   const router = useRouter();
@@ -23,7 +25,7 @@ const Email = () => {
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm<EmailFormValues>({
-    defaultValues: {email: email || ""},
+    defaultValues: {email: email || user?.email || ""},
   });
 
   const onSubmit = async (data: EmailFormValues) => {

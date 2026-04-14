@@ -51,8 +51,7 @@ export const useCheckout = () => {
           count: item.count,
         })) || [],
       });
-
-      if (orderData?.orderId) {
+      if (orderData?.payOrderId) {
         showToast("Order placed successfully!", "success");
         setCookie(ORDER_ID, orderData.orderId);
 

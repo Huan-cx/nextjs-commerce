@@ -1,5 +1,5 @@
 import {GRAPHQL_URL} from "@/utils/constants";
-import {getCartToken} from "../getCartToken";
+import {getSession, signOut} from "next-auth/react";
 
 type HttpMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
 
@@ -11,7 +11,6 @@ export interface RequestOptions<TBody = unknown> {
   headers?: Record<string, string>;  // 自定义请求头
   contentType?: boolean | 'urlencoded';  // 是否设置 Content-Type，或使用 urlencoded
   requiresAuth?: boolean; // 是否需要认证 Token，默认为 true
-  retryOnAuthError?: boolean; // 是否在认证错误时重试，默认为 true
 }
 
 /**
@@ -42,8 +41,7 @@ export async function request<T = any>(options: RequestOptions): Promise<T> {
     data,
     headers = {},
     contentType = true,
-    requiresAuth = true,
-    retryOnAuthError = true,
+    requiresAuth = false,
   } = options;
 
   try {
@@ -62,9 +60,9 @@ export async function request<T = any>(options: RequestOptions): Promise<T> {
 
     // 自动添加认证 Token
     if (requiresAuth) {
-      const token = getCartToken();
-      if (token) {
-        defaultHeaders['Authorization'] = `Bearer ${token}`;
+      const session = await getSession();
+      if (session?.user?.accessToken) {
+        defaultHeaders['Authorization'] = `Bearer ${session.user.accessToken as string}`;
       }
     }
 
@@ -98,29 +96,58 @@ export async function request<T = any>(options: RequestOptions): Promise<T> {
     const result = await response.json();
 
     // 处理错误
-    if (!response.ok) {
+    if (result.code !== 0) {
       // 处理认证错误
-      if (response.status === 401 && requiresAuth && retryOnAuthError) {
+      if (response.status === 401 && requiresAuth) {
+        console.log('收到 401 错误，尝试刷新 token');
 
-        //     if (newToken) {
-        //         // 重新构建请求头
-        //         defaultHeaders['Authorization'] = `Bearer ${newToken}`;
-        //         // 重新发送请求
-        //         const retryResponse = await fetch(requestUrl, {
-        //             ...requestConfig,
-        //             headers: defaultHeaders
-        //         });
-        //         const retryResult = await retryResponse.json();
-        //
-        //         if (!retryResponse.ok) {
-        //             throw new Error(retryResult?.msg || `Request failed with status ${retryResponse.status}`);
-        //         }
-        //
-        //         return (retryResult?.data !== undefined) ? (retryResult.data as T) : (retryResult as T);
-        //     }
+        // 直接调用刷新 token 的 API
+        try {
+          const session = await getSession();
+          if (session?.user?.refreshToken) {
+            console.log('使用 refreshToken 刷新 token:', session.user.refreshToken);
+
+            // 调用刷新 token 的 API
+            const {refreshAccessToken} = await import('@utils/api/auth');
+            const newToken = await refreshAccessToken(session.user.refreshToken);
+
+            console.log('Token 刷新成功:', newToken);
+
+            // 更新 session 中的 token
+            // 注意：这里需要使用 NextAuth 的 update() 方法，但这个方法在客户端不可用
+            // 所以我们只能重新发送请求，使用新的 token
+
+            // 重新构建请求头，使用新的 token
+            const newHeaders = {
+              ...headers,
+              'Authorization': `Bearer ${newToken.accessToken}`,
+            };
+
+            // 重新发送请求
+            const retryResponse = await fetch(requestUrl, {
+              ...requestConfig,
+              headers: newHeaders,
+            });
+
+            const retryResult = await retryResponse.json();
+
+            if (retryResult.code === 0) {
+              console.log('重试请求成功');
+              return (retryResult?.data !== undefined) ? (retryResult.data as T) : (retryResult as T);
+            } else {
+              throw new Error(retryResult?.msg || 'Token refresh failed');
+            }
+          } else {
+            console.log('没有 refreshToken，跳转到登录页');
+            await signOut({callbackUrl: '/login'});
+          }
+        } catch (refreshError) {
+          console.error('Token 刷新失败:', refreshError);
+          await signOut({callbackUrl: '/login'});
+        }
+
+        throw new Error(result?.msg || `Request failed with status ${response.status}`);
       }
-
-      throw new Error(result?.msg || `Request failed with status ${response.status}`);
     }
 
     // 智能返回响应数据

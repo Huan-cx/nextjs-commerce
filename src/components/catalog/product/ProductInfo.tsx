@@ -10,7 +10,7 @@ export default async function ProductInfo({
   product: Spu;
   slug: string;
 }) {
-  const reviews = await getProductReviews(product.id || 0);
+  const reviews = await getProductReviews(product.id || 0, 0);
 
   return (
       <ProductDescription
