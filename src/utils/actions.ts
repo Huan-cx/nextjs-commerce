@@ -13,6 +13,16 @@ export async function userSubscribe(
   formData: FormData
 ): Promise<RecoverPasswordFormState> {
   const email = formData.get("email");
+  if (!email) {
+    return {
+      errors: {
+        apiRes: {
+          status: false,
+          msg: "Email is required",
+        },
+      },
+    };
+  }
   return {
     errors: {
       apiRes: {
@@ -22,12 +32,12 @@ export async function userSubscribe(
     },
   };
 
+
   /* const data = {
     email: typeof email === "string" ? email.trim() : "",
   };
 
   try {
-    const result = await subscribeUser(data) as Record<string, unknown>;
 
     if (result?.error) {
       const error = result.error as Record<string, unknown>;

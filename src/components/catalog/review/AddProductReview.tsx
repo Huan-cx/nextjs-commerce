@@ -7,15 +7,12 @@ import {Button} from "@components/common/button/Button";
 import {useCustomToast} from "@utils/hooks/useToast";
 import {useProductReview} from "@utils/hooks/useProductReview";
 import Image from "next/image";
-
-import {CreateProductReviewInput} from "@/types/review";
 import {AddUploadImage} from "@components/common/icons/AddUploadImage";
+import {CreateProductReviewRequest} from "@utils/api/trade";
 
 export default function AddProductReview({
-  productId,
   onClose,
 }: {
-  productId: number;
   onClose: () => void;
 }) {
   const [imageFile, setImageFile] = useState<string | null>(null);
@@ -32,7 +29,7 @@ export default function AddProductReview({
     attachments: null as string | null,
   });
   const { showToast } = useCustomToast();
-  const { createProductReview, isLoading } = useProductReview();
+  const {createReview, isLoading} = useProductReview();
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -77,17 +74,16 @@ export default function AddProductReview({
     }
 
     try {
-      const input: CreateProductReviewInput = {
-        productId: productId,
-        title: reviewInfo.title,
-        comment: reviewInfo.comment,
-        rating: reviewInfo.rating,
-        name: "Guest User",
-        email: "guest@mail.com",
-        attachments: "",
+      const input: CreateProductReviewRequest = {
+        anonymous: true,
+        orderItemId: 0,
+        descriptionScores: reviewInfo.rating,
+        benefitScores: reviewInfo.rating,
+        content: reviewInfo.comment,
+        picUrls: reviewInfo.attachments ? [reviewInfo.attachments] : [],
       };
 
-      await createProductReview(input);
+      await createReview(input);
 
       setReviewInfo({
         title: "",

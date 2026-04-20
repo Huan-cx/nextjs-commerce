@@ -48,7 +48,6 @@ export async function request<T = any>(options: RequestOptions): Promise<T> {
     // 构建请求 URL
     const queryString = params ? buildQueryString(params) : '';
     const requestUrl = `${GRAPHQL_URL}/${url}${queryString ? `?${queryString}` : ''}`;
-
     // 构建请求头
     const defaultHeaders: Record<string, string> = {
       ...(contentType === true ? {"Content-Type": "application/json"} : {}),
@@ -99,19 +98,16 @@ export async function request<T = any>(options: RequestOptions): Promise<T> {
     if (result.code !== 0) {
       // 处理认证错误
       if (response.status === 401 && requiresAuth) {
-        console.log('收到 401 错误，尝试刷新 token');
 
         // 直接调用刷新 token 的 API
         try {
           const session = await getSession();
           if (session?.user?.refreshToken) {
-            console.log('使用 refreshToken 刷新 token:', session.user.refreshToken);
 
             // 调用刷新 token 的 API
             const {refreshAccessToken} = await import('@utils/api/auth');
             const newToken = await refreshAccessToken(session.user.refreshToken);
 
-            console.log('Token 刷新成功:', newToken);
 
             // 更新 session 中的 token
             // 注意：这里需要使用 NextAuth 的 update() 方法，但这个方法在客户端不可用
@@ -132,13 +128,11 @@ export async function request<T = any>(options: RequestOptions): Promise<T> {
             const retryResult = await retryResponse.json();
 
             if (retryResult.code === 0) {
-              console.log('重试请求成功');
               return (retryResult?.data !== undefined) ? (retryResult.data as T) : (retryResult as T);
             } else {
               throw new Error(retryResult?.msg || 'Token refresh failed');
             }
           } else {
-            console.log('没有 refreshToken，跳转到登录页');
             await signOut({callbackUrl: '/login'});
           }
         } catch (refreshError) {

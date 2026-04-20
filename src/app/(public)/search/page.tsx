@@ -9,6 +9,7 @@ import {SortByFields} from "@/utils/constants";
 import MobileFilter from "@/components/theme/filters/MobileFilter";
 import FilterList from "@/components/theme/filters/FilterList";
 import {MobileSearchBar} from "@components/layout/navbar/MobileSearch";
+import {Metadata} from "next";
 
 const Pagination = dynamicImport(
   () => import("@/components/catalog/Pagination"),
@@ -56,7 +57,7 @@ export async function generateMetadata({
   searchParams,
 }: {
   searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
-}) {
+}): Promise<Metadata> {
   const params = await searchParams;
   const searchQuery = params?.q as string | undefined;
 

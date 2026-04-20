@@ -53,7 +53,7 @@ export const useCheckout = () => {
       });
       if (orderData?.payOrderId) {
         showToast("Order placed successfully!", "success");
-        setCookie(ORDER_ID, orderData.orderId);
+        setCookie(ORDER_ID, orderData.payOrderId);
 
         // 跳转到成功页面
         router.replace("/success");

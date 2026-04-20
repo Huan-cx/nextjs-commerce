@@ -67,7 +67,7 @@ export interface SubmitOrderRequest {
 
 // 提交订单响应类型
 export interface SubmitOrderResponse {
-  orderId: number;
+  payOrderId: number;
 }
 
 // 提交订单

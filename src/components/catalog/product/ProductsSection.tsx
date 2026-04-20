@@ -22,14 +22,11 @@ export function ProductsSection({ title, description, products }: ProductsSectio
             <ProductCard
               key={item.id ?? index}
               currency="USD"
-              imageUrl={imageUrl || ""}
-              price={String(ProductPrice)}
               product={{
                 id: item.id ? item.id : 0,
                 name: item?.name || "",
-                isSaleable: item.status == 1 ? "available" : "unavailable",
                 skus: item.skus || []
-              }} specialPrice={""} />
+              }}/>
           );
         })}
       </Grid>

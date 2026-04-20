@@ -13,7 +13,6 @@ interface ReviewSectionProps {
 }
 
 export default function ReviewSection({
-  productId,
   className,
   totalReview,
 }: ReviewSectionProps) {
@@ -46,7 +45,6 @@ export default function ReviewSection({
         <ModalContent className="p-0 border-none">
           {(onClose) => (
             <AddProductReview
-              productId={productId}
               onClose={onClose}
             />
           )}

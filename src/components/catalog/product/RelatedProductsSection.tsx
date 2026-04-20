@@ -1,11 +1,13 @@
 import {ProductsSection} from "./ProductsSection";
 import {Spu} from "@/types/api/product/type";
 
-export async function RelatedProductsSection({
-  fullPath,
-}: {
-  fullPath: string;
-}) {
+export async function RelatedProductsSection(
+//     {
+//   fullPath,
+// }: {
+//   fullPath: string;
+// }
+) {
   // async function getRelatedProduct(urlKey: string) {
   //  return null;
   // }

@@ -1,4 +1,3 @@
-// src/components/catalog/review/ReviewDetail.tsx
 "use client";
 import React, {FC} from "react";
 import {Rating} from "@/components/common/Rating";
@@ -6,14 +5,10 @@ import {Comment} from "@/types/api/product/type";
 
 interface ReviewDetailProps {
   reviewDetails: Comment[];
-  totalReview: number;
-  productId: number;
 }
 
 export const ReviewDetail: FC<ReviewDetailProps> = ({
                                                       reviewDetails,
-                                                      totalReview,
-                                                      productId,
                                                     }) => {
   const reviews: Comment[] = reviewDetails;
 

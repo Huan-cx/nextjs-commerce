@@ -6,6 +6,7 @@ import {staticSeo} from "@utils/metadata";
 import {SpeculationRules} from "@components/theme/SpeculationRules";
 import {ErrorBoundary} from "@/components/error/ErrorBoundary";
 import clsx from "clsx";
+import {Metadata} from "next";
 
 const outfit = Outfit({
   subsets: ["latin", "latin-ext"],
@@ -15,7 +16,7 @@ const outfit = Outfit({
   preload: true,
 });
 
-export async function generateMetadata() {
+export async function generateMetadata(): Promise<Metadata> {
   return generateMetadataForPage("", staticSeo.default);
 }
 

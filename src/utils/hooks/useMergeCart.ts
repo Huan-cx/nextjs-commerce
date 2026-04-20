@@ -26,7 +26,6 @@ export function useMergeCart() {
 
   const handleMergeCart = async () => {
     if (!cartItems || cartItems.length === 0) {
-      console.log("No items to merge.");
       return;
     }
 

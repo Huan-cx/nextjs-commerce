@@ -111,8 +111,6 @@ export const ProductMoreDetails: FC<{
                 <>
                   <ReviewDetail
                       reviewDetails={reviews}
-                      totalReview={totalReview}
-                      productId={productId}
                   />
                 </>
             ) : (

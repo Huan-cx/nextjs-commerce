@@ -54,11 +54,9 @@ export default function LoginForm() {
       setLocalStorage("email", data?.username)
 
       const session = await getSession();
-      console.log("login session", session);
       if (session?.user) {
         dispatch(setUser(session.user as any));
       }
-      console.log("login session", session);
       // Merge local guest cart to server cart
       if (localCart && localCart.items.length > 0) {
         const mergeItems = localCart.items.map(item => ({

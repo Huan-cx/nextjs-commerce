@@ -50,7 +50,6 @@ export const authOptions: NextAuthOptions = {
       if (Date.now() < (token.expiresTime as number)) {
         return token;
       }
-      console.log("accessToken 过期，尝试刷新");
       // 如果 accessToken 已过期，尝试刷新它
       return await refreshAccessToken(token.refreshToken);
     },
