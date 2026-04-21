@@ -1,4 +1,3 @@
-import {baseUrl, getImageUrl, NOT_IMAGE} from "@/utils/constants";
 import Grid from "../../theme/ui/grid/Grid";
 import {ProductCard} from "./ProductCard";
 import {ProductsSectionProps} from "../type";
@@ -16,8 +15,6 @@ export function ProductsSection({ title, description, products }: ProductsSectio
 
       <Grid className="grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
         {products.map((item, index) => {
-          const imageUrl = getImageUrl(item?.picUrl, baseUrl, NOT_IMAGE);
-          const ProductPrice = item.price;
           return (
             <ProductCard
               key={item.id ?? index}
