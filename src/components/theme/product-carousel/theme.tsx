@@ -1,5 +1,4 @@
 import {FC} from "react";
-import {NOT_IMAGE} from "@/utils/constants";
 import {ProductCard} from "@/components/catalog/product/ProductCard";
 import {Spu} from "@/types/api/product/type";
 
@@ -26,8 +25,6 @@ const Theme: FC<{
               <ProductCard
                 key={index}
                 currency={"USD"}
-                imageUrl={product.picUrl || NOT_IMAGE}
-                price={product?.price || "0"}
                 product={product}
                 priority={index < 4}
               />
