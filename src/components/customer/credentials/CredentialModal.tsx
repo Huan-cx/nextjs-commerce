@@ -1,7 +1,7 @@
 "use client";
 
 import {Popover, PopoverContent, PopoverTrigger} from "@heroui/popover";
-import {useDisclosure} from "@heroui/react";
+import {Divider, Listbox, ListboxItem, useDisclosure} from "@heroui/react";
 import {AnimatePresence, motion} from "framer-motion";
 import clsx from "clsx";
 import {signOut} from "next-auth/react";
@@ -20,6 +20,7 @@ import {clearUser} from "@/store/slices/user-slice";
 import {clearCart} from "@/store/slices/cart-slice";
 import {resetCheckoutState} from "@/store/slices/checkout-slice";
 import LoadingDots from "@components/common/icons/LoadingDots";
+import {ChevronRightIcon} from "@heroicons/react/24/outline";
 
 
 export default function CredentialModal({
@@ -98,7 +99,20 @@ export default function CredentialModal({
       showToast(message, "danger");
     }
   };
-
+  const menuItems = [
+    {
+      key: "/account/profile",
+      label: "Profile",
+    },
+    {
+      key: "/account/orders",
+      label: "Orders",
+    },
+    // {
+    //   key: "logout",
+    //   label: "Logout",
+    // },
+  ];
   const innerContent = (_onClose?: () => void) => (
     <div className={clsx("flex w-full flex-col rounded-md py-4", {
       "gap-y-6": !!session?.user || (!session?.user && isDesktop),
@@ -119,9 +133,9 @@ export default function CredentialModal({
                 />
                 <div className={clsx("flex flex-col justify-center", !isDesktop ? "items-center gap-1" : "items-start")}>
                   <h4 className={clsx("leading-none dark:text-white", isDesktop ? "font-semibold text-default-500 text-small" : "text-xl font-bold text-black")}>
-                    {session?.user?.name}
+                    {session?.user?.nickname}
                   </h4>
-                  <h5 className={clsx("tracking-tight dark:text-white", isDesktop ? "text-default-500 text-small" : "text-sm text-gray-500")}>
+                  <h5 className={clsx("tracking-tight dark:text-white", isDesktop ? "font-semibold text-default-500 text-small" : "text-sm text-gray-500")}>
                     {session?.user?.email}
                   </h5>
                 </div>
@@ -136,6 +150,48 @@ export default function CredentialModal({
             </div>
           </header>
 
+          <Divider className="opacity-50"/>
+
+
+          <nav className="w-full">
+            <Listbox
+                aria-label="User Menu"
+                onAction={(key) => {
+                  console.log(key);
+                  router.push(typeof key === "string" ? key : key.toString());
+                  finalOnClose?.();
+                }}
+                variant="flat"
+                className="p-0" // 移除 Listbox 自身的内边距
+                itemClasses={{
+                  base: [
+                    "rounded-none",      // 核心：移除圆角，实现背景全宽
+                    "px-4",              // 左右内边距，保持文字对齐
+                    "py-3",              // 垂直高度
+                    "gap-0",
+                    "data-[hover=true]:bg-default-100", // 图片中的灰色背景色
+                    "data-[hover=true]:text-default-900",
+                  ],
+                  title: "text-sm font-medium",
+                }}
+            >
+              {menuItems.map((item) => (
+                  <ListboxItem
+                      key={item.key}
+                      aria-label="User Menu"
+                      variant="flat"
+                      // 关键：去掉 Listbox 默认的包裹间距，让内容撑满
+                      className={clsx(item.key === "logout" && "text-danger")}
+                      textValue={item.label}
+                      endContent={<ChevronRightIcon/>}
+                  >
+                    <span className={clsx(isDesktop ? "text-base" : "text-base")}>
+                      {item.label}
+                    </span>
+                  </ListboxItem>
+              ))}
+            </Listbox>
+          </nav>
           <footer>
             <form onSubmit={handleSubmit(onSubmit)} className={clsx(!isDesktop && "flex justify-center")}>
               <button

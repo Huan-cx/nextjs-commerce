@@ -1,5 +1,4 @@
 import {get, post} from "@utils/request/request";
-import {User} from "next-auth";
 
 // ======================= 重置密码 API =======================
 
@@ -70,12 +69,22 @@ export async function registerUser(request: RegisterRequest): Promise<boolean> {
   });
 }
 
+export interface UserInfo {
+  "id": number;
+  "nickname": string;
+  "avatar": string;
+  "phone": number;
+  "email": string;
+  "sex": number;
+  "point": number;
+  "experience": number;
+}
 /**
  * 校验重置密码的 Token
  */
-export async function getUserInfo(accessToken: string): Promise<User> {
-  return await get<User>("member/user/get", {}, {
-    contentType: "urlencoded",
-    headers: {"Authorization": `Bearer ${accessToken}`}
+export async function getUserInfo(): Promise<UserInfo> {
+  return await get<UserInfo>("member/user/get", {}, {
+    contentType: true,
+    requiresAuth: true,
   });
 }

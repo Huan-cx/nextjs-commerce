@@ -1,21 +1,36 @@
 import {GRAPHQL_URL} from "@/utils/constants";
-import {getSession, signOut} from "next-auth/react";
+import {signOut} from "next-auth/react";
+import {getServerSession} from "next-auth/next";
+import {authOptions} from "@/utils/auth";
 
 type HttpMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
 
-export interface RequestOptions<TBody = unknown> {
-  url: string;           // API 端点，例如 "product/spu/page"
-  method?: HttpMethod;   // HTTP 方法，默认为 GET
-  params?: Record<string, any>;  // 查询参数（用于 GET 请求）
-  data?: TBody;         // 请求体（用于 POST、PUT 等请求）
-  headers?: Record<string, string>;  // 自定义请求头
-  contentType?: boolean | 'urlencoded';  // 是否设置 Content-Type，或使用 urlencoded
-  requiresAuth?: boolean; // 是否需要认证 Token，默认为 true
+const MAX_RETRY_COUNT = 1;
+const RETRY_DELAY = 100;
+let isRefreshing = false;
+let refreshPromise: Promise<any> | null = null;
+
+async function getAuthSession() {
+  if (typeof window === 'undefined') {
+    return await getServerSession(authOptions);
+  } else {
+    const {getSession} = await import("next-auth/react");
+    return await getSession();
+  }
 }
 
-/**
- * 构建查询字符串
- */
+export interface RequestOptions<TBody = unknown> {
+  url: string;
+  method?: HttpMethod;
+  params?: Record<string, any>;
+  data?: TBody;
+  headers?: Record<string, string>;
+  contentType?: boolean | 'urlencoded';
+  requiresAuth?: boolean;
+  retryCount?: number;
+  maxRetries?: number;
+}
+
 function buildQueryString(params: Record<string, any>): string {
   const queryParams = new URLSearchParams();
 
@@ -28,11 +43,6 @@ function buildQueryString(params: Record<string, any>): string {
   return queryParams.toString();
 }
 
-/**
- * 通用 HTTP 请求工具
- * @param options 请求选项
- * @returns 响应数据
- */
 export async function request<T = any>(options: RequestOptions): Promise<T> {
   const {
     url,
@@ -42,13 +52,14 @@ export async function request<T = any>(options: RequestOptions): Promise<T> {
     headers = {},
     contentType = true,
     requiresAuth = false,
+    retryCount = 0,
+    maxRetries = MAX_RETRY_COUNT,
   } = options;
 
   try {
-    // 构建请求 URL
     const queryString = params ? buildQueryString(params) : '';
     const requestUrl = `${GRAPHQL_URL}/${url}${queryString ? `?${queryString}` : ''}`;
-    // 构建请求头
+
     const defaultHeaders: Record<string, string> = {
       ...(contentType === true ? {"Content-Type": "application/json"} : {}),
       ...(contentType === 'urlencoded' ? {"Content-Type": "application/x-www-form-urlencoded"} : {}),
@@ -57,24 +68,20 @@ export async function request<T = any>(options: RequestOptions): Promise<T> {
       ...headers,
     };
 
-    // 自动添加认证 Token
     if (requiresAuth) {
-      const session = await getSession();
+      const session = await getAuthSession();
       if (session?.user?.accessToken) {
         defaultHeaders['Authorization'] = `Bearer ${session.user.accessToken as string}`;
       }
     }
 
-    // 构建请求配置
     const requestConfig: RequestInit = {
       method,
       headers: defaultHeaders,
     };
 
-    // 对于非 GET 请求，添加请求体
     if (method !== "GET" && data) {
       if (contentType === 'urlencoded') {
-        // 处理 application/x-www-form-urlencoded 格式
         const formData = new URLSearchParams();
         Object.entries(data).forEach(([key, value]) => {
           if (value !== undefined && value !== null) {
@@ -83,68 +90,68 @@ export async function request<T = any>(options: RequestOptions): Promise<T> {
         });
         requestConfig.body = formData.toString();
       } else {
-        // 处理 application/json 格式
         requestConfig.body = JSON.stringify(data);
       }
     }
 
-    // 发送请求
     const response = await fetch(requestUrl, requestConfig);
-
-    // 解析响应
     const result = await response.json();
 
-    // 处理错误
     if (result.code !== 0) {
-      // 处理认证错误
-      if (response.status === 401 && requiresAuth) {
+      if (response.status === 401 && requiresAuth && retryCount < maxRetries) {
+        if (isRefreshing) {
+          console.warn(`Waiting for concurrent token refresh...`);
+          return await request<T>({...options, retryCount: retryCount + 1});
+        }
 
-        // 直接调用刷新 token 的 API
         try {
-          const session = await getSession();
-          if (session?.user?.refreshToken) {
+          isRefreshing = true;
+          refreshPromise = (async () => {
+            console.warn(`Refreshing token (attempt ${retryCount + 1}/${maxRetries})...`);
 
-            // 调用刷新 token 的 API
-            const {refreshAccessToken} = await import('@utils/api/auth');
-            const newToken = await refreshAccessToken(session.user.refreshToken);
+            const session = await getAuthSession();
+            if (session?.user?.refreshToken) {
+              const {refreshAccessToken} = await import('@utils/api/auth');
+              const newToken = await refreshAccessToken(session.user.refreshToken);
 
+              const newHeaders = {
+                ...headers,
+                'Authorization': `Bearer ${newToken.accessToken}`,
+              };
 
-            // 更新 session 中的 token
-            // 注意：这里需要使用 NextAuth 的 update() 方法，但这个方法在客户端不可用
-            // 所以我们只能重新发送请求，使用新的 token
+              await new Promise(resolve => setTimeout(resolve, RETRY_DELAY));
 
-            // 重新构建请求头，使用新的 token
-            const newHeaders = {
-              ...headers,
-              'Authorization': `Bearer ${newToken.accessToken}`,
-            };
+              const retryResponse = await fetch(requestUrl, {
+                ...requestConfig,
+                headers: newHeaders,
+              });
 
-            // 重新发送请求
-            const retryResponse = await fetch(requestUrl, {
-              ...requestConfig,
-              headers: newHeaders,
-            });
+              const retryResult = await retryResponse.json();
 
-            const retryResult = await retryResponse.json();
-
-            if (retryResult.code === 0) {
-              return (retryResult?.data !== undefined) ? (retryResult.data as T) : (retryResult as T);
+              if (retryResult.code === 0) {
+                return (retryResult?.data !== undefined) ? (retryResult.data as T) : (retryResult as T);
+              } else {
+                throw new Error(retryResult?.msg || 'Token refresh failed');
+              }
             } else {
-              throw new Error(retryResult?.msg || 'Token refresh failed');
+              await signOut({callbackUrl: '/login'});
+              throw new Error('No refresh token available');
             }
-          } else {
-            await signOut({callbackUrl: '/login'});
-          }
+          })();
+
+          return await refreshPromise;
         } catch (refreshError) {
           console.error('Token 刷新失败:', refreshError);
           await signOut({callbackUrl: '/login'});
+        } finally {
+          isRefreshing = false;
+          refreshPromise = null;
         }
-
-        throw new Error(result?.msg || `Request failed with status ${response.status}`);
       }
+
+      throw new Error(result?.msg || `Request failed with status ${response.status}`);
     }
 
-    // 智能返回响应数据
     return (result?.data !== undefined) ? (result.data as T) : (result as T);
   } catch (error) {
     console.error(`Request failed for ${url}:`, error);
@@ -152,9 +159,6 @@ export async function request<T = any>(options: RequestOptions): Promise<T> {
   }
 }
 
-/**
- * 便捷方法：发送 GET 请求
- */
 export async function get<T = any>(url: string, params?: Record<string, any>, options?: Partial<RequestOptions>) {
   return request<T>({
     url,
@@ -164,9 +168,6 @@ export async function get<T = any>(url: string, params?: Record<string, any>, op
   });
 }
 
-/**
- * 便捷方法：发送 POST 请求
- */
 export async function post<T = any>(url: string, data?: any, options?: Partial<RequestOptions>) {
   return request<T>({
     url,
@@ -176,9 +177,6 @@ export async function post<T = any>(url: string, data?: any, options?: Partial<R
   });
 }
 
-/**
- * 便捷方法：发送 PUT 请求
- */
 export async function put<T = any>(url: string, data?: any, options?: Partial<RequestOptions>) {
   return request<T>({
     url,
@@ -188,9 +186,6 @@ export async function put<T = any>(url: string, data?: any, options?: Partial<Re
   });
 }
 
-/**
- * 便捷方法：发送 DELETE 请求
- */
 export async function del<T = any>(url: string, params?: Record<string, any>, options?: Partial<RequestOptions>) {
   return request<T>({
     url,

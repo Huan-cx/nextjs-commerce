@@ -7,7 +7,7 @@ export const authOptions: NextAuthOptions = {
     strategy: "jwt",
     // 移除 maxAge，完全依赖 API 返回的 expiresTime 控制 session 过期
     // 这样可以确保 session 过期与 API token 过期完全同步
-    maxAge: 60,
+    maxAge: 2 * 60 * 60,
   },
 
   providers: [
