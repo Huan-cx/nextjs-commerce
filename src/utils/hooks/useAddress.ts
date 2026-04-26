@@ -2,10 +2,10 @@
 
 import {useCallback, useRef, useState} from "react";
 import {getAddressList} from "@/utils/api/address";
-import {Address} from "@/types/api/address/type";
+import {AddressLine} from "@/types/api/address/type";
 
 export const useAddress = () => {
-  const [addresses, setAddresses] = useState<Address[]>([]);
+  const [addresses, setAddresses] = useState<AddressLine[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 

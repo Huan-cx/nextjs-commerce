@@ -28,7 +28,7 @@ export const CHECKOUT = {
 };
 export const HIDDEN_PRODUCT_TAG = "nextjs-frontend-hidden";
 export const DEFAULT_OPTION = "Default Title";
-export const BAGISTO_GRAPHQL_API_ENDPOINT = "/app-api";
+export const SERVER_API_ENDPOINT = "/app-api";
 
 /**
  * productJsonLd constant
@@ -44,7 +44,7 @@ export const BAGISTO_SESSION = process.env.BAGISTO_SESSION ?? "app_session";
 export const TOKEN = "token";
 export const BASE_URL = process.env.NEXT_PUBLIC_NEXT_AUTH_URL;
 export const baseUrl = process.env.NEXT_PUBLIC_BAGISTO_ENDPOINT;
-export const GRAPHQL_URL = `${(process.env.NEXT_PUBLIC_BAGISTO_ENDPOINT || '').replace(/\/$/, '')}${BAGISTO_GRAPHQL_API_ENDPOINT}`;
+export const REST_URL = `${(process.env.NEXT_PUBLIC_BAGISTO_ENDPOINT || '').replace(/\/$/, '')}${SERVER_API_ENDPOINT}`;
 export const NEXT_AUTH_SECRET = process.env.NEXT_PUBLIC_NEXT_AUTH_SECRET;
 
 // Server-only: Use non-public env var, fallback to public for backwards compatibility

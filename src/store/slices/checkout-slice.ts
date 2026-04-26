@@ -1,5 +1,5 @@
 import {createAsyncThunk, createSlice, PayloadAction} from '@reduxjs/toolkit';
-import {Address} from "@/types/api/address/type";
+import {AddressLine} from "@/types/api/address/type";
 import {getOrderSettlement, OrderSettlement, SubmitOrderRequest} from "@utils/api/trade";
 import {CartState} from "@/store/slices/cart-slice";
 
@@ -27,9 +27,9 @@ export const fetchOrderSettlement = createAsyncThunk(
 export interface CheckoutState {
   deliveryType: number; // 配送方式
   paymentMethod: number; // 支付方式
-  receiverAddress: Address | null; // 收货地址
-  billingAddress: Address | null; // 账单地址
-  businessAddress: Address | null; // 公司地址
+  receiverAddress: AddressLine | null; // 收货地址
+  billingAddress: AddressLine | null; // 账单地址
+  businessAddress: AddressLine | null; // 公司地址
   receiveUseBilling: boolean; // 是否使用账单地址作为收货地址
   businessUseBilling: boolean; // 是否使用账单地址作为公司地址
   couponId: number | null; // 优惠券ID
@@ -71,15 +71,15 @@ export const checkoutSlice = createSlice({
       state.paymentMethod = action.payload;
     },
     // 设置收货地址
-    setReceiverAddress: (state, action: PayloadAction<Address | null>) => {
+    setReceiverAddress: (state, action: PayloadAction<AddressLine | null>) => {
       state.receiverAddress = action.payload;
     },
     // 设置账单地址
-    setBillingAddress: (state, action: PayloadAction<Address | null>) => {
+    setBillingAddress: (state, action: PayloadAction<AddressLine | null>) => {
       state.billingAddress = action.payload;
     },
     // 设置公司地址
-    setBusinessAddress: (state, action: PayloadAction<Address | null>) => {
+    setBusinessAddress: (state, action: PayloadAction<AddressLine | null>) => {
       state.businessAddress = action.payload;
     },
     // 切换“收货地址是否使用账单地址”

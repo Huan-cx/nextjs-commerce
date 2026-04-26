@@ -2,7 +2,7 @@ import Link from "next/link";
 import {useMemo} from "react";
 import LogoIcon from "@components/common/icons/LogoIcon";
 import Email from "./Email";
-import {GuestAddAddressForm} from "./GuestAddAddressForm";
+import {AddAddressForm} from "./address";
 import Shipping from "./shipping";
 import Payment from "./payment";
 import Review from "./review";
@@ -46,7 +46,7 @@ export default function Stepper(
         title: "Address",
         href: "/checkout",
         component:
-            <GuestAddAddressForm
+            <AddAddressForm
           />
       },
       {

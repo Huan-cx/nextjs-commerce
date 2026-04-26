@@ -1,11 +1,11 @@
 import {del, get, post, put} from "@utils/request/request";
-import {Address, AddressAddRequest, AddressUpdateRequest, Geo,} from "@/types/api/address/type";
+import {AddressAddRequest, AddressLine, AddressUpdateRequest, Geo,} from "@/types/api/address/type";
 
 /**
  * 获取地址列表
  */
-export async function getAddressList(): Promise<Address[]> {
-  const response = await get<Address[]>("member/address/list", undefined, {
+export async function getAddressList(): Promise<AddressLine[]> {
+  const response = await get<AddressLine[]>("member/address/list", undefined, {
     contentType: 'urlencoded',
     requiresAuth: true
   });
@@ -16,9 +16,9 @@ export async function getAddressList(): Promise<Address[]> {
  * 添加地址
  * @param params 地址信息
  */
-export async function addAddress(params: AddressAddRequest): Promise<Address> {
-  const response = await post<Address>("member/address/add", params, {
-    contentType: 'urlencoded',
+export async function addAddress(params: AddressAddRequest): Promise<AddressLine> {
+  const response = await post<AddressLine>("member/address/create", params, {
+    contentType: true,
     requiresAuth: true
   });
   return response;
@@ -28,9 +28,9 @@ export async function addAddress(params: AddressAddRequest): Promise<Address> {
  * 更新地址
  * @param params 地址信息
  */
-export async function updateAddress(params: AddressUpdateRequest): Promise<Address> {
-  const response = await put<Address>("member/address/update", params, {
-    contentType: 'urlencoded',
+export async function updateAddress(params: AddressUpdateRequest): Promise<AddressLine> {
+  const response = await put<AddressLine>("member/address/update", params, {
+    contentType: true,
     requiresAuth: true
   });
   return response;

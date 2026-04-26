@@ -1,5 +1,5 @@
 import {get, post} from "@utils/request/request";
-import {Address} from "@/types/api/address/type";
+import {AddressLine} from "@/types/api/address/type";
 import {Spu} from "@/types/api/product/type";
 
 // 订单结算信息响应类型
@@ -27,9 +27,9 @@ interface OrderSettlementPrice {
 export interface OrderSettlement {
   items: OrderSettlementItem[];
   price: OrderSettlementPrice;
-  receiverAddress: Address;
-  billingAddress: Address;
-  businessAddress: Address;
+  receiverAddress: AddressLine;
+  billingAddress: AddressLine;
+  businessAddress: AddressLine;
   shippingAmount: number;
   taxAmount: number;
   grandTotal: number;
@@ -54,9 +54,9 @@ export interface SubmitOrderItem {
 export interface SubmitOrderRequest {
   items: SubmitOrderItem[];
   deliveryType?: number | null;
-  receiverAddress?: Address | null;
-  billingAddress?: Address | null;
-  businessAddress?: Address | null;
+  receiverAddress?: AddressLine | null;
+  billingAddress?: AddressLine | null;
+  businessAddress?: AddressLine | null;
   receiveUseBilling?: boolean;
   businessUseBilling?: boolean;
   couponId: number | null;

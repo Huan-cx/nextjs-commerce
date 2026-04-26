@@ -1,4 +1,4 @@
-import {GRAPHQL_URL} from "@/utils/constants";
+import {REST_URL} from "@/utils/constants";
 import {signOut} from "next-auth/react";
 import {getServerSession} from "next-auth/next";
 import {authOptions} from "@/utils/auth";
@@ -58,7 +58,7 @@ export async function request<T = any>(options: RequestOptions): Promise<T> {
 
   try {
     const queryString = params ? buildQueryString(params) : '';
-    const requestUrl = `${GRAPHQL_URL}/${url}${queryString ? `?${queryString}` : ''}`;
+    const requestUrl = `${REST_URL}/${url}${queryString ? `?${queryString}` : ''}`;
 
     const defaultHeaders: Record<string, string> = {
       ...(contentType === true ? {"Content-Type": "application/json"} : {}),
@@ -98,6 +98,7 @@ export async function request<T = any>(options: RequestOptions): Promise<T> {
     const result = await response.json();
 
     if (result.code !== 0) {
+      console.log(defaultHeaders);
       if (response.status === 401 && requiresAuth && retryCount < maxRetries) {
         if (isRefreshing) {
           console.warn(`Waiting for concurrent token refresh...`);

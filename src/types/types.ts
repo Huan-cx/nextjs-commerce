@@ -1,5 +1,5 @@
 import {SVGProps} from "react";
-import {Address} from "@/types/api/address/type";
+import {AddressLine} from "@/types/api/address/type";
 
 
 export type Connection<T> = {
@@ -293,7 +293,7 @@ export type BagistoAddressDataTypes = {
     checkoutAddresses: {
       isGuest: boolean;
       customer: {
-        addresses?: Address[];
+        addresses?: AddressLine[];
       };
     };
   };
@@ -302,7 +302,7 @@ export type BagistoAddressDataTypes = {
 export type EditItemTypes = {
   state: boolean;
   type: string;
-  address?: Address;
+  address?: AddressLine;
   label: string;
 };
 

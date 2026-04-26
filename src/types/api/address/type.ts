@@ -3,7 +3,7 @@
 /**
  * 地址类型
  */
-export interface Address {
+export interface AddressLine {
   id: number;
   firstName: string;
   lastName: string;
@@ -59,7 +59,7 @@ export interface AddressAddRequest {
 export interface AddressAddResponse {
   code: number;
   msg: string;
-  data: Address;
+  data: AddressLine;
 }
 
 /**
@@ -75,7 +75,7 @@ export interface AddressUpdateRequest extends AddressAddRequest {
 export interface AddressUpdateResponse {
   code: number;
   msg: string;
-  data: Address;
+  data: AddressLine;
 }
 
 /**
