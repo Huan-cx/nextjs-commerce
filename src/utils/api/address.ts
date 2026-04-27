@@ -5,11 +5,10 @@ import {AddressAddRequest, AddressLine, AddressUpdateRequest, Geo,} from "@/type
  * 获取地址列表
  */
 export async function getAddressList(): Promise<AddressLine[]> {
-  const response = await get<AddressLine[]>("member/address/list", undefined, {
+  return await get<AddressLine[]>("member/address/list", undefined, {
     contentType: 'urlencoded',
     requiresAuth: true
   });
-  return response;
 }
 
 /**
@@ -17,11 +16,10 @@ export async function getAddressList(): Promise<AddressLine[]> {
  * @param params 地址信息
  */
 export async function addAddress(params: AddressAddRequest): Promise<AddressLine> {
-  const response = await post<AddressLine>("member/address/create", params, {
+  return await post<AddressLine>("member/address/create", params, {
     contentType: true,
     requiresAuth: true
   });
-  return response;
 }
 
 /**
@@ -29,11 +27,10 @@ export async function addAddress(params: AddressAddRequest): Promise<AddressLine
  * @param params 地址信息
  */
 export async function updateAddress(params: AddressUpdateRequest): Promise<AddressLine> {
-  const response = await put<AddressLine>("member/address/update", params, {
+  return await put<AddressLine>("member/address/update", params, {
     contentType: true,
     requiresAuth: true
   });
-  return response;
 }
 
 /**
@@ -41,11 +38,10 @@ export async function updateAddress(params: AddressUpdateRequest): Promise<Addre
  * @param id 地址 ID
  */
 export async function deleteAddress(id: number): Promise<boolean> {
-  const response = await del<boolean>("member/address/delete", {id}, {
+  return await del<boolean>("member/address/delete", {id}, {
     contentType: 'urlencoded',
     requiresAuth: true
   });
-  return response;
 }
 
 /**

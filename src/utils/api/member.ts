@@ -1,4 +1,4 @@
-import {get, post} from "@utils/request/request";
+import {get, post, put} from "@utils/request/request";
 
 // ======================= 重置密码 API =======================
 
@@ -46,6 +46,24 @@ export async function logout(): Promise<boolean> {
   return await post<boolean>("member/auth/logout");
 }
 
+// ======================= 发送验证码 API =======================
+
+/**
+ * 发送验证码请求体类型
+ */
+export interface SendCodeRequest {
+  email: string;
+}
+
+/**
+ * 发送验证码
+ */
+export async function sendVerificationCode(request: SendCodeRequest): Promise<boolean> {
+  return await post<boolean>("member/auth/send-verify-code", request, {
+    contentType: true,
+  });
+}
+
 // ======================= 注册 API =======================
 
 /**
@@ -79,11 +97,54 @@ export interface UserInfo {
   "point": number;
   "experience": number;
 }
+
 /**
- * 校验重置密码的 Token
+ * 获取用户信息
  */
 export async function getUserInfo(): Promise<UserInfo> {
   return await get<UserInfo>("member/user/get", {}, {
+    contentType: true,
+    requiresAuth: true,
+  });
+}
+
+// ======================= 用户信息更新 API =======================
+
+/**
+ * 用户信息更新请求体类型
+ */
+export interface UpdateUserInfoRequest {
+  nickname: string;
+  avatar?: string;
+  sex: number;
+  email?: string;
+}
+
+/**
+ * 更新用户信息
+ */
+export async function updateUserInfo(request: UpdateUserInfoRequest): Promise<boolean> {
+  return await put<boolean>("member/user/update", request, {
+    contentType: true,
+    requiresAuth: true,
+  });
+}
+
+// ======================= 修改密码 API =======================
+
+/**
+ * 修改密码请求体类型
+ */
+export interface UpdatePasswordRequest {
+  password: string;
+  code: string;
+}
+
+/**
+ * 修改密码
+ */
+export async function updatePassword(request: UpdatePasswordRequest): Promise<boolean> {
+  return await put<boolean>("member/user/update-password", request, {
     contentType: true,
     requiresAuth: true,
   });

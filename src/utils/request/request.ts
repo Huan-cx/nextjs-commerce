@@ -98,8 +98,7 @@ export async function request<T = any>(options: RequestOptions): Promise<T> {
     const result = await response.json();
 
     if (result.code !== 0) {
-      console.log(defaultHeaders);
-      if (response.status === 401 && requiresAuth && retryCount < maxRetries) {
+      if (result.code === 401 && requiresAuth && retryCount < maxRetries) {
         if (isRefreshing) {
           console.warn(`Waiting for concurrent token refresh...`);
           return await request<T>({...options, retryCount: retryCount + 1});
@@ -135,6 +134,7 @@ export async function request<T = any>(options: RequestOptions): Promise<T> {
                 throw new Error(retryResult?.msg || 'Token refresh failed');
               }
             } else {
+              console.warn(url, '刷新token不存在，退出登陆');
               await signOut({callbackUrl: '/login'});
               throw new Error('No refresh token available');
             }
@@ -142,15 +142,15 @@ export async function request<T = any>(options: RequestOptions): Promise<T> {
 
           return await refreshPromise;
         } catch (refreshError) {
-          console.error('Token 刷新失败:', refreshError);
+          console.error('Token 刷新异常:', refreshError);
           await signOut({callbackUrl: '/login'});
         } finally {
           isRefreshing = false;
           refreshPromise = null;
         }
       }
-
-      throw new Error(result?.msg || `Request failed with status ${response.status}`);
+      console.log(result.code, response.status, response.status === 401, requiresAuth, retryCount < maxRetries)
+      throw new Error(result?.msg || `Request failed with status ${result.status}`);
     }
 
     return (result?.data !== undefined) ? (result.data as T) : (result as T);
