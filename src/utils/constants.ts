@@ -28,7 +28,7 @@ export const CHECKOUT = {
 };
 export const HIDDEN_PRODUCT_TAG = "nextjs-frontend-hidden";
 export const DEFAULT_OPTION = "Default Title";
-export const SERVER_API_ENDPOINT = "/app-api";
+export const SERVER_API_ENDPOINT = "/api/app-api";
 
 /**
  * productJsonLd constant
