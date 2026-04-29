@@ -1,7 +1,7 @@
 "use client";
 
 import {Avatar, Divider, Listbox, ListboxItem} from "@heroui/react";
-import {ChevronRight, Download, Heart, MapPin, Package, Star, User} from "lucide-react";
+import {ChevronRight, MapPin, Package, User} from "lucide-react";
 import {useRouter} from "next/navigation";
 import {useMediaQuery} from "@utils/hooks/useMediaQueryHook";
 import clsx from "clsx";
@@ -10,9 +10,9 @@ const menuItems = [
   {key: "profile", label: "Profile", icon: <User size={18}/>},
   {key: "orders", label: "Orders", icon: <Package size={18}/>},
   {key: "address", label: "Address", icon: <MapPin size={18}/>},
-  {key: "downloads", label: "Downloadable Products", icon: <Download size={18}/>},
-  {key: "reviews", label: "Reviews", icon: <Star size={18}/>},
-  {key: "wishlist", label: "Wishlist", icon: <Heart size={18}/>},
+  // {key: "downloads", label: "Downloadable Products", icon: <Download size={18}/>},
+  // {key: "reviews", label: "Reviews", icon: <Star size={18}/>},
+  // {key: "wishlist", label: "Wishlist", icon: <Heart size={18}/>},
 ];
 
 export const AccountSidebar = ({
