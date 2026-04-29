@@ -8,7 +8,7 @@ import {get, post, put} from "@utils/request/request";
 export async function sendResetPasswordMail(params: { email: string }): Promise<boolean> {
   return await post<boolean>(
       "member/auth/send-reset-password-mail",
-      {params},
+      params,
       {contentType: "urlencoded"}
   );
 }
