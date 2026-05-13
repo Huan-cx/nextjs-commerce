@@ -1,7 +1,7 @@
-import { FC } from "react";
-import type { FunctionComponent } from "react";
+import type {FunctionComponent} from "react";
+import {FC} from "react";
 import clsx from "clsx";
-import Link from "next/link";
+import Link from "@/components/common/Link";
 
 interface TextProps {
   html: string;

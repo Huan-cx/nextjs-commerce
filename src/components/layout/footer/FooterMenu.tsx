@@ -1,31 +1,34 @@
-import Link from "next/link";
+"use client";
+
+import Link from "@/components/common/Link";
 import {ThemeOptions} from "@/types/types";
 import {isArray} from "@/utils/type-guards";
-
-const getUrlparams = (url: string) => {
-  // const splitUrl = url.split("/");
-  //
-  // if (isArray(splitUrl)) {
-  //   const urlLength = splitUrl.length;
-  //
-  //   if (urlLength >= 1) {
-  //     return `/${splitUrl.at(urlLength - 1)}`;
-  //   }
-  // }
-
-  return `/${url}`;
-};
+import {useLocale} from "next-intl";
 
 const FooterMenuItem = ({ item }: { item: ThemeOptions }) => {
+  const locale = useLocale();
+
+  // 获取当前语言的翻译（精确匹配4位语言代码）
+  const translation = item?.translations?.find(
+      (t: any) => t.locale === locale
+  );
+
+  // 优先使用翻译的slug，否则使用默认的slug或title作为URL
+  const slug = translation?.slug || item?.slug || item?.title;
+  const url = `/${slug}`;
+
+  // 优先使用翻译的标题，否则使用默认的title
+  const displayTitle = translation?.title || item?.title;
+
   return (
     <li className="text-selected-black dark:text-neutral-300">
       <Link
-        aria-label={`${item?.title}`}
-        title={`${item?.title}`}
+          aria-label={`${displayTitle}`}
+          title={`${displayTitle}`}
         className="block px-0 py-1 md:p-2 text-nowrap text-sm underline-offset-4 text-selected-black dark:text-neutral-300 hover:text-black hover:underline md:inline-block dark:hover:text-neutral-300"
-        href={getUrlparams(item?.title)}
+          href={url}
       >
-        {item.title}
+        {displayTitle}
       </Link>
     </li>
   );

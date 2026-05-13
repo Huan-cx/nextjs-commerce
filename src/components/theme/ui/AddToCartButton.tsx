@@ -2,7 +2,7 @@
 
 import ShoppingCartIcon from "@components/common/icons/ShoppingCartIcon";
 import clsx from "clsx";
-import Link from "next/link";
+import Link from "@/components/common/Link";
 import {useCart} from "@utils/hooks/useAddToCart";
 import LoadingDots from "@components/common/icons/LoadingDots";
 import {useCustomToast} from "@utils/hooks/useToast";

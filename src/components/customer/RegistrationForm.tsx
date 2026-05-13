@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
+import Link from "@/components/common/Link";
 import {SubmitHandler, useForm} from "react-hook-form";
 import InputText from "@components/common/form/Input";
 import {useCustomToast} from "@/utils/hooks/useToast";
@@ -9,6 +9,7 @@ import {useRouter} from "next/navigation";
 import {EMAIL_REGEX, IS_VALID_INPUT, SIGNUP_IMG} from "@utils/constants";
 import {RegisterRequest, registerUser} from "@utils/api/member";
 import {Button} from "@components/common/button/Button";
+import {useTranslations} from "next-intl";
 
 export type RegisterInputs = {
   firstName: string;
@@ -20,6 +21,7 @@ export type RegisterInputs = {
 
 export default function RegistrationForm() {
   const router = useRouter();
+  const t = useTranslations("auth");
 
   const {
     register,
@@ -63,10 +65,10 @@ export default function RegistrationForm() {
       <div className="relative flex w-full max-w-[583px] flex-col gap-y-4 lg:gap-y-12">
         <div className="font-outfit">
           <h2 className="py-1 text-2xl font-semibold sm:text-4xl">
-            Become User
+            {t("becomeUser")}
           </h2>
           <p className="mt-2 text-base md:text-lg font-normal text-black/[60%] dark:text-neutral-400 sm:mt-2">
-            You are new to our store, we are glad to have you as a member.
+            {t("welcomeMessage")}
           </p>
         </div>
 
@@ -91,10 +93,10 @@ export default function RegistrationForm() {
                     ? [errors.firstName.message]
                     : undefined
                 }
-                label="First Name"
+                label={t("firstName")}
                 labelPlacement="outside"
                 name="firstName"
-                placeholder="Enter first name"
+                placeholder={t("firstNamePlaceholder")}
                 size="lg"
               />
               <InputText
@@ -112,10 +114,10 @@ export default function RegistrationForm() {
                     ? [errors.lastName.message]
                     : undefined
                 }
-                label="Last Name"
+                label={t("lastName")}
                 labelPlacement="outside"
                 name="lastName"
-                placeholder="Enter last name"
+                placeholder={t("lastNamePlaceholder")}
                 size="lg"
               />
             </div>
@@ -129,10 +131,10 @@ export default function RegistrationForm() {
                 },
               })}
               errorMsg={errors.email?.message}
-              label="Email"
+              label={t("email")}
               labelPlacement="outside"
               name="email"
-              placeholder="Enter email address"
+              placeholder={t("emailPlaceholder")}
               size="lg"
             />
 
@@ -155,10 +157,10 @@ export default function RegistrationForm() {
                   return true;
                 },
               })}
-              label="Password"
+              label={t("password")}
               labelPlacement="outside"
               name="password"
-              placeholder="Enter password"
+              placeholder={t("passwordPlaceholder")}
               typeName="password"
               size="lg"
               errorMsg={
@@ -170,10 +172,10 @@ export default function RegistrationForm() {
               {...register("passwordConfirmation", {
                 required: "Please confirm your password",
               })}
-              label="Confirm Password"
+              label={t("confirmPassword")}
               labelPlacement="outside"
               name="passwordConfirmation"
-              placeholder="Enter confirm password"
+              placeholder={t("confirmPasswordPlaceholder")}
               size="lg"
               typeName="password"
             />
@@ -183,13 +185,13 @@ export default function RegistrationForm() {
             <Button
               disabled={isSubmitting}
               loading={isSubmitting}
-              title="Sign Up"
+              title={t("signUp")}
               type="submit"
             />
             <span className="mx-auto md:mx-0 font-outfit">
-              Already have an account?{" "}
+              {t("alreadyHaveAccount")}{" "}
               <Link className="text-blue-600 underline" href="/customer/login" aria-label="Go to sign in page">
-                Sign In
+                {t("signIn")}
               </Link>
             </span>
           </div>

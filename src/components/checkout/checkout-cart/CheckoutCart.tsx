@@ -2,7 +2,7 @@ import {GridTileImage} from "@components/theme/ui/grid/Tile";
 import {Price} from "@components/theme/ui/Price";
 import CartItemAccordion from "./CartItemAccordian";
 import {NOT_IMAGE} from "@utils/constants";
-import Link from "next/link";
+import Link from "@/components/common/Link";
 import {createUrl, safeCurrencyCode} from "@utils/helper";
 import {Cart, CartItem} from "@/types/api/trade/cart";
 import {OrderSettlement} from "@utils/api/trade";

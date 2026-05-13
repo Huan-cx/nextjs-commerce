@@ -10,9 +10,10 @@ import {getVariantInfo} from "@utils/hooks/useSkuInfo";
 import {useSearchParams} from "next/navigation";
 import Prose from "@components/theme/search/Prose";
 import {safeCurrencyCode, safePriceValue} from "@utils/helper";
-import Link from "next/link";
+import Link from "@/components/common/Link";
 import {Comment, Spu} from "@/types/api/product/type";
 import {additionalDataTypes} from "../type";
+import {useTranslationData} from "@/hooks/useTranslationData";
 
 // 从 Spu 中提取附加属性
 const extractAdditionalData = (product: Spu): additionalDataTypes[] => {
@@ -63,10 +64,15 @@ export function ProductDescription({
   avgRating: number;
   totalReview: number;
 }) {
+  const {getName, getIntroduction, getDescription} = useTranslationData();
   const priceValue = safePriceValue(product);
   const currencyCode = safeCurrencyCode(product);
   const searchParams = useSearchParams();
   const [userInteracted, setUserInteracted] = useState(false);
+
+  const productName = getName(product, product.name || "");
+  const productIntroduction = getIntroduction(product, product.introduction || "");
+  const productDescription = getDescription(product, product.description || "");
 
   const variantInfo = getVariantInfo(
       product,
@@ -94,7 +100,7 @@ export function ProductDescription({
             </Link>
           </div>
           <h1 className="font-outfit text-2xl md:text-3xl lg:text-4xl font-semibold">
-            {product?.name || ""}
+            {productName}
           </h1>
 
           <div
@@ -140,9 +146,9 @@ export function ProductDescription({
             />
         )}
 
-        {product?.introduction ? (
+        {productIntroduction ? (
             <Prose className="mb-6 text-base text-selected-black dark:text-white font-light"
-                   html={product.introduction}/>
+                   html={productIntroduction}/>
         ) : null}
 
         <AddToCart
@@ -152,7 +158,7 @@ export function ProductDescription({
 
         <ProductMoreDetails
             additionalData={additionalData}
-            description={product?.description ?? ""}
+            description={productDescription}
             reviews={Array.isArray(reviews) ? reviews : []}
             totalReview={totalReview}
             productId={product?.id || 0}

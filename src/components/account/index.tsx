@@ -10,8 +10,10 @@ import {OrderDetailView} from "./views/OrderDetail";
 import {UserInfo} from "@utils/api/member";
 import {OrderDetail} from "@utils/api/trade";
 import {useQuery} from "@tanstack/react-query";
+import {useTranslations} from "next-intl";
 
 export const AccountContainer = ({userInfo, activeKey}: { userInfo: UserInfo | null, activeKey?: string }) => {
+  const t = useTranslations("account");
   //1. 内部状态管理（如果是 SPA 模式使用 state，如果是路由模式则使用 usePathname）
   const [activeTab, setActiveTab] = useState(activeKey || "profile");
   const [selectedOrderId, setSelectedOrderId] = useState<number | null>(null);
@@ -39,7 +41,7 @@ export const AccountContainer = ({userInfo, activeKey}: { userInfo: UserInfo | n
   const renderContent = () => {
 
     if (!userInfo) {
-      return <div className="flex items-center justify-center h-full">Failed to load user information</div>;
+      return <div className="flex items-center justify-center h-full">{t("loadFailed")}</div>;
     }
 
     // 如果选择了订单详情，显示订单详情
@@ -47,7 +49,7 @@ export const AccountContainer = ({userInfo, activeKey}: { userInfo: UserInfo | n
       if (!orderData) {
         return (
             <div className="max-w-6xl mx-auto p-6">
-              <p>Loading order details...</p>
+              <p>{t("loadingOrderDetails")}</p>
             </div>
         );
       }
@@ -81,7 +83,7 @@ export const AccountContainer = ({userInfo, activeKey}: { userInfo: UserInfo | n
                   onSelect={setActiveTab}
               />
           )}
-          <main className="flex-1 bg-white border border-default-100 rounded-2xl overflow-y-auto">
+          <main className="flex-1 bg-white border border-default-100 rounded-2xl p-4 md:p-10 shadow-sm overflow-y-auto">
             {renderContent()}
           </main>
         </div>

@@ -1,11 +1,12 @@
 "use client"
 
 import {FC} from "react";
-import Link from "next/link";
+import Link from "@/components/common/Link";
 import clsx from "clsx";
 import {GridTileImage} from "@/components/theme/ui/grid/Tile";
 import {Spu} from "@/types/api/product/type";
-import {NOT_IMAGE} from "@/utils/constants"; // 导入 NOT_IMAGE
+import {NOT_IMAGE} from "@/utils/constants";
+import {useTranslationData} from "@/hooks/useTranslationData";
 
 interface ThreeItemGridProps {
     title: string;
@@ -18,6 +19,11 @@ function ThreeItemGridItem({ product, size, priority }: {
     size: 'full' | 'half';
     priority?: boolean;
 }) {
+  const {getName} = useTranslationData();
+  const productName = getName(product, product.name || "");
+  // 优先使用产品本身的slug，不使用多语言翻译的slug，最后回退到id
+  const productSlug = product.slug || String(product.id);
+    
     return (
         <div
             className={
@@ -28,8 +34,8 @@ function ThreeItemGridItem({ product, size, priority }: {
         >
             <Link
                 className="relative block h-full w-full"
-                href={`/product/${product.id}`}
-                aria-label={`${product?.name}`}
+                href={`/product/${productSlug}`}
+                aria-label={`${productName}`}
                 style={{
                     aspectRatio: size === 'full' ? '1018 / 800' : '502 / 393'
                 }}
@@ -44,10 +50,10 @@ function ThreeItemGridItem({ product, size, priority }: {
                             : '(min-width: 768px) 33vw, 100vw'
                     }
                     priority={priority}
-                    alt={product.name || 'Product Image'}
+                    alt={productName || 'Product Image'}
                     label={{
                         position: size === 'full' ? 'center' : 'bottom',
-                      title: product.name || 'Product Image',
+                      title: productName || 'Product Image',
                       amount: product.price || 0,
                         currencyCode: 'USD',
                     }}
@@ -63,6 +69,10 @@ function MobileThreeItemGridItem({ product, size, priority }: {
     size: 'full' | 'half';
     priority?: boolean;
 }) {
+  const {getName} = useTranslationData();
+  const productName = getName(product, product.name || "");
+  // 优先使用产品本身的slug，不使用多语言翻译的slug，最后回退到id
+  const productSlug = product.slug || String(product.id);
 
     return (
         <div
@@ -75,18 +85,18 @@ function MobileThreeItemGridItem({ product, size, priority }: {
                     "relative block h-full w-full aspect-[380/280]",
                     size === "half" && "xxs:aspect-[182/280]"
                 )}
-                href={`/product/${product.id}`}
-                aria-label={`${product?.name}`}
+                href={`/product/${productSlug}`}
+                aria-label={`${productName}`}
             >
                 <GridTileImage
                     src={product.picUrl || NOT_IMAGE}
                     className="object-cover "
                     fill
                     priority={priority}
-                    alt={product.name || 'Product Image'}
+                    alt={productName || 'Product Image'}
                     label={{
                         position: size === 'full' ? 'center' : 'bottom',
-                      title: product.name || 'Product Image',
+                      title: productName || 'Product Image',
                       amount: product.price || 0,
                         currencyCode: 'USD',
                     }}

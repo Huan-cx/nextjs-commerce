@@ -1,9 +1,9 @@
 "use client";
 
-import { FC, useState, useEffect, useCallback, useRef } from "react";
-import Link from "next/link";
+import {FC, useCallback, useEffect, useRef, useState} from "react";
+import Link from "@/components/common/Link";
 import Image from "next/image";
-import { Shimmer } from "@/components/common/Shimmer";
+import {Shimmer} from "@/components/common/Shimmer";
 
 interface ImageCarouselProps {
     options: {
@@ -160,6 +160,7 @@ const ImageCarousel: FC<ImageCarouselProps> = ({ options }) => {
                                             className="object-cover !z-0"
                                             priority={index === 0}
                                             sizes="100vw"
+                                            loading={index === 0 ? "eager" : "lazy"}
                                         />
                                     </div>
                                 </Link>

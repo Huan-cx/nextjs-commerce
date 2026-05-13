@@ -8,8 +8,9 @@ import {delay} from "@utils/helper";
 import {EmailFormProps, EmailFormValues} from "../type";
 import {EMAIL_REGEX} from "@utils/constants";
 import InputText from "@components/common/form/Input";
-import Link from "next/link";
+import Link from "@/components/common/Link";
 import {ProceedToCheckout} from "@components/checkout/stepper/ProceedToCheckout";
+import {useTranslations} from "next-intl";
 
 const
     Email = () => {
@@ -101,6 +102,7 @@ function EmailForm({
   isSubmitting,
   isGuest,
 }: EmailFormProps) {
+  const t = useTranslations("checkout");
   return (
     <div>
       <InputText
@@ -115,8 +117,8 @@ function EmailForm({
           }
         })}
         errorMsg={errors?.email?.message as string}
-        label="Enter Email *"
-        placeholder="example@gmail.com"
+        label={t("email")}
+        placeholder={t("emailPlaceholder")}
         readOnly={!isGuest}
       />
 

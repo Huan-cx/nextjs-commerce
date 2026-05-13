@@ -4,13 +4,19 @@ import {Tab, Tabs} from "@heroui/react";
 import {Spu} from "@/types/api/product/type";
 import Prose from "@components/theme/search/Prose";
 import React from "react";
+import {useTranslations} from "next-intl";
+import {useTranslationData} from "@/hooks/useTranslationData";
 
 
 export default function ProductTabs({product}: { product: Spu }) {
+  const t = useTranslations("product");
+  const {getDescription} = useTranslationData();
+  const description = getDescription(product, product.description || "");
+  
   return (
       <div className="flex w-full flex-col items-center mt-16">
         <Tabs
-            aria-label="Product Details"
+            aria-label={t("details")}
             variant="underlined"
             size="lg"
             color="secondary"
@@ -23,9 +29,9 @@ export default function ProductTabs({product}: { product: Spu }) {
               tabContent: "text-zinc-600 dark:text-zinc-300 group-data-[selected=true]:text-black dark:group-data-[selected=true]:text-white",
             }}
         >
-          <Tab key="description" title="Description">
+          <Tab key="description" title={t("description")}>
             <Prose className="pb-2 pt-16 text-selected-black dark:text-white font-light max-w-[1270px] mx-auto"
-                   html={product?.description || ""}/>
+                   html={description}/>
           </Tab>
 
         </Tabs>

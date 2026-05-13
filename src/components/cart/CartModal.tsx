@@ -14,14 +14,15 @@ import {EditItemQuantityButton} from "../common/icons/cart/EditItemQuantityButto
 import {useCartDetail} from "@utils/hooks/useCartDetail";
 import Image from "next/image";
 import {NOT_IMAGE} from "@utils/constants";
-import Link from "next/link";
+import Link from "@/components/common/Link";
 import {useMediaQuery} from "@utils/hooks/useMediaQueryHook";
 import {useBodyScrollLock} from "@utils/hooks/useBodyScrollLock";
 import {useSyncExternalStore} from "react";
 import {useFormStatus} from "react-dom";
 import {redirectToCheckout} from "@/utils/actions";
-import {createUrl, isCheckout} from "@utils/helper";
+import {createUrl, isCheckout} from "@/utils/helper";
 import LoadingDots from "@components/common/icons/LoadingDots";
+import {useTranslations} from "next-intl";
 
 type MerchandiseSearchParams = {
   [key: string]: string;
@@ -39,6 +40,7 @@ export default function CartModal({
   onClose?: () => void;
   isOpen?: boolean;
 }) {
+  const t = useTranslations("cart");
   const {
     isOpen: internalIsOpen,
     onOpen: internalOnOpen,
@@ -106,7 +108,7 @@ export default function CartModal({
               <>
                 <DrawerHeader className="flex flex-col gap-1">
                   <div className="flex items-center justify-between">
-                    <p className="text-lg font-semibold">My Cart</p>
+                    <p className="text-lg font-semibold">{t("title")}</p>
                     <button
                       aria-label="Close cart"
                       className="cursor-pointer"
@@ -122,7 +124,7 @@ export default function CartModal({
                     <div className="mt-20 flex w-full flex-col items-center justify-center overflow-hidden">
                       <ShoppingCartIcon className="h-16" />
                       <p className="mt-6 text-center text-2xl font-bold">
-                        Your cart is empty.
+                        {t("empty")}
                       </p>
                     </div>
                   ) : (
@@ -192,8 +194,13 @@ export default function CartModal({
                                         <EditItemQuantityButton
                                           item={item}
                                           type="minus"
+                                          step={10}
                                         />
-                                        <p className="w-6 text-center">
+                                        <EditItemQuantityButton
+                                            item={item}
+                                            type="minus"
+                                        />
+                                        <p className="w-8 text-center">
                                           <span className="w-full text-sm">
                                             {item?.count}
                                           </span>
@@ -201,6 +208,11 @@ export default function CartModal({
                                         <EditItemQuantityButton
                                           item={item}
                                           type="plus"
+                                        />
+                                        <EditItemQuantityButton
+                                            item={item}
+                                            type="plus"
+                                            step={10}
                                         />
                                       </div>
                                     </div>
@@ -214,7 +226,7 @@ export default function CartModal({
                       <div className="border-0 border-t border-solid border-neutral-200 dark:border-dark-grey py-4 text-sm text-neutral-500 dark:text-neutral-400">
                         <div className="mb-3 flex items-center justify-between pb-1">
                           <p className="text-base font-normal text-black/[60%] dark:text-white">
-                            Total
+                            {t("total")}
                           </p>
                           <Price
                               amount={grandTotal}
@@ -232,6 +244,7 @@ export default function CartModal({
                             isSelectShipping={false}
                             isSelectAddress={false}
                             isSelectPayment={false}
+                            t={t}
                         />
                       </form>
                     </div>
@@ -283,7 +296,7 @@ export default function CartModal({
                         isDesktop ? "text-lg" : "text-xl",
                       )}
                     >
-                      My Cart
+                      {t("title")}
                     </p>
                     {isDesktop && (
                       <button
@@ -307,7 +320,7 @@ export default function CartModal({
                     <div className="mt-20 flex w-full flex-col items-center justify-center overflow-hidden">
                       <ShoppingCartIcon className="h-16" />
                       <p className="mt-6 text-center text-2xl font-bold">
-                        Your cart is empty.
+                        {t("empty")}
                       </p>
                     </div>
                   ) : (
@@ -357,7 +370,7 @@ export default function CartModal({
                                       </span>
                                       {item.spu.name !== DEFAULT_OPTION && (
                                         <p className="text-sm lowercase line-clamp-1 text-black dark:text-neutral-400">
-                                          {item?.sku?.name || "颜色"}
+                                          {item?.sku?.name || "ÃƒÂ©Ã‚Â¢Ã…â€œÃƒÂ¨Ã¢â‚¬Â°Ã‚Â²"}
                                         </p>
                                       )}
                                     </div>
@@ -374,8 +387,13 @@ export default function CartModal({
                                         <EditItemQuantityButton
                                           item={item}
                                           type="minus"
+                                          step={10}
                                         />
-                                        <p className="w-6 text-center">
+                                        <EditItemQuantityButton
+                                            item={item}
+                                            type="minus"
+                                        />
+                                        <p className="w-8 text-center">
                                           <span className="w-full text-sm">
                                             {item?.count}
                                           </span>
@@ -383,6 +401,11 @@ export default function CartModal({
                                         <EditItemQuantityButton
                                           item={item}
                                           type="plus"
+                                        />
+                                        <EditItemQuantityButton
+                                            item={item}
+                                            type="plus"
+                                            step={10}
                                         />
                                       </div>
                                     </div>
@@ -396,7 +419,7 @@ export default function CartModal({
                       <div className="border-0 border-t border-solid border-neutral-200 dark:border-dark-grey py-4 text-sm text-neutral-500 dark:text-neutral-400">
                         <div className="mb-3 flex items-center justify-between pb-1">
                           <p className="text-base font-normal text-black/[60%] dark:text-white">
-                            Total
+                            {t("total")}
                           </p>
                           <Price
                               amount={String(grandTotal / 100)}
@@ -410,9 +433,10 @@ export default function CartModal({
                               cartDetails={cart ?? []}
                               isGuest={!isAuthenticated}
                               email={user?.email}
-                              isSelectShipping={false}
                               isSelectAddress={false}
+                              isSelectShipping={false}
                               isSelectPayment={false}
+                              t={t}
                           />
                         </form>
                       </div>
@@ -437,6 +461,7 @@ function CheckoutButton({
                           isSelectAddress,
   isSelectShipping,
   isSelectPayment,
+                          t,
 }: {
   cartDetails: Array<any>;
   isGuest: boolean;
@@ -444,6 +469,7 @@ function CheckoutButton({
   isSelectAddress: boolean;
   isSelectShipping: boolean;
   isSelectPayment: boolean;
+  t: ReturnType<typeof useTranslations>;
 }) {
   const { pending } = useFormStatus();
 
@@ -469,7 +495,7 @@ function CheckoutButton({
         disabled={pending || cartDetails.length === 0}
         type="submit"
       >
-        {pending ? <LoadingDots className="bg-white" /> : "Proceed to Checkout"}
+        {pending ? <LoadingDots className="bg-white"/> : t("checkout")}
       </button>
     </>
   );

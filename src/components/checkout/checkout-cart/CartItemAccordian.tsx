@@ -4,7 +4,7 @@ import {Accordion, AccordionItem} from "@heroui/accordion";
 import {ChevronLeftIcon, ChevronRightIcon} from "@heroicons/react/24/outline";
 import {createUrl} from "@utils/helper";
 import Image from "next/image";
-import Link from "next/link";
+import Link from "@/components/common/Link";
 import {Cart, CartItem} from "@/types/api/trade/cart";
 import {OrderSettlement} from "@utils/api/trade";
 

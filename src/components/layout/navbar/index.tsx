@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "@/components/common/Link";
 import {Suspense} from "react";
 import Search from "./Search";
 import {SearchSkeleton} from "@/components/common/skeleton/SearchSkeleton";
@@ -9,7 +9,7 @@ import {NavbarErrorBoundary} from "@components/error/ErrorBoundary";
 import {NavigationSkeleton} from "@components/layout/navbar/NavigationSkeleton";
 import {CategoriesMenu} from "@components/layout/navbar/CategoriesMenu";
 
-export default async function Navbar() {
+export default function Navbar() {
   return (
       <NavbarErrorBoundary>
         <>

@@ -3,7 +3,7 @@
 import clsx from "clsx";
 import {getSession, signIn} from "next-auth/react";
 import Image from "next/image";
-import Link from "next/link";
+import Link from "@/components/common/Link";
 import {useRouter} from "next/navigation";
 import {SubmitHandler, useForm} from "react-hook-form";
 import {Button} from "@components/common/button/Button";
@@ -15,6 +15,7 @@ import {useAppDispatch, useAppSelector} from "@/store/hooks";
 import {setUser} from "@/store/slices/user-slice";
 import {useCartDetail} from "@utils/hooks/useCartDetail";
 import {mergeCart} from "@/utils/api/cart";
+import {useTranslations} from "next-intl";
 
 
 type LoginFormInputs = {
@@ -28,6 +29,8 @@ export default function LoginForm() {
   const { showToast } = useCustomToast();
   const {getCartDetail} = useCartDetail();
   const localCart = useAppSelector((state) => state.cartDetail.cart);
+  const t = useTranslations("auth");
+  const loginT = useTranslations("loginForm");
 
 
   const {
@@ -47,10 +50,10 @@ export default function LoginForm() {
         callbackUrl: "/",
       });
       if (!result?.ok) {
-        showToast(result?.error || "Invalid login credentials.", "warning");
+        showToast(result?.error || loginT("invalidCredentials"), "warning");
         return;
       }
-      showToast("Welcome! Successfully logged in.", "success");
+      showToast(loginT("welcomeMessage"), "success");
       setLocalStorage("email", data?.username)
 
       const session = await getSession();
@@ -67,7 +70,7 @@ export default function LoginForm() {
           await mergeCart(mergeItems);
         } catch (err) {
           console.error("mergeCart failed:", err);
-          showToast("Could not merge your cart. Please contact support.", "danger");
+          showToast(loginT("mergeCartFailed"), "danger");
         }
       }
 
@@ -81,7 +84,7 @@ export default function LoginForm() {
 
     } catch (error) {
       console.error(error);
-      showToast("Something went wrong. Please try again.", "danger");
+      showToast(loginT("errorMessage"), "danger");
     }
   };
 
@@ -91,10 +94,10 @@ export default function LoginForm() {
       <div className="flex w-full max-w-[583px] flex-col gap-y-4 lg:gap-y-12">
         <div className="font-outfit">
           <h2 className="py-1 text-2xl font-semibold sm:text-4xl">
-            Sign in to your account
+            {loginT("title")}
           </h2>
           <p className="mt-2  text-base md:text-lg font-normal text-black/60 dark:text-neutral-400">
-            If you have an account, sign in with your email address.
+            {loginT("description")}
           </p>
         </div>
 
@@ -106,19 +109,19 @@ export default function LoginForm() {
           <div className="flex flex-col gap-y-2.5 lg:gap-4">
             <InputText
               {...register("username", {
-                required: "Email is required",
+                required: loginT("emailRequired"),
                 pattern: {
                   value: EMAIL_REGEX,
-                  message: "Please enter a valid email.",
+                  message: loginT("emailInvalid"),
                 },
               })}
               errorMsg={
                 errors.username?.message ? [errors.username.message] : undefined
               }
-              label="Enter Your Email Address"
+              label={loginT("emailLabel")}
               labelPlacement="outside"
               name="username"
-              placeholder="Enter your email address"
+              placeholder={loginT("emailPlaceholder")}
               rounded="md"
               size="lg"
               typeName="email"
@@ -126,15 +129,15 @@ export default function LoginForm() {
 
             <InputText
               {...register("password", {
-                required: "Password is required",
+                required: loginT("passwordRequired"),
                 minLength: {
                   value: 2,
-                  message: "Be at least 2 characters long",
+                  message: loginT("passwordMinLength"),
                 },
                 validate: (value) => {
                   // Correctly check for any digit, not just 0-2.
                   if (!/[0-9]/.test(value))
-                    return "Contain at least one number.";
+                    return loginT("passwordNumber");
 
                   return true;
                 },
@@ -142,10 +145,10 @@ export default function LoginForm() {
               errorMsg={
                 errors.password?.message ? [errors.password.message] : undefined
               }
-              label="Enter Password"
+              label={loginT("passwordLabel")}
               labelPlacement="outside"
               name="password"
-              placeholder="Enter your password"
+              placeholder={loginT("passwordPlaceholder")}
               rounded="md"
               size="lg"
               typeName="password"
@@ -156,7 +159,7 @@ export default function LoginForm() {
               href="/customer/forget-password"
               aria-label="Go to forgot password page"
             >
-              Forgot your password ?
+              {loginT("forgotPassword")}
             </Link>
           </div>
 
@@ -165,17 +168,17 @@ export default function LoginForm() {
               className="cursor-pointer"
               disabled={isSubmitting}
               loading={isSubmitting}
-              title="Sign In"
+              title={t("signIn")}
               type="submit"
             />
             <span className="mx-auto font-outfit sm:mx-0">
-              New customer?{" "}
+              {t("newCustomer")}{" "}
               <Link
                 className="font-medium text-blue-600 hover:text-blue-500 underline"
                 href="/customer/register"
                 aria-label="Go to create account page"
               >
-                Create your account
+                {t("createAccount")}
               </Link>
             </span>
           </div>

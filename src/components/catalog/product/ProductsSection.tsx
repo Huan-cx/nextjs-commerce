@@ -19,15 +19,10 @@ export function ProductsSection({ title, description, products }: ProductsSectio
             <ProductCard
               key={item.id ?? index}
               currency="USD"
-              product={{
-                id: item.id ? item.id : 0,
-                name: item?.name || "",
-                skus: item.skus || []
-              }}/>
+              product={item}/>
           );
         })}
       </Grid>
     </div>
   );
 }
-

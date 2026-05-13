@@ -38,9 +38,23 @@ export async function getProductSpu(params: {
   return get<Spu>(`product/spu/get-detail?id=${params.id}`);
 }
 
+/* 通过slug获取商品详情 */
+export async function getProductSpuBySlug(params: {
+  slug: string;
+}): Promise<Spu> {
+  return get<Spu>(`product/spu/get-detail-by-slug?slug=${params.slug}`);
+}
+
 /* 获取商品分类树形结构 */
 export async function getCategoryTree(): Promise<Category[]> {
   return get<Category[]>("product/category/tree");
+}
+
+/* 通过slug获取商品分类 */
+export async function getCategoryBySlug(params: {
+  slug: string;
+}): Promise<Category> {
+  return get<Category>(`product/category/get-by-slug?slug=${params.slug}`);
 }
 
 /**

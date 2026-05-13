@@ -9,12 +9,14 @@ import {useProductReview} from "@utils/hooks/useProductReview";
 import Image from "next/image";
 import {AddUploadImage} from "@components/common/icons/AddUploadImage";
 import {CreateProductReviewRequest} from "@utils/api/trade";
+import {useTranslations} from "next-intl";
 
 export default function AddProductReview({
   onClose,
 }: {
   onClose: () => void;
 }) {
+  const t = useTranslations("productReview");
   const [imageFile, setImageFile] = useState<string | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [errors, setErrors] = useState({
@@ -54,22 +56,22 @@ export default function AddProductReview({
     };
 
     if (!reviewInfo.title.trim()) {
-      newErrors.title = "Title is required";
+      newErrors.title = t("titleRequired");
     }
 
     if (!reviewInfo.comment.trim()) {
-      newErrors.comment = "Comment is required";
+      newErrors.comment = t("commentRequired");
     }
 
     if (reviewInfo.rating === 0) {
-      newErrors.rating = "Please select a rating";
+      newErrors.rating = t("selectRating");
     }
 
     setErrors(newErrors);
 
     // If there are errors, don't submit
     if (newErrors.title || newErrors.comment || newErrors.rating) {
-      showToast("Please fill in all required fields", "danger");
+      showToast(t("fillRequiredFields"), "danger");
       return;
     }
 
@@ -98,9 +100,11 @@ export default function AddProductReview({
         comment: "",
         rating: "",
       });
+      showToast(t("submitSuccess"), "success");
+      onClose();
     } catch (error) {
       console.error("Error submitting review:", error);
-      showToast("Failed to submit review. Please try again.", "danger");
+      showToast(t("submitFailed"), "danger");
     }
   };
 
@@ -110,12 +114,12 @@ export default function AddProductReview({
       className="w-full max-w-4xl mx-auto p-4 md:p-6 rounded-xl relative"
     >
       <div className="flex mb-4">
-        <h1 className="text-xl font-semibold">Write a review</h1>
+        <h1 className="text-xl font-semibold">{t("title")}</h1>
         <button
           type="button"
           onClick={onClose}
           className="absolute top-4 right-4 z-50 p-2 rounded-full bg-gray-100 hover:bg-gray-200 dark:bg-neutral-300 dark:hover:bg-neutral-700 text-gray-500 hover:text-gray-700 dark:hover:text-gray-400 transition-colors"
-          aria-label="Close review form"
+          aria-label={t("closeForm")}
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -141,7 +145,7 @@ export default function AddProductReview({
                 <div className="relative mx-auto">
                   <Image
                     src={imagePreview}
-                    alt="Preview"
+                    alt={t("preview")}
                     width={120}
                     height={120}
                     className="w-full h-full object-cover rounded-lg"
@@ -184,7 +188,7 @@ export default function AddProductReview({
                   </div>
 
                   <div className="text-sm text-center">
-                    <span className="font-medium">Add Image</span>
+                    <span className="font-medium">{t("addImage")}</span>
                   </div>
 
                   <input
@@ -205,7 +209,7 @@ export default function AddProductReview({
         <div className="flex flex-col gap-4">
           <div>
             <label className="block text-base font-semibold  mb-1">
-              Rating
+              {t("rating")}
             </label>
             <AddRatingStar
               value={reviewInfo.rating}
@@ -222,8 +226,8 @@ export default function AddProductReview({
           </div>
 
           <Textarea
-            label="Title"
-            placeholder="Title"
+              label={t("reviewTitle")}
+              placeholder={t("reviewTitlePlaceholder")}
             labelPlacement="outside"
             value={reviewInfo.title}
             onChange={(e) => {
@@ -242,8 +246,8 @@ export default function AddProductReview({
           />
 
           <Textarea
-            label="Comment"
-            placeholder="Comment"
+              label={t("comment")}
+              placeholder={t("commentPlaceholder")}
             labelPlacement="outside"
             value={reviewInfo.comment}
             onChange={(e) => {
@@ -261,7 +265,7 @@ export default function AddProductReview({
           />
           <div className="w-32">
             <Button
-              title={isLoading ? "Submitting..." : "Submit"}
+                title={isLoading ? t("submitting") : t("submit")}
               type="submit"
               disabled={isLoading}
               className="w-full mt-4 rounded-2xl"

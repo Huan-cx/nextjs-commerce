@@ -10,33 +10,46 @@ function SubmitButton({
   type,
   handleUpdateCart,
   pending,
+                        step = 1,
 }: {
   type: "plus" | "minus";
-  handleUpdateCart: (_: "plus" | "minus") => void;
+  handleUpdateCart: (_: "plus" | "minus", step: number) => void;
   pending: boolean;
+  step?: number;
 }) {
   return (
     <button
       aria-disabled={pending}
       aria-label={
-        type === "plus" ? "Increase item quantity" : "Reduce item quantity"
+        type === "plus"
+            ? `Increase item quantity by ${step}`
+            : `Reduce item quantity by ${step}`
       }
       className={clsx(
-        "ease flex h-full cursor-pointer min-w-[36px] max-w-[36px] flex-none items-center justify-center rounded-full px-2 transition-all duration-200 hover:border-neutral-800 hover:opacity-80",
+          "ease flex h-full cursor-pointer flex-none items-center justify-center rounded-full px-2 transition-all duration-200 hover:border-neutral-800 hover:opacity-80",
         {
           "cursor-wait": pending,
-          "ml-auto": type === "minus",
+          "min-w-[36px] max-w-[36px]": step === 1,
+          "min-w-[40px] max-w-[40px] text-xs font-medium": step > 1,
         }
       )}
       type="button"
-      onClick={() => handleUpdateCart(type)}
+      onClick={() => handleUpdateCart(type, step)}
     >
       {pending ? (
         <LoadingDots className="bg-black dark:bg-white" />
       ) : type === "plus" ? (
-        <PlusIcon className="h-4 w-4 dark:text-neutral-100" />
+          step === 1 ? (
+              <PlusIcon className="h-4 w-4 dark:text-neutral-100"/>
+          ) : (
+              <span className="text-black dark:text-white">+{step}</span>
+          )
       ) : (
-        <MinusIcon className="h-4 w-4 dark:text-neutral-100" />
+          step === 1 ? (
+              <MinusIcon className="h-4 w-4 dark:text-neutral-100"/>
+          ) : (
+              <span className="text-black dark:text-white">-{step}</span>
+          )
       )}
     </button>
   );
@@ -45,18 +58,21 @@ function SubmitButton({
 export function EditItemQuantityButton({
   item,
   type,
+                                         step = 1,
 }: {
   item: CartItem;
   type: "plus" | "minus";
+  step?: number;
 }) {
-
   const {onUpdateItem, isUpdateLoading} = useCart();
   const {isGuest} = useAuthStatus();
-  
-  const handleUpdateCart = throttle((type: "plus" | "minus") => {
+
+  const handleUpdateCart = throttle((type: "plus" | "minus", step: number) => {
     if (isUpdateLoading) return;
 
-    const newCount = type === "plus" ? item.count + 1 : item.count - 1;
+    const newCount = type === "plus"
+        ? item.count + step
+        : Math.max(1, item.count - step);
     onUpdateItem(item, newCount, isGuest);
   }, 200);
 
@@ -66,6 +82,7 @@ export function EditItemQuantityButton({
       handleUpdateCart={handleUpdateCart}
       pending={isUpdateLoading}
       type={type}
+      step={step}
     />
   );
 }

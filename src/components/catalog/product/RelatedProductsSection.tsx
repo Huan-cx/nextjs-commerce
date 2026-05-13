@@ -1,13 +1,16 @@
 import {ProductsSection} from "./ProductsSection";
 import {Spu} from "@/types/api/product/type";
+import {useTranslations} from "next-intl";
 
-export async function RelatedProductsSection(
+export function RelatedProductsSection(
 //     {
 //   fullPath,
 // }: {
 //   fullPath: string;
 // }
 ) {
+  const t = useTranslations("home");
+  
   // async function getRelatedProduct(urlKey: string) {
   //  return null;
   // }
@@ -17,8 +20,8 @@ export async function RelatedProductsSection(
   const relatedProducts: Spu[] = [];
   return (
     <ProductsSection
-      title="Related Products"
-      description="Discover the latest trends! Fresh products just added—shop new styles, tech, and essentials before they're gone."
+        title={t("relatedProducts")}
+        description={t("productCarouselDescription")}
       products={relatedProducts}
     />
   );

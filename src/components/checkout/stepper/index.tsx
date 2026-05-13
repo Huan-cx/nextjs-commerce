@@ -1,4 +1,6 @@
-import Link from "next/link";
+"use client";
+
+import Link from "@/components/common/Link";
 import {useMemo} from "react";
 import LogoIcon from "@components/common/icons/LogoIcon";
 import Email from "./Email";
@@ -7,6 +9,7 @@ import Shipping from "./shipping";
 import Payment from "./payment";
 import Review from "./review";
 import {OrderSettlement} from "@utils/api/trade";
+import {useTranslations} from "next-intl";
 
 
 const { SITE_NAME } = process.env;
@@ -30,20 +33,21 @@ export default function Stepper(
     currentStep,
   }: CheckOutProps
 ) {
+  const t = useTranslations("checkout");
 
   const steps = useMemo<Step[]>(() => {
     return [
       {
         id: 1,
         key: "email",
-        title: "Email",
+        title: t("email"),
         href: "/checkout",
         component: <Email />,
       },
       {
         id: 2,
         key: "address",
-        title: "Address",
+        title: t("address"),
         href: "/checkout",
         component:
             <AddAddressForm
@@ -52,7 +56,7 @@ export default function Stepper(
       {
         id: 3,
         key: "shipping",
-        title: "Shipping",
+        title: t("shipping"),
         href: "/checkout?step=address",
         component: <Shipping
           currentStep={currentStep}
@@ -61,7 +65,7 @@ export default function Stepper(
       {
         id: 4,
         key: "payment",
-        title: "Payment",
+        title: t("payment"),
         href: "/checkout?step=shipping",
         component: (
           <Payment
@@ -72,7 +76,7 @@ export default function Stepper(
       {
         id: 5,
         key: "review",
-        title: "Review",
+        title: t("review"),
         href: "/checkout?step=payment",
         component: (
           <Review
@@ -84,6 +88,7 @@ export default function Stepper(
   }, [
     currentStep,
     settlementData,
+    t,
   ]);
 
   const currentStepIndex = steps.findIndex((s) => s.key === currentStep);

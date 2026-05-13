@@ -1,3 +1,13 @@
+export interface I18nArticleVO {
+  locale: string;  // 语言代码，如 zh-CN, en-US, fr-FR
+  title: string;         // 标题翻译
+  introduction: string;  // 简介翻译
+  content: string;       // 内容翻译
+  slug: string;          // URL友好名称翻译
+  metaTitle?: string;    // SEO标题翻译
+  metaDescription?: string; // SEO描述翻译
+}
+
 export interface AppArticle {
   /*文章编号 */
   id: number;
@@ -28,6 +38,18 @@ export interface AppArticle {
 
   /*关联的商品 SPU 编号 */
   spuId: number;
+
+  /*多语言翻译列表 */
+  translations?: I18nArticleVO[];
+
+  /*SEO标题 */
+  metaTitle?: string;
+
+  /*SEO描述 */
+  metaDescription?: string;
+
+  /*URL友好名称 */
+  slug?: string;
 }
 
 export interface FooterColumns {

@@ -7,12 +7,14 @@ import {usePathname, useRouter, useSearchParams} from "next/navigation";
 import {FC, useEffect, useState} from "react";
 import {Button, Drawer, DrawerBody, DrawerContent, DrawerHeader, useDisclosure,} from "@heroui/react";
 import {SortIcon} from "@components/common/icons/SortIcon";
+import {useTranslations} from "next-intl";
 
 
 const SortOrder: FC<{
   sortOrders: SortOrderTypes[];
   title: string;
 }> = ({ sortOrders, title }) => {
+  const t = useTranslations("filters");
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const router = useRouter();
@@ -66,7 +68,7 @@ const SortOrder: FC<{
           selectedKeys={[sort]}
           isMultiline={false}
           items={sortOrders}
-          placeholder="Select a Sort Order"
+          placeholder={t("sortPlaceholder")}
           classNames={{
             value: "text-neutral-800 dark:text-neutral-200",
           }}

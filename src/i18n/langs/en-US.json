@@ -1,0 +1,292 @@
+{
+  "header": {
+    "title": "My Account",
+    "orders": "Orders",
+    "profile": "Profile",
+    "address": "Address"
+  },
+  "orders": {
+    "title": "My Orders",
+    "orderId": "ORDER ID",
+    "date": "DATE",
+    "statusLabel": "STATUS",
+    "total": "TOTAL",
+    "action": "ACTION",
+    "viewDetails": "View Details",
+    "all": "All Orders",
+    "processing": "Processing",
+    "completed": "Completed",
+    "loading": "Loading...",
+    "noOrders": "No orders found",
+    "status": {
+      "pending": "Pending",
+      "unpaid": "Unpaid",
+      "shipped": "Shipped",
+      "completed": "Completed",
+      "cancelled": "Cancelled",
+      "unknown": "Unknown"
+    },
+    "pagination": {
+      "previous": "Previous",
+      "next": "Next",
+      "page": "Page",
+      "of": "of"
+    }
+  },
+  "orderDetail": {
+    "title": "Order Details",
+    "information": "Order Information",
+    "summary": "Order Summary",
+    "shipping": "Shipping & Payment",
+    "products": "Products",
+    "quantity": "Qty",
+    "price": "Price",
+    "subtotal": "Subtotal",
+    "shippingFee": "Shipping Fee",
+    "discount": "Discount",
+    "total": "Total",
+    "back": "Back to Orders",
+    "notFound": "Order not found.",
+    "shippingPaymentDetails": "Shipping & Payment Details",
+    "shippingAddress": "Shipping Address",
+    "billingAddress": "Billing Address",
+    "shippingMethod": "Shipping Method",
+    "paymentMethod": "Payment Method",
+    "contact": "Contact",
+    "freeShipping": "Free Shipping",
+    "moneyTransfer": "Money Transfer",
+    "orderTimeline": "Order Timeline",
+    "status": {
+      "pending": "Pending",
+      "unpaid": "Unpaid",
+      "shipped": "Shipped",
+      "completed": "Completed",
+      "cancelled": "Cancelled",
+      "unknown": "Unknown"
+    }
+  },
+  "address": {
+    "title": "My Addresses",
+    "addNew": "Add New Address",
+    "edit": "Edit",
+    "editAddress": "Edit Address",
+    "delete": "Delete",
+    "default": "Default",
+    "name": "Name",
+    "phone": "Phone",
+    "address": "Address",
+    "city": "City",
+    "zipCode": "Zip Code",
+    "country": "Country",
+    "billing": "Billing",
+    "shipping": "Shipping",
+    "business": "Business",
+    "unknown": "Unknown",
+    "setDefault": "Set Default",
+    "addressType": "Address Type",
+    "company": "Company",
+    "addressLine1": "Address Line 1",
+    "addressLine2": "Address Line 2",
+    "state": "State",
+    "phoneNumber": "Phone Number",
+    "setAsDefault": "Set as default address",
+    "cancel": "Cancel",
+    "update": "Update",
+    "saveAddress": "Save Address",
+    "required": "Required",
+    "firstName": "First Name",
+    "lastName": "Last Name"
+  },
+  "profile": {
+    "title": "My Profile",
+    "editProfile": "Edit Profile",
+    "changePassword": "Change Password",
+    "email": "Email",
+    "phone": "Phone",
+    "nickname": "Nickname",
+    "fullName": "Full Name",
+    "emailAddress": "Email Address",
+    "memberSince": "Member Since",
+    "na": "N/A",
+    "avatarUrl": "Avatar URL",
+    "enterNickname": "Enter your nickname",
+    "enterAvatarUrl": "Enter avatar URL",
+    "enterEmail": "Enter your email",
+    "cancel": "Cancel",
+    "saveChanges": "Save Changes",
+    "newPassword": "New Password",
+    "enterNewPassword": "Enter new password",
+    "verificationCode": "Verification Code",
+    "enterVerificationCode": "Enter verification code",
+    "sendCode": "Send Code",
+    "codeSentToEmail": "The verification code will be sent to your email",
+    "updatePassword": "Update Password",
+    "passwordSuccess": "Password updated successfully!",
+    "codeSent": "Verification code sent to your email",
+    "setEmailFirst": "Please set your email address first"
+  },
+  "navbar": {
+    "home": "Home",
+    "categories": "Categories",
+    "cart": "Cart",
+    "account": "Account",
+    "all": "All",
+    "browseProducts": "Browse {name} products"
+  },
+  "mobileMenu": {
+    "category": "Category"
+  },
+  "accountSidebar": {
+    "title": "My Account",
+    "hello": "Hello!",
+    "user": "User"
+  },
+  "account": {
+    "loadFailed": "Failed to load user information",
+    "loadingOrderDetails": "Loading order details..."
+  },
+  "cart": {
+    "title": "My Cart",
+    "empty": "Your cart is empty.",
+    "total": "Total",
+    "checkout": "Proceed to Checkout",
+    "addToCart": "Add To Cart",
+    "outOfStock": "Out of Stock",
+    "selectOption": "Please select an option",
+    "noStockAvailable": "NO STOCK AVAILABLE"
+  },
+  "checkout": {
+    "email": "Enter Email *",
+    "emailPlaceholder": "example@gmail.com",
+    "address": "Address",
+    "shipping": "Shipping",
+    "payment": "Payment",
+    "review": "Review"
+  },
+  "filters": {
+    "sortPlaceholder": "Select a Sort Order"
+  },
+  "footer": {
+    "newsletter": "Newsletter",
+    "newsletterDescription": "Subscribe to our newsletter for exclusive offers!",
+    "emailPlaceholder": "Email Address",
+    "subscribe": "Subscribe"
+  },
+  "home": {
+    "shopByCategory": "Shop by Category",
+    "categoryDescription": "Discover the latest trends! Fresh products just added—shop new styles, tech, and essentials before they're gone.",
+    "productCarouselDescription": "Discover the latest trends! Fresh products just added—shop new styles, tech, and essentials before they're gone.",
+    "relatedProducts": "Related Products"
+  },
+  "productReview": {
+    "title": "Write a review",
+    "closeForm": "Close review form",
+    "preview": "Preview",
+    "addImage": "Add Image",
+    "rating": "Rating",
+    "reviewTitle": "Title",
+    "reviewTitlePlaceholder": "Title",
+    "comment": "Comment",
+    "commentPlaceholder": "Comment",
+    "submit": "Submit",
+    "submitting": "Submitting...",
+    "titleRequired": "Title is required",
+    "commentRequired": "Comment is required",
+    "selectRating": "Please select a rating",
+    "fillRequiredFields": "Please fill in all required fields",
+    "submitSuccess": "Review submitted successfully!",
+    "submitFailed": "Failed to submit review. Please try again."
+  },
+  "auth": {
+    "signIn": "Sign In",
+    "signUp": "Sign Up",
+    "newCustomer": "New customer?",
+    "createAccount": "Create your account",
+    "alreadyHaveAccount": "Already have an account?",
+    "becomeUser": "Become User",
+    "welcomeMessage": "You are new to our store, we are glad to have you as a member.",
+    "firstName": "First Name",
+    "lastName": "Last Name",
+    "email": "Email",
+    "password": "Password",
+    "confirmPassword": "Confirm Password",
+    "newPassword": "New Password",
+    "confirmNewPassword": "Confirm New Password",
+    "firstNamePlaceholder": "Enter first name",
+    "lastNamePlaceholder": "Enter last name",
+    "emailPlaceholder": "Enter email address",
+    "passwordPlaceholder": "Enter password",
+    "confirmPasswordPlaceholder": "Enter confirm password",
+    "newPasswordPlaceholder": "Enter your new password",
+    "confirmNewPasswordPlaceholder": "Confirm your new password"
+  },
+  "search": {
+    "placeholder": "Search for products...",
+    "allTopProducts": "All Top Products",
+    "searchResults": "Search Results",
+    "sortBy": "Sort by",
+    "noProductsMatch": "There are no products that match: {searchValue}",
+    "noProductsFound": "There are no products that match"
+  },
+  "forgetPassword": {
+    "title": "Recover Password",
+    "description": "If you forgot your password, recover it by entering your email address.",
+    "emailLabel": "Enter Your Email Address",
+    "emailPlaceholder": "Enter email address",
+    "emailRequired": "Email is required",
+    "emailInvalid": "Please enter a valid email address.",
+    "submitButton": "Reset Password",
+    "backToSignIn": "Back to sign in?",
+    "successMessage": "Reset password email sent. Please check your inbox.",
+    "errorMessage": "Failed to send email.",
+    "unknownError": "An unknown error occurred."
+  },
+  "credentialModal": {
+    "welcomeGuest": "Welcome Guest",
+    "manageCartOrders": "Manage Cart, Orders",
+    "account": "Account",
+    "loading": "Loading",
+    "logOut": "Log Out",
+    "signIn": "Sign In",
+    "signUp": "Sign Up",
+    "logoutSuccess": "You are logged out successfully!",
+    "logoutFailed": "Logout failed. Please try again."
+  },
+  "loginForm": {
+    "title": "Sign in to your account",
+    "description": "If you have an account, sign in with your email address.",
+    "emailLabel": "Enter Your Email Address",
+    "emailPlaceholder": "Enter your email address",
+    "emailRequired": "Email is required",
+    "emailInvalid": "Please enter a valid email.",
+    "passwordLabel": "Enter Password",
+    "passwordPlaceholder": "Enter your password",
+    "passwordRequired": "Password is required",
+    "passwordMinLength": "Be at least 2 characters long",
+    "passwordNumber": "Contain at least one number.",
+    "forgotPassword": "Forgot your password?",
+    "welcomeMessage": "Welcome! Successfully logged in.",
+    "invalidCredentials": "Invalid login credentials.",
+    "mergeCartFailed": "Could not merge your cart. Please contact support.",
+    "errorMessage": "Something went wrong. Please try again."
+  },
+  "product": {
+    "details": "Product Details",
+    "description": "Description",
+    "additionalInformation": "Additional Information",
+    "ratings": "Ratings"
+  },
+  "error": {
+    "title": "Oh no!",
+    "message": "There was an issue with our storefront. This could be a temporary issue, please try your action again.",
+    "tryAgain": "Try Again"
+  },
+  "notFound": {
+    "title": "Oops!, No products available in this category",
+    "backToHome": "Back to Home"
+  },
+  "order": {
+    "orderPlaced": "Your order has been placed successfully",
+    "missingPage": "Missing page, but your next favorite chair is just a click away."
+  }
+}
