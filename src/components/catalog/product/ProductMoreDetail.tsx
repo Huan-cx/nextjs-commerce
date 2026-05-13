@@ -7,6 +7,7 @@ import ReviewSection from "../review/ReviewSection";
 import {ReviewDetail} from "../review/ReviewDetail";
 import {additionalDataTypes} from "../type";
 import {Comment} from "@/types/api/product/type";
+import {useTranslations} from "next-intl";
 
 export const ProductMoreDetails: FC<{
   description: string;
@@ -17,7 +18,8 @@ export const ProductMoreDetails: FC<{
   expandedKeys: Set<string>;
   setExpandedKeys: (keys: Set<string>) => void;
 }> = ({ description, additionalData, reviews, productId, totalReview, expandedKeys, setExpandedKeys }) => {
-
+  const t = useTranslations("product");
+  
   const filterAdditionalData = additionalData.filter((item) => item?.attribute?.isVisibleOnFront == "1");
 
 
@@ -48,8 +50,8 @@ export const ProductMoreDetails: FC<{
                       <ChevronRightIcon className="h-5 w-5 stroke-neutral-800 dark:stroke-white"/>
                   )
               }
-              aria-label="Description"
-              title="Description"
+              aria-label={t("description")}
+              title={t("description")}
           >
             <Prose className="pb-2 text-selected-black dark:text-white font-light" html={description}/>
           </AccordionItem>
@@ -69,8 +71,8 @@ export const ProductMoreDetails: FC<{
                           <ChevronRightIcon className="h-5 w-5 stroke-neutral-800 dark:stroke-white"/>
                       )
                   }
-                  aria-label="Additional Information"
-                  title="Additional Information"
+                  aria-label={t("additionalInformation")}
+                  title={t("additionalInformation")}
               >
                 <div className="grid max-w-max grid-cols-[auto_1fr] gap-x-8 gap-y-4 px-1 pb-2">
                   {filterAdditionalData?.map((item) => (
@@ -104,8 +106,8 @@ export const ProductMoreDetails: FC<{
                       <ChevronRightIcon className="h-5 w-5 stroke-neutral-800 dark:stroke-white"/>
                   )
               }
-              aria-label="Ratings"
-              title="Ratings"
+              aria-label={t("ratings")}
+              title={t("ratings")}
           >
             {totalReview > 0 ? (
                 <>

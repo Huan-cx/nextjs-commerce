@@ -9,7 +9,7 @@ const QueryClientWrapper = ({children}: { children: ReactNode }) => {
     defaultOptions: {
       queries: {
         staleTime: 5 * 60 * 1000, // 5分钟
-        retry: 1,
+        retry: 3,
       },
     },
   });

@@ -1,11 +1,16 @@
+"use client";
+
 import {FC} from "react";
 import {ProductCard} from "@/components/catalog/product/ProductCard";
 import {Spu} from "@/types/api/product/type";
+import {useTranslations} from "next-intl";
 
 const Theme: FC<{
   products: Spu[];
   name: string;
 }> = ({ products, name }) => {
+  const t = useTranslations("home");
+  
   return (
     <section>
       <div className="md:max-w-4.5xl mx-auto mb-6 w-full px-0 text-center xss:mb-10 md:px-36">
@@ -13,8 +18,7 @@ const Theme: FC<{
           {name}
         </h2>
         <p className="font-normal text-black/60 dark:text-neutral-300 text-lg">
-          Discover the latest trends! Fresh products just added—shop new styles,
-          tech, and essentials before they&apos;re gone.
+          {t("productCarouselDescription")}
         </p>
       </div>
 

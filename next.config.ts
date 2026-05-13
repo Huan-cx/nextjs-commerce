@@ -1,11 +1,15 @@
-import { configHeader } from '@/utils/constants';
-import type { NextConfig } from "next";
+import {configHeader} from '@/utils/constants';
+import type {NextConfig} from "next";
+import createNextIntlPlugin from 'next-intl/plugin';
+
+const withNextIntl = createNextIntlPlugin();
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   typescript: {
     ignoreBuildErrors: false,
   },
+  allowedDevOrigins: ['10.0.0.9'],
   images: {
     unoptimized: true,
     remotePatterns: [],
@@ -22,4 +26,4 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+export default withNextIntl(nextConfig);

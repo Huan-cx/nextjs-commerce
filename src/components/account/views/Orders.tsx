@@ -5,12 +5,14 @@ import {Button, Chip, Tab, Table, TableBody, TableCell, TableColumn, TableHeader
 import {getOrders} from "@utils/api/trade";
 import {fenToYuan} from "@utils/formatNumber";
 import {useQuery} from "@tanstack/react-query";
+import {useTranslations} from "next-intl";
 
 interface OrdersProps {
   onSelectOrder: (orderId: number | null) => void;
 }
 
 export const Orders = ({onSelectOrder}: OrdersProps) => {
+  const t = useTranslations("orders");
   const [selectedTab, setSelectedTab] = useState("all");
   const [page, setPage] = useState(1);
   const pageSize = 10;
@@ -35,12 +37,12 @@ export const Orders = ({onSelectOrder}: OrdersProps) => {
   };
 
   const getStatusText = (status: number) => {
-    if (status === 0) return "Pending";
-    if (status === 10) return "Unpaid";
-    if (status === 20) return "Shipped";
-    if (status === 30) return "Completed";
-    if (status === 40) return "Cancelled";
-    return "Unknown";
+    if (status === 0) return t("status.pending");
+    if (status === 10) return t("status.unpaid");
+    if (status === 20) return t("status.shipped");
+    if (status === 30) return t("status.completed");
+    if (status === 40) return t("status.cancelled");
+    return t("status.unknown");
   };
 
   const formatDate = (dateString: string) => {
@@ -54,7 +56,7 @@ export const Orders = ({onSelectOrder}: OrdersProps) => {
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-bold">Orders</h2>
+      <h2 className="text-2xl font-bold">{t("title")}</h2>
 
       <Tabs
           variant="underlined"
@@ -65,21 +67,21 @@ export const Orders = ({onSelectOrder}: OrdersProps) => {
             setPage(1);
           }}
       >
-        <Tab key="all" title="All Orders"/>
-        <Tab key="processing" title="Processing"/>
-        <Tab key="completed" title="Completed"/>
+        <Tab key="all" title={t("all")}/>
+        <Tab key="processing" title={t("processing")}/>
+        <Tab key="completed" title={t("completed")}/>
       </Tabs>
 
       <Table aria-label="Orders table" removeWrapper>
         <TableHeader>
-          <TableColumn>ORDER ID</TableColumn>
-          <TableColumn>DATE</TableColumn>
-          <TableColumn>STATUS</TableColumn>
-          <TableColumn>TOTAL</TableColumn>
-          <TableColumn>ACTION</TableColumn>
+          <TableColumn>{t("orderId")}</TableColumn>
+          <TableColumn>{t("date")}</TableColumn>
+          <TableColumn>{t("statusLabel")}</TableColumn>
+          <TableColumn>{t("total")}</TableColumn>
+          <TableColumn>{t("action")}</TableColumn>
         </TableHeader>
         <TableBody
-            emptyContent={isLoading ? "Loading..." : "No orders found"}
+            emptyContent={isLoading ? t("loading") : t("noOrders")}
             isLoading={isLoading}
         >
           {orders.map((order) => (
@@ -105,7 +107,7 @@ export const Orders = ({onSelectOrder}: OrdersProps) => {
                       color="primary"
                       onPress={() => onSelectOrder(order.id)}
                   >
-                    View Details
+                    {t("viewDetails")}
                   </Button>
                 </TableCell>
               </TableRow>
@@ -121,10 +123,10 @@ export const Orders = ({onSelectOrder}: OrdersProps) => {
                 isDisabled={page === 1}
                 onPress={() => setPage(page - 1)}
             >
-              Previous
+              {t("pagination.previous")}
             </Button>
             <span className="flex items-center px-4">
-              Page {page} of {totalPages}
+              {t("pagination.page")} {page} {t("pagination.of")} {totalPages}
             </span>
             <Button
                 size="sm"
@@ -132,7 +134,7 @@ export const Orders = ({onSelectOrder}: OrdersProps) => {
                 isDisabled={page === totalPages}
                 onPress={() => setPage(page + 1)}
             >
-              Next
+              {t("pagination.next")}
             </Button>
           </div>
       )}

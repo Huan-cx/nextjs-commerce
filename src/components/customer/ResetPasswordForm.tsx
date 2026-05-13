@@ -3,7 +3,7 @@
 import {useEffect, useState} from "react";
 import {SubmitHandler, useForm} from "react-hook-form";
 import {useRouter, useSearchParams} from "next/navigation";
-import Link from "next/link";
+import Link from "@/components/common/Link";
 import Image from "next/image";
 import clsx from "clsx";
 
@@ -13,6 +13,7 @@ import {Button} from "@components/common/button/Button";
 import InputText from "@components/common/form/Input";
 import {FORGET_PASSWORD_IMG} from "@/utils/constants";
 import {AuthPlaceHolder} from "@components/common/skeleton/AuthPlaceHolder";
+import {useTranslations} from "next-intl";
 
 type ResetPasswordInputs = {
   password: string;
@@ -20,6 +21,7 @@ type ResetPasswordInputs = {
 };
 
 export default function ResetPasswordForm() {
+  const t = useTranslations("auth");
   const router = useRouter();
   const searchParams = useSearchParams();
   const {showToast} = useCustomToast();
@@ -141,10 +143,10 @@ export default function ResetPasswordForm() {
                   errorMsg={
                     errors.password?.message ? [errors.password.message] : undefined
                   }
-                  label="New Password"
+                  label={t("newPassword")}
                   labelPlacement="outside"
                   name="password"
-                  placeholder="Enter your new password"
+                  placeholder={t("newPasswordPlaceholder")}
                   size="lg"
                   typeName="password"
               />
@@ -159,10 +161,10 @@ export default function ResetPasswordForm() {
                         ? [errors.confirmPassword.message]
                         : undefined
                   }
-                  label="Confirm New Password"
+                  label={t("confirmNewPassword")}
                   labelPlacement="outside"
                   name="confirmPassword"
-                  placeholder="Confirm your new password"
+                  placeholder={t("confirmNewPasswordPlaceholder")}
                   size="lg"
                   typeName="password"
               />

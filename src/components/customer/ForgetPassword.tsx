@@ -3,12 +3,13 @@ import {useState} from "react";
 import {SubmitHandler, useForm} from "react-hook-form";
 import clsx from "clsx";
 import Image from "next/image";
-import Link from "next/link";
+import Link from "@/components/common/Link";
 import {Button} from "@components/common/button/Button";
 import {EMAIL_REGEX, FORGET_PASSWORD_IMG} from '@/utils/constants';
 import InputText from '@components/common/form/Input';
 import {useCustomToast} from '@/utils/hooks/useToast';
 import {sendResetPasswordMail} from "@utils/api/member";
+import {useTranslations} from "next-intl";
 
 type ForgetPasswordInputs = {
   email: string;
@@ -17,6 +18,8 @@ type ForgetPasswordInputs = {
 export default function ForgetPasswordForm() {
   const { showToast } = useCustomToast();
   const [loading, setLoading] = useState(false);
+  const t = useTranslations("forgetPassword");
+  const authT = useTranslations("auth");
 
   const {
     register,
@@ -34,16 +37,16 @@ export default function ForgetPasswordForm() {
         email: data.email,
       }).then(() => {
         showToast(
-            "Reset password email sent. Please check your inbox.",
+            t("successMessage"),
             "success"
         );
       })
           .catch(() => {
-            showToast("Failed to send email.", "danger");
+            showToast(t("errorMessage"), "danger");
           });
     } catch (error) {
       showToast(
-          error instanceof Error ? error.message : "An unknown error occurred.",
+          error instanceof Error ? error.message : t("unknownError"),
           "danger"
       );
     } finally {
@@ -56,11 +59,10 @@ export default function ForgetPasswordForm() {
       <div className="flex w-full flex-col gap-y-4 lg:max-w-[583px] lg:gap-y-12">
         <div className="font-outfit">
           <h2 className="py-1 text-2xl font-semibold sm:text-4xl">
-            Recover Password
+            {t("title")}
           </h2>
           <p className="mt-2 text-base md:text-lg font-normal text-black/60 dark:text-neutral-400">
-            If you forgot your password, recover it by entering your email
-            address.
+            {t("description")}
           </p>
         </div>
 
@@ -71,17 +73,17 @@ export default function ForgetPasswordForm() {
         >
           <InputText
             {...register("email", {
-              required: "Email is required",
+              required: t("emailRequired"),
               pattern: {
                 value: EMAIL_REGEX,
-                message: "Please enter a valid email address.",
+                message: t("emailInvalid"),
               },
             })}
             errorMsg={errors?.email?.message ? [errors.email.message] : undefined}
-            label="Enter Your Email Address"
+            label={t("emailLabel")}
             labelPlacement="outside"
             name="email"
-            placeholder="Enter email address"
+            placeholder={t("emailPlaceholder")}
             size="lg"
             typeName="email"
           />
@@ -90,13 +92,13 @@ export default function ForgetPasswordForm() {
             <Button
               disabled={loading || isSubmitting}
               loading={loading || isSubmitting}
-              title="Reset Password"
+              title={t("submitButton")}
               type="submit"
             />
             <span className="px-1 mx-auto md:mx-0 font-outfit">
-              Back to sign in?{" "}
+              {t("backToSignIn")}{" "}
               <Link className="text-blue-600 underline" href="/customer/login" aria-label="Go to sign in page">
-                Sign In
+                {authT("signIn")}
               </Link>
             </span>
           </div>

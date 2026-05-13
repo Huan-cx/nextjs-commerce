@@ -1,0 +1,292 @@
+{
+  "header": {
+    "title": "Mon Compte",
+    "orders": "Commandes",
+    "profile": "Profil",
+    "address": "Adresse"
+  },
+  "orders": {
+    "title": "Mes Commandes",
+    "orderId": "ID COMMANDE",
+    "date": "DATE",
+    "statusLabel": "STATUT",
+    "total": "TOTAL",
+    "action": "ACTION",
+    "viewDetails": "Voir Détails",
+    "all": "Toutes les Commandes",
+    "processing": "En cours",
+    "completed": "Terminé",
+    "loading": "Chargement...",
+    "noOrders": "Aucune commande trouvée",
+    "status": {
+      "pending": "En attente",
+      "unpaid": "Non payée",
+      "shipped": "Expédiée",
+      "completed": "Terminée",
+      "cancelled": "Annulée",
+      "unknown": "Inconnu"
+    },
+    "pagination": {
+      "previous": "Précédent",
+      "next": "Suivant",
+      "page": "Page",
+      "of": "sur"
+    }
+  },
+  "orderDetail": {
+    "title": "Détails de la Commande",
+    "information": "Informations de la Commande",
+    "summary": "Résumé de la Commande",
+    "shipping": "Expédition & Paiement",
+    "products": "Produits",
+    "quantity": "Qté",
+    "price": "Prix",
+    "subtotal": "Sous-total",
+    "shippingFee": "Frais d'expédition",
+    "discount": "Remise",
+    "total": "Total",
+    "back": "Retour aux Commandes",
+    "notFound": "Commande introuvable.",
+    "shippingPaymentDetails": "Détails de livraison et de paiement",
+    "shippingAddress": "Adresse de livraison",
+    "billingAddress": "Adresse de facturation",
+    "shippingMethod": "Méthode de livraison",
+    "paymentMethod": "Méthode de paiement",
+    "contact": "Contact",
+    "freeShipping": "Livraison gratuite",
+    "moneyTransfer": "Virement bancaire",
+    "orderTimeline": "Chronologie de la commande",
+    "status": {
+      "pending": "En attente",
+      "unpaid": "Non payée",
+      "shipped": "Expédiée",
+      "completed": "Terminée",
+      "cancelled": "Annulée",
+      "unknown": "Inconnu"
+    }
+  },
+  "address": {
+    "title": "Mes Adresses",
+    "addNew": "Ajouter une Nouvelle Adresse",
+    "edit": "Modifier",
+    "editAddress": "Modifier l'Adresse",
+    "delete": "Supprimer",
+    "default": "Défaut",
+    "name": "Nom",
+    "phone": "Téléphone",
+    "address": "Adresse",
+    "city": "Ville",
+    "zipCode": "Code Postal",
+    "country": "Pays",
+    "billing": "Facturation",
+    "shipping": "Expédition",
+    "business": "Professionnel",
+    "unknown": "Inconnu",
+    "setDefault": "Définir par défaut",
+    "addressType": "Type d'adresse",
+    "company": "Société",
+    "addressLine1": "Ligne d'adresse 1",
+    "addressLine2": "Ligne d'adresse 2",
+    "state": "État",
+    "phoneNumber": "Numéro de téléphone",
+    "setAsDefault": "Définir comme adresse par défaut",
+    "cancel": "Annuler",
+    "update": "Mettre à jour",
+    "saveAddress": "Enregistrer l'adresse",
+    "required": "Obligatoire",
+    "firstName": "Prénom",
+    "lastName": "Nom"
+  },
+  "profile": {
+    "title": "Mon Profil",
+    "editProfile": "Modifier le Profil",
+    "changePassword": "Changer le Mot de Passe",
+    "email": "Email",
+    "phone": "Téléphone",
+    "nickname": "Surnom",
+    "fullName": "Nom Complet",
+    "emailAddress": "Adresse Email",
+    "memberSince": "Membre depuis",
+    "na": "N/A",
+    "avatarUrl": "URL de l'avatar",
+    "enterNickname": "Entrez votre surnom",
+    "enterAvatarUrl": "Entrez l'URL de l'avatar",
+    "enterEmail": "Entrez votre email",
+    "cancel": "Annuler",
+    "saveChanges": "Enregistrer les modifications",
+    "newPassword": "Nouveau Mot de Passe",
+    "enterNewPassword": "Entrez le nouveau mot de passe",
+    "verificationCode": "Code de vérification",
+    "enterVerificationCode": "Entrez le code de vérification",
+    "sendCode": "Envoyer le code",
+    "codeSentToEmail": "Le code de vérification sera envoyé par email",
+    "updatePassword": "Mettre à jour le mot de passe",
+    "passwordSuccess": "Mot de passe mis à jour avec succès !",
+    "codeSent": "Code de vérification envoyé à votre email",
+    "setEmailFirst": "Veuillez d'abord définir votre adresse email"
+  },
+  "navbar": {
+    "home": "Accueil",
+    "categories": "Catégories",
+    "cart": "Panier",
+    "account": "Compte",
+    "all": "Tous",
+    "browseProducts": "Parcourir les produits {name}"
+  },
+  "mobileMenu": {
+    "category": "Catégorie"
+  },
+  "accountSidebar": {
+    "title": "Mon Compte",
+    "hello": "Bonjour !",
+    "user": "Utilisateur"
+  },
+  "account": {
+    "loadFailed": "Échec du chargement des informations utilisateur",
+    "loadingOrderDetails": "Chargement des détails de la commande..."
+  },
+  "cart": {
+    "title": "Mon Panier",
+    "empty": "Votre panier est vide.",
+    "total": "Total",
+    "checkout": "Passer à la caisse",
+    "addToCart": "Ajouter au panier",
+    "outOfStock": "Épuisé",
+    "selectOption": "Veuillez sélectionner une option",
+    "noStockAvailable": "STOCK INDISPONIBLE"
+  },
+  "checkout": {
+    "email": "Entrez Email *",
+    "emailPlaceholder": "exemple@gmail.com",
+    "address": "Adresse",
+    "shipping": "Expédition",
+    "payment": "Paiement",
+    "review": "Récapitulatif"
+  },
+  "filters": {
+    "sortPlaceholder": "Sélectionnez un ordre de tri"
+  },
+  "footer": {
+    "newsletter": "Newsletter",
+    "newsletterDescription": "Abonnez-vous à notre newsletter pour des offres exclusives !",
+    "emailPlaceholder": "Adresse Email",
+    "subscribe": "S'abonner"
+  },
+  "home": {
+    "shopByCategory": "Acheter par catégorie",
+    "categoryDescription": "Découvrez les dernières tendances ! De nouveaux produits fraîchement ajoutés - achetez les nouvelles tendances, la technologie et les essentiels avant qu'ils disparaissent.",
+    "productCarouselDescription": "Découvrez les dernières tendances ! De nouveaux produits fraîchement ajoutés - achetez les nouvelles tendances, la technologie et les essentiels avant qu'ils disparaissent.",
+    "relatedProducts": "Produits associés"
+  },
+  "productReview": {
+    "title": "Écrire un avis",
+    "closeForm": "Fermer le formulaire d'avis",
+    "preview": "Aperçu",
+    "addImage": "Ajouter une image",
+    "rating": "Note",
+    "reviewTitle": "Titre",
+    "reviewTitlePlaceholder": "Titre",
+    "comment": "Commentaire",
+    "commentPlaceholder": "Commentaire",
+    "submit": "Soumettre",
+    "submitting": "Soumission...",
+    "titleRequired": "Le titre est requis",
+    "commentRequired": "Le commentaire est requis",
+    "selectRating": "Veuillez sélectionner une note",
+    "fillRequiredFields": "Veuillez remplir tous les champs obligatoires",
+    "submitSuccess": "Avis soumis avec succès !",
+    "submitFailed": "Échec de la soumission de l'avis. Veuillez réessayer."
+  },
+  "auth": {
+    "signIn": "Se Connecter",
+    "signUp": "S'Inscrire",
+    "newCustomer": "Nouveau client ?",
+    "createAccount": "Créer votre compte",
+    "alreadyHaveAccount": "Déjà un compte ?",
+    "becomeUser": "Devenir utilisateur",
+    "welcomeMessage": "Vous êtes nouveau dans notre magasin, nous vous accueillons avec joie en tant que membre.",
+    "firstName": "Prénom",
+    "lastName": "Nom",
+    "email": "Email",
+    "password": "Mot de passe",
+    "confirmPassword": "Confirmer le mot de passe",
+    "newPassword": "Nouveau mot de passe",
+    "confirmNewPassword": "Confirmer le nouveau mot de passe",
+    "firstNamePlaceholder": "Entrez le prénom",
+    "lastNamePlaceholder": "Entrez le nom",
+    "emailPlaceholder": "Entrez l'adresse email",
+    "passwordPlaceholder": "Entrez le mot de passe",
+    "confirmPasswordPlaceholder": "Entrez la confirmation du mot de passe",
+    "newPasswordPlaceholder": "Entrez votre nouveau mot de passe",
+    "confirmNewPasswordPlaceholder": "Confirmez votre nouveau mot de passe"
+  },
+  "search": {
+    "placeholder": "Rechercher des produits...",
+    "allTopProducts": "Tous les produits phares",
+    "searchResults": "Résultats de recherche",
+    "sortBy": "Trier par",
+    "noProductsMatch": "Aucun produit ne correspond à: {searchValue}",
+    "noProductsFound": "Aucun produit ne correspond"
+  },
+  "forgetPassword": {
+    "title": "Récupérer le Mot de Passe",
+    "description": "Si vous avez oublié votre mot de passe, récupérez-le en saisissant votre adresse e-mail.",
+    "emailLabel": "Saisissez votre adresse e-mail",
+    "emailPlaceholder": "Saisissez l'adresse e-mail",
+    "emailRequired": "L'e-mail est obligatoire",
+    "emailInvalid": "Veuillez saisir une adresse e-mail valide.",
+    "submitButton": "Réinitialiser le Mot de Passe",
+    "backToSignIn": "Retour à la connexion ?",
+    "successMessage": "L'e-mail de réinitialisation du mot de passe a été envoyé. Veuillez vérifier votre boîte de réception.",
+    "errorMessage": "Échec de l'envoi de l'e-mail.",
+    "unknownError": "Une erreur inconnue s'est produite."
+  },
+  "credentialModal": {
+    "welcomeGuest": "Bienvenue Invité",
+    "manageCartOrders": "Gérer le Panier, Commandes",
+    "account": "Compte",
+    "loading": "Chargement",
+    "logOut": "Se Déconnecter",
+    "signIn": "Se Connecter",
+    "signUp": "S'Inscrire",
+    "logoutSuccess": "Vous êtes déconnecté avec succès !",
+    "logoutFailed": "Échec de la déconnexion. Veuillez réessayer."
+  },
+  "loginForm": {
+    "title": "Connectez-vous à votre compte",
+    "description": "Si vous avez un compte, connectez-vous avec votre adresse e-mail.",
+    "emailLabel": "Saisissez votre adresse e-mail",
+    "emailPlaceholder": "Saisissez votre adresse e-mail",
+    "emailRequired": "L'e-mail est obligatoire",
+    "emailInvalid": "Veuillez saisir un e-mail valide.",
+    "passwordLabel": "Saisissez le mot de passe",
+    "passwordPlaceholder": "Saisissez votre mot de passe",
+    "passwordRequired": "Le mot de passe est obligatoire",
+    "passwordMinLength": "Au moins 2 caractères",
+    "passwordNumber": "Contient au moins un chiffre.",
+    "forgotPassword": "Mot de passe oublié ?",
+    "welcomeMessage": "Bienvenue ! Connexion réussie.",
+    "invalidCredentials": "Identifiants de connexion invalides.",
+    "mergeCartFailed": "Impossible de fusionner votre panier. Veuillez contacter le support.",
+    "errorMessage": "Quelque chose a mal fonctionné. Veuillez réessayer."
+  },
+  "product": {
+    "details": "Détails du produit",
+    "description": "Description",
+    "additionalInformation": "Informations complémentaires",
+    "ratings": "Évaluations"
+  },
+  "error": {
+    "title": "Oh non !",
+    "message": "Un problème est survenu sur notre site. Cela pourrait être un problème temporaire, veuillez réessayer votre action.",
+    "tryAgain": "Réessayer"
+  },
+  "notFound": {
+    "title": "Oups ! Aucun produit disponible dans cette catégorie",
+    "backToHome": "Retour à l'accueil"
+  },
+  "order": {
+    "orderPlaced": "Votre commande a été passée avec succès",
+    "missingPage": "Page manquante, mais votre prochaine chaise préférée n'est qu'un clic loin."
+  }
+}

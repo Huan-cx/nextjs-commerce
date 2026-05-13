@@ -116,8 +116,8 @@ const CountrySelect = (
                       placeholder={labelPlacement === "inside" ? label : (placeholder || `Select ${label}`)}
                       menuTrigger="focus"
                       isLoading={isLoading}
-                      selectedKey={field.value}
-                      onSelectionChange={field.onChange}
+                      inputValue={field.value}
+                      onChange={field.onChange}
                       onBlur={field.onBlur}
                       {...rest}
                   >

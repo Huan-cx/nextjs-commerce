@@ -5,7 +5,7 @@ import {Divider, Listbox, ListboxItem, useDisclosure} from "@heroui/react";
 import {AnimatePresence, motion} from "framer-motion";
 import clsx from "clsx";
 import {signOut} from "next-auth/react";
-import Link from "next/link";
+import Link from "@/components/common/Link";
 import {Avatar} from "@heroui/avatar";
 import {useForm} from "react-hook-form";
 import {usePathname, useRouter} from "next/navigation";
@@ -21,6 +21,7 @@ import {clearCart} from "@/store/slices/cart-slice";
 import {resetCheckoutState} from "@/store/slices/checkout-slice";
 import LoadingDots from "@components/common/icons/LoadingDots";
 import {ChevronRightIcon} from "@heroicons/react/24/outline";
+import {useTranslations} from "next-intl";
 
 
 export default function CredentialModal({
@@ -73,6 +74,8 @@ export default function CredentialModal({
 
   const { user } = useAppSelector((state) => state.user);
   const session = { user };
+  const t = useTranslations("header");
+  const modalT = useTranslations("credentialModal");
   const onSubmit = async () => {
     try {
       // Call the backend API to invalidate the token
@@ -87,7 +90,7 @@ export default function CredentialModal({
       dispatch(clearCart());
       dispatch(resetCheckoutState());
 
-      showToast("You are logged out successfully!", "success");
+      showToast(modalT("logoutSuccess"), "success");
 
       // Redirect to login page
       setTimeout(() => {
@@ -95,18 +98,18 @@ export default function CredentialModal({
         router.refresh();
       }, 100);
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : "Logout failed. Please try again.";
+      const message = err instanceof Error ? err.message : modalT("logoutFailed");
       showToast(message, "danger");
     }
   };
   const menuItems = [
     {
       key: "/account/profile",
-      label: "Profile",
+      label: t("profile"),
     },
     {
       key: "/account/orders",
-      label: "Orders",
+      label: t("orders"),
     },
     // {
     //   key: "logout",
@@ -142,7 +145,7 @@ export default function CredentialModal({
               </div>
 
               <p className={clsx("text-default-500 dark:text-white", isDesktop ? "text-small pl-px" : "text-center mt-2")}>
-                Manage Cart, Orders
+                {modalT("manageCartOrders")}
                 <span aria-label="confetti" className="px-2" role="img">
                   🎉
                 </span>
@@ -157,7 +160,7 @@ export default function CredentialModal({
             <Listbox
                 aria-label="User Menu"
                 onAction={(key) => {
-                  console.log(key);
+                  console.warn(key);
                   router.push(typeof key === "string" ? key : key.toString());
                   finalOnClose?.();
                 }}
@@ -205,11 +208,11 @@ export default function CredentialModal({
                 <div className="mx-1">
                   {isSubmitting ? (
                     <div className="flex items-center justify-center">
-                      <p>Loading</p>
+                      <p>{modalT("loading")}</p>
                       <LoadingDots className="bg-white" />
                     </div>
                   ) : (
-                    <p> Log Out</p>
+                      <p> {modalT("logOut")}</p>
                   )}
                 </div>
               </button>
@@ -222,11 +225,11 @@ export default function CredentialModal({
             <div className="flex flex-col gap-y-2">
               <h4 className={clsx("font-bold leading-none text-black dark:text-white",
                 isDesktop ? "text-xl" : "text-3xl")}>
-                Welcome Guest
+                {modalT("welcomeGuest")}
               </h4>
               <p className={clsx("text-default-500 dark:text-neutral-400",
                 isDesktop ? "text-sm" : "text-lg")}>
-                Manage Cart, Orders
+                {modalT("manageCartOrders")}
                 <span aria-label="confetti" className="px-2" role="img">
                   🎉
                 </span>
@@ -246,7 +249,7 @@ export default function CredentialModal({
                 disabled={pathname === "/customer/login"}
                 type="button"
               >
-                Sign In
+                {modalT("signIn")}
               </button>
             </Link>
 
@@ -261,7 +264,7 @@ export default function CredentialModal({
                 disabled={pathname === "/customer/register"}
                 type="button"
               >
-                Sign Up
+                {modalT("signUp")}
               </button>
             </Link>
           </footer>
@@ -335,7 +338,7 @@ export default function CredentialModal({
             >
               <div className="flex flex-col gap-1 border-b border-neutral-100 p-4 dark:border-neutral-800">
                 <div className="flex items-center justify-between">
-                  <p className="text-xl font-semibold dark:text-white">Account</p>
+                  <p className="text-xl font-semibold dark:text-white">{modalT("account")}</p>
                 </div>
               </div>
 

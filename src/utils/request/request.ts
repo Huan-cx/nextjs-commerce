@@ -149,7 +149,7 @@ export async function request<T = any>(options: RequestOptions): Promise<T> {
           refreshPromise = null;
         }
       }
-      console.log(result.code, response.status, response.status === 401, requiresAuth, retryCount < maxRetries)
+      console.warn(requestUrl, result.code, response.status, response.status === 401, requiresAuth, retryCount < maxRetries)
       throw new Error(result?.msg || `Request failed with status ${result.status}`);
     }
 

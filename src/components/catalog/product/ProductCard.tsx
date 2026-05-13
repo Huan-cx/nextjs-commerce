@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "@/components/common/Link";
 import {FC} from "react";
 import Grid from "@/components/theme/ui/grid/Grid";
 import AddToCartButton from "@/components/theme/ui/AddToCartButton";
@@ -6,6 +6,7 @@ import {NextImage} from "@/components/common/NextImage";
 import {Price} from "@/components/theme/ui/Price";
 import {Sku, Spu} from "@/types/api/product/type";
 import {getImageUrl, NOT_IMAGE} from "@utils/constants";
+import {useTranslationData} from "@/hooks/useTranslationData";
 
 type ProductCardProps = {
   currency: string;
@@ -20,6 +21,7 @@ export const ProductCard: FC<ProductCardProps> = ({
                                                     sizes = "(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw",
                                                     priority = false
                                                   }) => {
+  const {getName, locale} = useTranslationData();
   const productType = product.skus?.length === 1 ? 'simple' : 'configurable';
   const price = product.price?.toString() || "0";
   const specialPrice = product.combinationPrice?.toString() || product.seckillPrice?.toString();
@@ -29,6 +31,10 @@ export const ProductCard: FC<ProductCardProps> = ({
       NOT_IMAGE
   );
   const isSaleable = product.skus && product.skus.length > 0;
+  const productName = getName(product, product.name || "");
+
+  // 优先使用产品本身的slug，不使用多语言翻译的slug，最后回退到id
+  const productSlug = product.slug || String(product.id);
 
   // For simple products, we can construct the full product info for the cart button.
   // For configurable products, the button will act as a link, so we pass the data anyway.
@@ -43,10 +49,10 @@ export const ProductCard: FC<ProductCardProps> = ({
           className="animate-fadeIn gap-y-4.5 flex flex-col"
       >
         <div className="group relative overflow-hidden rounded-lg">
-          <Link href={`/product/${product.id}`} aria-label={`View ${product.name}`}>
+          <Link href={`/product/${productSlug}`} aria-label={`View ${productName}`}>
             <div className="aspect-[353/283] h-auto truncate rounded-lg">
               <NextImage
-                  alt={product?.name || "Product image"}
+                  alt={productName || "Product image"}
                   src={imageUrl}
                   width={353}
                   height={283}
@@ -77,7 +83,7 @@ export const ProductCard: FC<ProductCardProps> = ({
 
         <div>
           <h3 className="mb-2.5 text-sm font-medium md:text-lg">
-            {product?.name}
+            {productName}
           </h3>
 
 

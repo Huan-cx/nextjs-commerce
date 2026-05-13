@@ -21,6 +21,14 @@ export interface ThemeCustomizationResponse {
 export interface ThemeOptions {
   title: string;
   url: string;
+  picUrl?: string;
+  sortOrder?: string;
+  slug?: string;
+  translations?: Array<{
+    locale: string;
+    title: string;
+    slug: string;
+  }>;
 }
 export interface FooterColumns {
   column_1?: ThemeOptions[];

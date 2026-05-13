@@ -6,8 +6,10 @@ import {useForm} from "react-hook-form";
 import InputText from "@components/common/form/Input";
 import CountrySelect from "@components/common/form/country";
 import {AddressLine} from "@/types/api/address/type";
+import {useTranslations} from "next-intl";
 
 export const Address = () => {
+  const t = useTranslations("address");
   const queryClient = useQueryClient();
   const {data: addresses = []} = useQuery({
     queryKey: ["addresses"],
@@ -143,25 +145,25 @@ export const Address = () => {
   return (
       <div className="space-y-6">
         <div className="flex justify-between items-center">
-          <h2 className="text-2xl font-bold">Address</h2>
+          <h2 className="text-2xl font-bold">{t("title")}</h2>
           <Button
               color="primary"
               size="sm"
               radius="full"
               onPress={handleAddNew}
           >
-            Add New Address
+            {t("addNew")}
           </Button>
         </div>
 
         {/* 地址卡片列表 */}
         {addresses.map((address) => {
           const addressTypeLabels: Record<number, string> = {
-            1: "Billing",
-            2: "Shipping",
-            3: "Business",
+            1: t("billing"),
+            2: t("shipping"),
+            3: t("business"),
           };
-          const addressTypeLabel = addressTypeLabels[address.type] || "Unknown";
+          const addressTypeLabel = addressTypeLabels[address.type] || t("unknown");
 
           return (
               <Card key={address.id} shadow="sm" className="border-none bg-default-50">
@@ -176,7 +178,7 @@ export const Address = () => {
                       {address.defaultStatus && (
                           <span
                               className="px-2 py-0.5 text-xs font-medium rounded-full bg-success-100 text-success-700">
-                        Default
+                        {t("default")}
                       </span>
                       )}
                     </div>
@@ -190,7 +192,7 @@ export const Address = () => {
                         className="flex-1 sm:flex-none"
                         onClick={() => handleEdit(address)}
                     >
-                      Edit
+                      {t("edit")}
                     </Button>
                     {!address.defaultStatus && (
                         <Button
@@ -199,7 +201,7 @@ export const Address = () => {
                             className="flex-1 sm:flex-none"
                             onClick={() => handleSetDefault(address)}
                         >
-                          Default
+                          {t("setDefault")}
                         </Button>
                     )}
                     <Button
@@ -209,7 +211,7 @@ export const Address = () => {
                         className="flex-1 sm:flex-none"
                         onClick={() => handleDelete(address.id)}
                     >
-                      Delete
+                      {t("delete")}
                     </Button>
                   </div>
                 </CardBody>
@@ -231,7 +233,7 @@ export const Address = () => {
             <div className="space-y-4 sm:space-y-6">
               <div className="border-b pb-3 sm:pb-4">
                 <h2 className="text-xl sm:text-2xl font-bold text-gray-800">
-                  {isEditing ? 'Edit Address' : 'Add New Address'}
+                  {isEditing ? t("editAddress") : t("addNew")}
                 </h2>
               </div>
 
@@ -241,7 +243,7 @@ export const Address = () => {
                   {/* --- 地址类型：手机端强制纵向排列或网格 --- */}
                   <div className="bg-default-50 p-3 rounded-xl border border-default-100">
                     <label className="block text-xs font-bold uppercase text-default-500 mb-3 tracking-wide">
-                      Address Type
+                      {t("addressType")}
                     </label>
                     <RadioGroup
                         value={selectedAddressType.toString()}
@@ -249,24 +251,24 @@ export const Address = () => {
                         orientation="vertical"
                         className="sm:flex-wrap gap-3"
                     >
-                      <Radio value="2" classNames={{label: "text-sm", description: "text-xs"}}>Shipping</Radio>
-                      <Radio value="1" classNames={{label: "text-sm", description: "text-xs"}}>Billing</Radio>
-                      <Radio value="3" classNames={{label: "text-sm", description: "text-xs"}}>Business</Radio>
+                      <Radio value="2" classNames={{label: "text-sm", description: "text-xs"}}>{t("shipping")}</Radio>
+                      <Radio value="1" classNames={{label: "text-sm", description: "text-xs"}}>{t("billing")}</Radio>
+                      <Radio value="3" classNames={{label: "text-sm", description: "text-xs"}}>{t("business")}</Radio>
                     </RadioGroup>
                   </div>
 
                   {/* --- 个人信息：手机端 1x2 -> 2x1 --- */}
                   <div className="grid grid-cols-2 gap-3">
                     <InputText
-                        {...register("firstName", {required: "Required"})}
+                        {...register("firstName", {required: t("required")})}
                         className="col-span-2 sm:col-span-1"
-                        label="First Name"
+                        label={t("firstName")}
                         size="md"
                     />
                     <InputText
-                        {...register("lastName", {required: "Required"})}
+                        {...register("lastName", {required: t("required")})}
                         className="col-span-2 sm:col-span-1"
-                        label="Last Name"
+                        label={t("lastName")}
                         size="md"
                     />
                   </div>
@@ -274,29 +276,29 @@ export const Address = () => {
                   {/* --- 商务信息：移动端去掉内边距感，改用边框区分 --- */}
                   <div
                       className="grid grid-cols-2 gap-3 p-3 bg-gray-50/50 rounded-xl border border-dashed border-gray-200">
-                    <InputText {...register("companyName")} className="col-span-2" label="Company"/>
+                    <InputText {...register("companyName")} className="col-span-2" label={t("company")}/>
                     <InputText {...register("vat")} className="col-span-1" label="VAT"/>
                     <InputText {...register("eori")} className="col-span-1" label="EORI"/>
                   </div>
 
                   {/* --- 地址主信息 --- */}
                   <div className="space-y-4">
-                    <InputText {...register("address", {required: "Required"})} label="Address Line 1"/>
-                    <InputText {...register("street")} label="Address Line 2"/>
+                    <InputText {...register("address", {required: t("required")})} label={t("addressLine1")}/>
+                    <InputText {...register("street")} label={t("addressLine2")}/>
 
                     <div className="grid grid-cols-2 gap-3">
-                      <CountrySelect control={control} name="country" label="Country"
+                      <CountrySelect control={control} name="country" label={t("country")}
                                      className="col-span-2 sm:col-span-1"/>
-                      <InputText {...register("state")} className="col-span-1" label="State"/>
-                      <InputText {...register("city")} className="col-span-1" label="City"/>
-                      <InputText {...register("postcode")} className="col-span-2 sm:col-span-1" label="Zip Code"/>
+                      <InputText {...register("state")} className="col-span-1" label={t("state")}/>
+                      <InputText {...register("city")} className="col-span-1" label={t("city")}/>
+                      <InputText {...register("postcode")} className="col-span-2 sm:col-span-1" label={t("zipCode")}/>
                     </div>
                   </div>
 
                   <InputText
-                      {...register("phone", {required: "Required"})}
+                      {...register("phone", {required: t("required")})}
                       type="tel"
-                      label="Phone Number"
+                      label={t("phoneNumber")}
                   />
 
                   {/* --- 设为默认地址 --- */}
@@ -309,7 +311,7 @@ export const Address = () => {
                           label: "text-sm font-medium text-default-700",
                         }}
                     >
-                      Set as default address
+                      {t("setAsDefault")}
                     </Checkbox>
                   </div>
                 </div>
@@ -321,7 +323,7 @@ export const Address = () => {
                       className="w-full sm:w-auto"
                       onPress={() => setIsModalOpen(false)}
                   >
-                    Cancel
+                    {t("cancel")}
                   </Button>
                   <Button
                       type="submit"
@@ -329,7 +331,7 @@ export const Address = () => {
                       className="w-full sm:w-auto px-10 shadow-lg"
                       isLoading={addAddressMutation.isPending || updateAddressMutation.isPending}
                   >
-                    {isEditing ? 'Update' : 'Save Address'}
+                    {isEditing ? t("update") : t("saveAddress")}
                   </Button>
                 </div>
               </form>

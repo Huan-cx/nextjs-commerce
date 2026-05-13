@@ -1,3 +1,13 @@
+export interface I18nDataVO {
+  locale: string;  // 语言代码，如 zh-CN, en-US, fr-FR
+  name: string;          // 名称翻译
+  keyword: string;       // 关键字翻译
+  introduction: string;  // 简介翻译
+  description: string;   // 描述翻译
+  metaTitle?: string;    // SEO标题翻译
+  metaDescription?: string; // SEO描述翻译
+}
+
 export interface Category {
   /*分类编号 */
   id: number;
@@ -23,27 +33,39 @@ export interface Category {
   /*创建时间 */
   createTime: Record<string, unknown>;
 
+  /*多语言翻译列表 */
+  translations?: I18nDataVO[];
+
   /*子分类列表 */
   children?: Category[];
+
+  /*SEO标题 */
+  metaTitle?: string;
+
+  /*SEO描述 */
+  metaDescription?: string;
+
+  /*URL友好名称 */
+  slug?: string;
 }
 
 /** 商品 SPU */
 export interface Spu {
   id?: number; // 商品编号
-  name?: string; // 商品名称
+  name?: string; // 商品名称（默认语言）
   categoryId?: number; // 商品分类
-  keyword?: string; // 关键字
+  keyword?: string; // 关键字（默认语言）
   unit?: number; // 单位
   picUrl?: string; // 商品封面图
   sliderPicUrls?: string[]; // 商品轮播图
-  introduction?: string; // 商品简介
+  introduction?: string; // 商品简介（默认语言）
   deliveryTypes?: number[]; // 配送方式
   deliveryTemplateId?: number; // 运费模版
   brandId?: number; // 商品品牌编号
   specType?: boolean; // 商品规格
   subCommissionType?: boolean; // 分销类型
   skus?: Sku[]; // sku数组
-  description?: string; // 商品详情
+  description?: string; // 商品详情（默认语言）
   sort?: number; // 商品排序
   giveIntegral?: number; // 赠送积分
   virtualSalesCount?: number; // 虚拟销量
@@ -57,6 +79,16 @@ export interface Spu {
   createTime?: Date; // 商品创建时间
   status?: number; // 商品状态
   browseCount?: number; // 浏览量
+  translations?: I18nDataVO[]; // 多语言翻译列表
+
+  /*SEO标题 */
+  metaTitle?: string;
+
+  /*SEO描述 */
+  metaDescription?: string;
+
+  /*URL友好名称 */
+  slug?: string;
 }
 
 /** 商品 SKU */

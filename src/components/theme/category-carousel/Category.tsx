@@ -1,13 +1,16 @@
-import { NOT_IMAGE } from "@/utils/constants";
-import Link from "next/link";
-import { FC } from "react";
-import { GridTileImage } from "../ui/grid/Tile";
-import { BagistoCollectionMenus } from "@/types/types";
+import {NOT_IMAGE} from "@/utils/constants";
+import Link from "@/components/common/Link";
+import {FC} from "react";
+import {GridTileImage} from "../ui/grid/Tile";
+import {BagistoCollectionMenus} from "@/types/types";
+import {useTranslations} from "next-intl";
 
 const Category: FC<{
   name: string;
   categories: BagistoCollectionMenus[];
 }> = ({ name, categories }) => {
+  const t = useTranslations("home");
+  
   return (
     <section>
       <div className="md:max-w-4.5xl mx-auto mb-10 w-auto px-0 text-center md:px-36">
@@ -15,8 +18,7 @@ const Category: FC<{
           {name}
         </h2>
         <p className="font-normal text-black/60 dark:text-neutral-300 text-lg">
-          Discover the latest trends! Fresh products just added—shop new styles,
-          tech, and essentials before they&apos;re gone.
+          {t("productCarouselDescription")}
         </p>
       </div>
       <div className="w-full overflow-x-auto overflow-y-hidden">
@@ -29,7 +31,7 @@ const Category: FC<{
               <Link
                 aria-label={`${product?.name}`}
                 className="relative h-full w-full"
-                href={`/search/${product.slug}`}
+                href={`/category/${product.slug}`}
               >
                 <GridTileImage
                   fill

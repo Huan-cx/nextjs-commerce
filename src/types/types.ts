@@ -414,6 +414,12 @@ export type ThemeOptions = {
   picUrl: string;
   title: string;
   sortOrder: string;
+  slug?: string;
+  translations?: Array<{
+    languageCode: string;
+    title: string;
+    slug: string;
+  }>;
 };
 export type OptionDataTypes = {
   title: string;

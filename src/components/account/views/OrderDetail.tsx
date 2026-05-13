@@ -4,6 +4,7 @@ import {Button, Chip, Table, TableBody, TableCell, TableColumn, TableHeader, Tab
 import {ChevronLeftIcon} from "@heroicons/react/24/outline";
 import {OrderDetail} from "@utils/api/trade";
 import {fenToYuan} from "@utils/formatNumber";
+import {useTranslations} from "next-intl";
 
 interface OrderDetailProps {
   data: OrderDetail;
@@ -42,15 +43,16 @@ const COLORS = {
 } as const;
 
 export const OrderDetailView = ({data, onBack}: OrderDetailProps) => {
+  const t = useTranslations("orderDetail");
   const items = data.items || [];
 
   const getStatusText = (status: number) => {
-    if (status === 0) return "Pending";
-    if (status === 10) return "Unpaid";
-    if (status === 20) return "Shipped";
-    if (status === 30) return "Completed";
-    if (status === 40) return "Cancelled";
-    return "Unknown";
+    if (status === 0) return t("status.pending");
+    if (status === 10) return t("status.unpaid");
+    if (status === 20) return t("status.shipped");
+    if (status === 30) return t("status.completed");
+    if (status === 40) return t("status.cancelled");
+    return t("status.unknown");
   };
 
 
@@ -77,7 +79,7 @@ export const OrderDetailView = ({data, onBack}: OrderDetailProps) => {
   if (!data.id) {
     return (
         <div className="max-w-6xl mx-auto p-6">
-          <p>Order not found.</p>
+          <p>{t("notFound")}</p>
         </div>
     );
   }
@@ -216,42 +218,42 @@ export const OrderDetailView = ({data, onBack}: OrderDetailProps) => {
 
           {/* 3. Shipping & Payment Details区块 - 优化阴影和边框 */}
           <div className="space-y-2">
-            <h3 className={`px-1 font-bold text-lg ${COLORS.text.primary}`}>Shipping & Payment Details</h3>
+            <h3 className={`px-1 font-bold text-lg ${COLORS.text.primary}`}>{t("shippingPaymentDetails")}</h3>
             <div className={`${COLORS.background.primary} rounded-xl p-3 space-y-6 shadow-sm`}>
               {/* 地址信息 - 优化文字颜色 */}
               <div className="space-y-1">
-                <h4 className={`${COLORS.text.tertiary} text-sm`}>Shipping Address</h4>
+                <h4 className={`${COLORS.text.tertiary} text-sm`}>{t("shippingAddress")}</h4>
                 <p className={`font-bold ${COLORS.text.primary}`}>{data.receiverAddress?.companyName || 'comp'}</p>
                 <p className={`text-sm leading-relaxed ${COLORS.text.primary}`}>
                   {data.receiverAddress?.firstName} {data.receiverAddress?.lastName} {data.receiverAddress?.address} {data.receiverAddress?.city} {data.receiverAddress?.country} ({data.receiverAddress?.postcode})
                 </p>
-                <p className={`text-sm ${COLORS.text.secondary}`}>Contact : {data.receiverAddress?.phone}</p>
+                <p className={`text-sm ${COLORS.text.secondary}`}>{t("contact")} : {data.receiverAddress?.phone}</p>
               </div>
 
               <div className="space-y-1">
-                <h4 className={`${COLORS.text.tertiary} text-sm`}>Billing Address</h4>
+                <h4 className={`${COLORS.text.tertiary} text-sm`}>{t("billingAddress")}</h4>
                 <p className={`font-bold ${COLORS.text.primary}`}>{data.billingAddress?.companyName || 'comp'}</p>
                 <p className={`text-sm leading-relaxed ${COLORS.text.primary}`}>
                   {data.billingAddress?.firstName} {data.billingAddress?.lastName} {data.billingAddress?.address} {data.billingAddress?.city} {data.billingAddress?.country} ({data.billingAddress?.postcode})
                 </p>
-                <p className={`text-sm ${COLORS.text.secondary}`}>Contact : {data.billingAddress?.phone}</p>
+                <p className={`text-sm ${COLORS.text.secondary}`}>{t("contact")} : {data.billingAddress?.phone}</p>
               </div>
 
               <div className="space-y-1">
-                <h4 className={`${COLORS.text.tertiary} text-sm`}>Shipping Method</h4>
-                <p className={`text-sm font-medium ${COLORS.text.secondary}`}>{data.logisticsName || 'Free Shipping'} - {data.logisticsNo || 'Free Shipping'}</p>
+                <h4 className={`${COLORS.text.tertiary} text-sm`}>{t("shippingMethod")}</h4>
+                <p className={`text-sm font-medium ${COLORS.text.secondary}`}>{data.logisticsName || t("freeShipping")} - {data.logisticsNo || t("freeShipping")}</p>
               </div>
 
               <div className="space-y-1">
-                <h4 className={`${COLORS.text.tertiary} text-sm`}>Payment Method</h4>
-                <p className={`text-sm font-medium ${COLORS.text.secondary}`}>{data.payChannelName || 'Money Transfer'}</p>
+                <h4 className={`${COLORS.text.tertiary} text-sm`}>{t("paymentMethod")}</h4>
+                <p className={`text-sm font-medium ${COLORS.text.secondary}`}>{data.payChannelName || t("moneyTransfer")}</p>
               </div>
             </div>
           </div>
 
           {/* 4. 订单时间线 - 优化阴影和边框 */}
           <div className="space-y-2">
-            <h3 className={`px-1 font-bold text-lg ${COLORS.text.primary}`}>Order Timeline</h3>
+            <h3 className={`px-1 font-bold text-lg ${COLORS.text.primary}`}>{t("orderTimeline")}</h3>
             <div className="space-y-4">
               {data.createTime && (
                   <div className="flex gap-3 group">

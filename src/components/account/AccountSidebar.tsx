@@ -5,15 +5,7 @@ import {ChevronRight, MapPin, Package, User} from "lucide-react";
 import {useRouter} from "next/navigation";
 import {useMediaQuery} from "@utils/hooks/useMediaQueryHook";
 import clsx from "clsx";
-
-const menuItems = [
-  {key: "profile", label: "Profile", icon: <User size={18}/>},
-  {key: "orders", label: "Orders", icon: <Package size={18}/>},
-  {key: "address", label: "Address", icon: <MapPin size={18}/>},
-  // {key: "downloads", label: "Downloadable Products", icon: <Download size={18}/>},
-  // {key: "reviews", label: "Reviews", icon: <Star size={18}/>},
-  // {key: "wishlist", label: "Wishlist", icon: <Heart size={18}/>},
-];
+import {useTranslations} from "next-intl";
 
 export const AccountSidebar = ({
                                  user,
@@ -26,8 +18,16 @@ export const AccountSidebar = ({
   onSelect: (key: string) => void;
   className?: string;
 }) => {
+  const t = useTranslations("accountSidebar");
+  const headerT = useTranslations("header");
   const router = useRouter();
   const isDesktop = useMediaQuery("(min-width: 1024px)");
+
+  const menuItems = [
+    {key: "profile", label: headerT("profile"), icon: <User size={18}/>},
+    {key: "orders", label: headerT("orders"), icon: <Package size={18}/>},
+    {key: "address", label: headerT("address"), icon: <MapPin size={18}/>},
+  ];
 
   return (
       <aside className={clsx("w-full md:w-80 space-y-4 md:space-y-6 flex-shrink-0", className)}>
@@ -43,7 +43,9 @@ export const AccountSidebar = ({
               className="flex-shrink-0"
           />
           <div className="flex flex-col truncate">
-            <h4 className="font-bold text-default-900 truncate text-sm md:text-base">Hello! {user?.nickname || "User"}</h4>
+            <h4 className="font-bold text-default-900 truncate text-sm md:text-base">
+              {t("hello")} {user?.nickname || t("user")}
+            </h4>
             <p className="text-tiny text-default-400 truncate">{user?.email}</p>
           </div>
         </div>
@@ -52,7 +54,7 @@ export const AccountSidebar = ({
         <div className="border border-default-100 rounded-xl overflow-hidden bg-white shadow-sm">
           <div
               className="px-4 md:px-6 py-3 md:py-4 font-bold text-xs uppercase tracking-widest bg-default-50 text-default-500">
-            My Account
+            {t("title")}
           </div>
           <Divider/>
           <Listbox
@@ -73,7 +75,7 @@ export const AccountSidebar = ({
                   "px-4 md:px-6",
                   "py-3 md:py-4",
                   "gap-3 md:gap-4",
-                  "data-[selected=true]:bg-default-100", // 选中项灰色背景
+                  "data-[selected=true]:bg-default-100",
                   "data-[selected=true]:text-default-900",
                   "data-[hover=true]:bg-default-50",
                 ],

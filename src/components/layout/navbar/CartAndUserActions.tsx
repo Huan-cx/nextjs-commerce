@@ -1,15 +1,19 @@
-import { Suspense } from "react";
+import {Suspense} from "react";
 import Cart from "@/components/cart";
 import UserAccount from "@components/customer/credentials";
 import ThemeSwitcherWrapper from "@components/theme/theme-switch";
-import { IconSkeleton } from "@/components/common/skeleton/IconSkeleton";
-import { SessionManager } from "@/providers";
+import {IconSkeleton} from "@components/common/skeleton/IconSkeleton";
+import {SessionManager} from "@/providers";
+import LanguageSwitcher from "@components/locals/LanguageSwitcher";
 
 export function CartAndUserActions() {
   return (
     <div className="flex max-w-fit gap-2 md:gap-4">
       <div className="flex">
         <ThemeSwitcherWrapper />
+      </div>
+      <div className="flex">
+        <LanguageSwitcher/>
       </div>
       <div className="hidden lg:block">
         <Cart />

@@ -9,6 +9,7 @@ import {getVariantInfo} from "@utils/hooks/useSkuInfo";
 import {Sku, Spu} from "@/types/api/product/type";
 import {useCart} from "@utils/hooks/useAddToCart";
 import {useAuthStatus} from "@utils/hooks/useAuthStatus";
+import {useTranslations} from "next-intl";
 
 interface AddToCartFormData {
   quantity: number;
@@ -26,6 +27,7 @@ function SubmitButton({
   type: string;
   isSaleable: boolean;
 }) {
+  const t = useTranslations("cart");
   const buttonClasses =
       "relative flex w-full max-w-[16rem] cursor-pointer h-fit items-center justify-center rounded-full bg-blue-600 p-4 tracking-wide text-white";
   const disabledClasses = "cursor-wait opacity-60";
@@ -34,12 +36,12 @@ function SubmitButton({
     return (
         <button
             aria-disabled
-            aria-label="Out of stock"
+            aria-label={t("outOfStock")}
             type="button"
             disabled
             className={clsx(buttonClasses, " opacity-60 !cursor-not-allowed")}
         >
-          Out of Stock
+          {t("outOfStock")}
         </button>
     );
   }
@@ -48,12 +50,12 @@ function SubmitButton({
     return (
         <button
             aria-disabled
-            aria-label="Please select an option"
+            aria-label={t("selectOption")}
             type="button"
             disabled={!selectedVariantId}
             className={clsx(buttonClasses, " opacity-60 !cursor-not-allowed")}
         >
-          Add To Cart
+          {t("addToCart")}
         </button>
     );
   }
@@ -61,7 +63,7 @@ function SubmitButton({
   return (
       <button
           aria-disabled={pending}
-          aria-label="Add to cart"
+          aria-label={t("addToCart")}
           type="submit"
           className={clsx(buttonClasses, {
             "hover:opacity-90": true,
@@ -74,7 +76,7 @@ function SubmitButton({
         <div className="absolute left-0 ml-4">
           {pending ? <LoadingDots className="mb-3 bg-white"/> : ""}
         </div>
-        Add To Cart
+        {t("addToCart")}
       </button>
   );
 }
@@ -153,7 +155,7 @@ export function AddToCart({
       <>
         {!checkStock && type === "configurable" && userInteracted && (
             <div className="gap-1 px-2 py-1 my-2 font-bold text-red-500 dark:text-red-400">
-              <h1>NO STOCK AVAILABLE</h1>
+              <h1>{useTranslations("cart")("noStockAvailable")}</h1>
             </div>
         )}
         <form className="flex gap-x-4" onSubmit={handleSubmit(actionWithVariant)}>

@@ -20,13 +20,14 @@ export async function generateMetadata(): Promise<Metadata> {
   return generateMetadataForPage("", staticSeo.default);
 }
 
-export default function RootLayout({
-  children,
-}: Readonly<{
+type Props = {
   children: React.ReactNode;
-}>) {
+};
+
+export default function RootLayout({children}: Props) {
+
   return (
-    <html lang="en" suppressHydrationWarning>
+      <html suppressHydrationWarning>
       <head>
       </head>
       <body className={clsx(

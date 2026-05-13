@@ -1,13 +1,15 @@
 "use client";
 
-import { AnimatePresence, motion } from "framer-motion";
-import Link from "next/link";
+import {AnimatePresence, motion} from "framer-motion";
+import Link from "@/components/common/Link";
 import BottomNavbar from "./BottomNavbar";
-import { MobileSearchBar } from "./MobileSearch";
-import { useState } from "react";
-import { useBodyScrollLock } from "@utils/hooks/useBodyScrollLock";
+import {MobileSearchBar} from "./MobileSearch";
+import {useState} from "react";
+import {useBodyScrollLock} from "@utils/hooks/useBodyScrollLock";
+import {useTranslations} from "next-intl";
 
 export default function MobileMenu({ menu }: { menu: any }) {
+  const t = useTranslations("mobileMenu");
   const [activeTab, setActiveTab] = useState<
     "home" | "category" | "cart" | "account" | null
   >("home");
@@ -58,7 +60,7 @@ export default function MobileMenu({ menu }: { menu: any }) {
                 <MobileSearchBar onClose={handleClose} />
 
                 <h1 className="mt-4 px-2 text-2xl font-semibold text-black dark:text-white">
-                  Category
+                  {t("category")}
                 </h1>
 
                 <ul className="mt-2 flex w-full flex-col drawer-scrollbar-hidden">

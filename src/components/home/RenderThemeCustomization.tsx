@@ -1,4 +1,7 @@
+"use client";
+
 import {FC, Suspense} from "react";
+import {useLocale} from "next-intl";
 import {
   CategoryCarouselOptions,
   ProductCarouselOptions,
@@ -17,6 +20,8 @@ interface RenderThemeCustomizationProps {
 }
 
 const RenderThemeCustomization: FC<RenderThemeCustomizationProps> = ({ themeCustomizations }) => {
+  const locale = useLocale();
+  
   if (!themeCustomizations?.length) return null;
 
     let productCarouselIndex = 0;
@@ -30,7 +35,11 @@ const RenderThemeCustomization: FC<RenderThemeCustomizationProps> = ({ themeCust
             <MobileSearchBar />
             <section className="w-full max-w-screen-2xl mx-auto pb-4 px-4 xss:px-7.5">
               {sortedEdges.map((node) => {
-                const translation = node.translations.find(e => e.locale === 'en') || node.translations[0];
+                // 使用当前语言环境获取翻译，支持4位语言代码（如zh-CN）和2位语言代码（如zh）
+                const currentLang = locale.split("-")[0];
+                const translation = node.translations.find(e =>
+                    e.locale === locale || e.locale === currentLang
+                ) || node.translations[0];
                     if (!translation) return null;
 
                 const options = translation.options || {};
