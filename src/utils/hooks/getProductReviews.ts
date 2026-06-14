@@ -9,9 +9,6 @@ export async function getProductReviews(spuId: number, type: number) {
           spuId: spuId,
           type: type,
         }
-        , {
-          requiresAuth: true,
-        }
     );
 
     return response?.list || [];

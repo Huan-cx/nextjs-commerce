@@ -24,9 +24,9 @@ export const useCheckout = () => {
       const {
         billingAddress,
         receiverAddress,
-        businessAddress,
+        importerAddress,
         receiveUseBilling,
-        businessUseBilling,
+        importerUseBilling,
         paymentMethod,
         deliveryType,
         pointStatus,
@@ -37,9 +37,9 @@ export const useCheckout = () => {
       const orderData = await submitOrder({
         billingAddress: billingAddress,
         receiverAddress: receiverAddress,
-        businessAddress: businessAddress,
+        importerAddress: importerAddress,
         receiveUseBilling: receiveUseBilling,
-        businessUseBilling: businessUseBilling,
+        importerUseBilling: importerUseBilling,
         paymentMethod: paymentMethod,
         deliveryType: deliveryType,
         pointStatus: pointStatus,

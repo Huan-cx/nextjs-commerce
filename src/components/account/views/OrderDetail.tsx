@@ -1,8 +1,8 @@
 "use client";
 
-import {Button, Chip, Table, TableBody, TableCell, TableColumn, TableHeader, TableRow, User,} from "@heroui/react";
-import {ChevronLeftIcon} from "@heroicons/react/24/outline";
-import {OrderDetail} from "@utils/api/trade";
+import {Button, Chip, Table, TableBody, TableCell, TableColumn, TableHeader, TableRow, User} from "@heroui/react";
+import {ChevronLeftIcon, CreditCardIcon, MapPinIcon, TruckIcon} from "@heroicons/react/24/outline";
+import {OrderAddress, OrderDetail} from "@utils/api/trade";
 import {fenToYuan} from "@utils/formatNumber";
 import {useTranslations} from "next-intl";
 
@@ -11,42 +11,255 @@ interface OrderDetailProps {
   onBack?: () => void;
 }
 
-// 统一色彩系统
+// ========== 颜色和样式常量 ==========
 const COLORS = {
-  // 状态颜色
-  status: {
-    pending: 'warning',
-    unpaid: 'warning',
-    shipped: 'primary',
-    completed: 'success',
-    cancelled: 'danger',
+  // 状态颜色映射
+  getStatusColor: (status: number) => {
+    if (status === 0 || status === 10) return "warning"; // 待处理/待付款
+    if (status === 20) return "primary"; // 已发货
+    if (status === 30) return "success"; // 已完成
+    if (status === 40) return "danger"; // 已取消
+    return "default";
   },
-  // 背景颜色
+  // 背景色类名
   background: {
-    primary: 'bg-default-50',
-    secondary: 'bg-white',
-    accent: 'bg-blue-50',
+    card: "bg-white",
+    muted: "bg-default-50",
+    accent: "bg-blue-50",
   },
-  // 文字颜色
+  // 文字颜色类名
   text: {
-    primary: 'text-default-800',
-    secondary: 'text-default-600',
-    tertiary: 'text-default-400',
-    muted: 'text-default-300',
+    primary: "text-default-900",
+    secondary: "text-default-600",
+    tertiary: "text-default-400",
   },
-  // 边框颜色
+  // 边框类名
   border: {
-    light: 'border-default-100',
-    medium: 'border-default-200',
-    dark: 'border-default-300',
+    light: "border-default-100",
+    medium: "border-default-200",
   },
 } as const;
 
+// ========== 子组件：地址卡片 ==========
+const AddressCard = ({
+                       title,
+                       icon: Icon,
+                       address,
+                       colorClass = "text-primary",
+                       bgClass = "bg-primary/10",
+                       t,
+                       isMobile = false,
+                     }: {
+  title: string;
+  icon: any;
+  address?: OrderAddress;
+  colorClass?: string;
+  bgClass?: string;
+  t: any;
+  isMobile?: boolean;
+}) => {
+  if (!address) return null;
+
+  // 手机端简洁设计
+  if (isMobile) {
+    return (
+        <div className="-mx-4 px-4 py-4 border-b border-default-100 last:border-b-0">
+          <div className="flex items-center gap-2 mb-3">
+            <div className={`p-2 rounded-lg ${bgClass}`}>
+              <Icon className={`w-4 h-4 ${colorClass}`}/>
+            </div>
+            <h4 className="font-semibold text-default-900">{title}</h4>
+          </div>
+          {address.companyName && (
+              <p className="font-medium text-default-800 mb-1">{address.companyName}</p>
+          )}
+          <p className={`text-sm ${COLORS.text.secondary} mb-1`}>
+            {address.firstName} {address.lastName}
+          </p>
+          <p className="text-sm text-default-500">
+            {address.address}
+            {address.street && `, ${address.street}`}
+          </p>
+          <p className="text-sm text-default-500">
+            {address.city}, {address.state} {address.postcode}, {address.country}
+          </p>
+          <p className="text-sm text-default-500 mt-1">{t("contact")}: {address.phone}</p>
+          {address.email && <p className="text-sm text-default-500">{address.email}</p>}
+          {address.vat && <p className="text-sm text-default-500">VAT: {address.vat}</p>}
+          {address.eori && <p className="text-sm text-default-500">EORI: {address.eori}</p>}
+        </div>
+    );
+  }
+
+  // 桌面端卡片设计
+  return (
+      <div className={`p-4 rounded-xl border ${COLORS.border.medium} hover:shadow-sm transition-shadow`}>
+        <div className="flex items-center gap-2 mb-3">
+          <div className={`p-2 rounded-lg ${bgClass}`}>
+            <Icon className={`w-4 h-4 ${colorClass}`}/>
+          </div>
+          <h4 className="font-semibold text-default-900">{title}</h4>
+        </div>
+        {address.companyName && (
+            <p className="font-medium text-default-800 mb-1">{address.companyName}</p>
+        )}
+        <p className={`text-sm ${COLORS.text.secondary} mb-1`}>
+          {address.firstName} {address.lastName}
+        </p>
+        <p className="text-sm text-default-500">
+          {address.address}
+          {address.street && `, ${address.street}`}
+        </p>
+        <p className="text-sm text-default-500">
+          {address.city}, {address.state} {address.postcode}, {address.country}
+        </p>
+        <p className="text-sm text-default-500 mt-1">{t("contact")}: {address.phone}</p>
+        {address.email && <p className="text-sm text-default-500">{address.email}</p>}
+        {address.vat && <p className="text-sm text-default-500">VAT: {address.vat}</p>}
+        {address.eori && <p className="text-sm text-default-500">EORI: {address.eori}</p>}
+      </div>
+  );
+};
+
+// ========== 子组件：费用明细行 ==========
+const FeeRow = ({label, value, isBold = false, isMuted = false}: {
+  label: string;
+  value: string;
+  isBold?: boolean;
+  isMuted?: boolean;
+}) => (
+    <div
+        className={`flex justify-between items-center py-1.5 ${isBold ? 'font-bold' : 'font-medium'} ${isMuted ? 'text-default-400' : 'text-default-700'}`}>
+      <span className="text-sm">{label}</span>
+      <span className="text-sm">{value}</span>
+    </div>
+);
+
+// ========== 子组件：订单时间线 ==========
+const OrderTimeline = ({data, isMobile = false}: { data: OrderDetail; isMobile?: boolean }) => {
+  const t = useTranslations("orderDetail");
+  const timelineItems = [
+    {
+      key: 'created',
+      label: t("timeline.created"),
+      time: data.createTime,
+      color: 'bg-primary',
+      ringColor: 'ring-primary/20',
+    },
+    {
+      key: 'paid',
+      label: t("timeline.paid"),
+      time: data.payTime,
+      color: 'bg-primary',
+      ringColor: 'ring-primary/20',
+    },
+    {
+      key: 'shipped',
+      label: t("timeline.shipped"),
+      time: data.deliveryTime,
+      color: 'bg-primary',
+      ringColor: 'ring-primary/20',
+    },
+    {
+      key: 'completed',
+      label: t("timeline.completed"),
+      time: data.finishTime,
+      color: 'bg-success',
+      ringColor: 'ring-success/20',
+      condition: data.status === 30,
+    },
+    {
+      key: 'cancelled',
+      label: t("timeline.cancelled"),
+      time: data.cancelTime,
+      color: 'bg-danger',
+      ringColor: 'ring-danger/20',
+      condition: data.status === 40,
+    },
+  ].filter(item => item.time && (item.condition === undefined || item.condition));
+
+  // 手机端简洁设计
+  if (isMobile) {
+    return (
+        <div className="-mx-4 px-4 py-4">
+          <h3 className={`font-bold text-lg ${COLORS.text.primary} mb-4`}>
+            {t("orderTimeline")}
+          </h3>
+          <div className="space-y-3">
+            {timelineItems.map((item, index) => (
+                <div key={item.key} className="flex gap-3">
+                  <div className="flex flex-col items-center">
+                    <div
+                        className={`w-2.5 h-2.5 rounded-full ${item.color} shadow-sm ring-2 ${item.ringColor}`}
+                    />
+                    {index < timelineItems.length - 1 && (
+                        <div className="w-0.5 h-8 bg-default-200 mt-0.5"/>
+                    )}
+                  </div>
+                  <div className="flex-1 pb-3">
+                    <p className={`font-semibold ${COLORS.text.primary} text-sm`}>{item.label}</p>
+                    <p className={`text-xs ${COLORS.text.tertiary} mt-0.5`}>
+                      {new Date(item.time).toLocaleString('zh-CN', {
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      })}
+                    </p>
+                  </div>
+                </div>
+            ))}
+          </div>
+        </div>
+    );
+  }
+
+  // 桌面端设计
+  return (
+      <div className="p-5 rounded-xl border border-default-200 bg-white">
+        <h3 className={`font-bold text-lg ${COLORS.text.primary} mb-5`}>
+          {t("orderTimeline")}
+        </h3>
+        <div className="space-y-4">
+          {timelineItems.map((item, index) => (
+              <div key={item.key} className="flex gap-4 group">
+                <div className="flex flex-col items-center">
+                  <div
+                      className={`w-3 h-3 rounded-full ${item.color} shadow-sm ring-2 ${item.ringColor} group-hover:scale-110 transition-transform duration-200`}
+                  />
+                  {index < timelineItems.length - 1 && (
+                      <div className="w-0.5 h-10 bg-default-200 mt-1"/>
+                  )}
+                </div>
+                <div className="flex-1 pb-4">
+                  <p className={`font-semibold ${COLORS.text.primary}`}>{item.label}</p>
+                  <p className={`text-sm ${COLORS.text.tertiary} mt-0.5`}>
+                    {new Date(item.time).toLocaleString('zh-CN', {
+                      year: 'numeric',
+                      month: 'short',
+                      day: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit',
+                    })}
+                  </p>
+                </div>
+              </div>
+          ))}
+        </div>
+      </div>
+  );
+};
+
+// ========== 主组件 ==========
 export const OrderDetailView = ({data, onBack}: OrderDetailProps) => {
   const t = useTranslations("orderDetail");
   const items = data.items || [];
+  const feeItems = data.feeItems || [];
 
+  // 获取状态文本
   const getStatusText = (status: number) => {
+    if (data.statusName) return data.statusName;
     if (status === 0) return t("status.pending");
     if (status === 10) return t("status.unpaid");
     if (status === 20) return t("status.shipped");
@@ -55,559 +268,432 @@ export const OrderDetailView = ({data, onBack}: OrderDetailProps) => {
     return t("status.unknown");
   };
 
+  // 判断是否为 B2B 订单（有报价单ID或询价单ID）
+  const isB2BOrder = data.quotationId || data.rfqId;
 
-  const getStatusColor = (status: number) => {
-    if (status === 0) return COLORS.status.pending;
-    if (status === 10) return COLORS.status.unpaid;
-    if (status === 20) return COLORS.status.shipped;
-    if (status === 30) return COLORS.status.completed;
-    if (status === 40) return COLORS.status.cancelled;
-    return 'default';
-  };
-
-  const formatDate = (dateString: string) => {
-    if (!dateString) return "N/A";
-    return new Date(dateString).toLocaleString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
+  // 计算总金额（包含增值费用）
+  const calculateTotalWithFees = () => {
+    const itemsTotal = items.reduce((sum, item) => sum + (item.payPrice || 0), 0);
+    const feesTotal = feeItems.reduce((sum, fee) => sum + fee.amount, 0);
+    return itemsTotal + feesTotal;
   };
 
   if (!data.id) {
     return (
         <div className="max-w-6xl mx-auto p-6">
-          <p>{t("notFound")}</p>
+          <p className={COLORS.text.secondary}>{t("notFound")}</p>
         </div>
     );
   }
 
   return (
-      <div className="max-w-6xl mx-auto md:p-6 space-y-4 md:space-y-6 bg-white">
-        {/* 手机端：顶部标题栏 - 使用ChevronLeftIcon */}
-        <div className="flex md:hidden items-center gap-2 p-3 border-b border-default-100">
+      <div className="max-w-7xl mx-auto w-full">
+        {/* ========== 顶部标题栏 ========== */}
+        <div className="hidden md:flex items-center gap-4 mb-6">
           {onBack && (
-              <Button isIconOnly size="sm" variant="light" onPress={onBack}>
-                <ChevronLeftIcon className="w-5 h-5"/>
-              </Button>
-          )}
-          <h1 className="text-lg font-bold">Order #{data.no || data.id}</h1>
-        </div>
-
-        {/* 手机端内容容器 */}
-        <div className="md:hidden px-2 pb-8 space-y-6">
-
-          {/* 1. Information区块 - 减少内边距 */}
-          <div className="border border-default-200 rounded-xl overflow-hidden shadow-sm">
-            <div className="p-3 space-y-3 bg-white">
-              <div className="flex justify-between items-center text-sm">
-                <span className={COLORS.text.tertiary}>Order Id:</span>
-                <span className={`font-bold ${COLORS.text.primary}`}>#{data.no || data.id}</span>
-              </div>
-              <div className="flex justify-between items-center text-sm">
-                <span className={COLORS.text.tertiary}>Placed On:</span>
-                <span className={`font-medium ${COLORS.text.secondary}`}>{formatDate(data.createTime)}</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-default-500 text-sm">Status:</span>
-                <Chip
-                    variant="flat"
-                    color={getStatusColor(data.status)}
-                    classNames={{
-                      base: `font-bold ${getStatusColor(data.status) === 'warning' ? 'bg-orange-100 text-orange-600' : ''}`,
-                      content: 'text-sm'
-                    }}
-                    size="sm"
-                >
-                  {getStatusText(data.status)}
-                </Chip>
-              </div>
-            </div>
-            {/* 操作按钮 - 优化交互效果 */}
-            <div className={`flex border-t ${COLORS.border.medium}`}>
               <Button
                   variant="light"
-                  radius="none"
-                  className={`flex-1 h-12 font-bold border-r ${COLORS.border.medium} ${COLORS.text.primary} hover:bg-default-100 active:bg-default-200 transition-colors duration-150`}
+                  radius="lg"
+                  className="font-semibold px-4"
+                  onPress={onBack}
+                  startContent={<ChevronLeftIcon className="w-5 h-5"/>}
               >
-                Reorder
+                {t("back")}
               </Button>
-              {data.status === 0 && (
-                  <Button
-                      variant="light"
-                      radius="none"
-                      className={`flex-1 h-12 font-bold ${COLORS.text.secondary} hover:bg-default-100 active:bg-default-200 transition-colors duration-150`}
-                  >
-                    Cancel
-                  </Button>
-              )}
-            </div>
-          </div>
-
-          {/* --- 商品明细表格 --- */}
-          <div className="space-y-2">
-            <h3 className={`px-1 font-bold text-lg ${COLORS.text.primary}`}>Products</h3>
-            <div className={`${COLORS.border.medium} rounded-xl overflow-hidden shadow-sm`}>
-              <Table
-                  removeWrapper
-                  aria-label="Order Items"
-                  classNames={{
-                    th: `${COLORS.background.primary} ${COLORS.text.tertiary} font-bold h-12 text-xs uppercase tracking-wider`,
-                    td: `py-4 border-b ${COLORS.border.light} last:border-b-0 hover:bg-default-50 transition-colors duration-150`
-                  }}
-              >
-                <TableHeader>
-                  <TableColumn className="font-semibold">PRODUCT</TableColumn>
-                  <TableColumn className={`text-right font-semibold ${COLORS.text.tertiary}`}>SUBTOTAL</TableColumn>
-                </TableHeader>
-                <TableBody>
-                  {items.map((item) => (
-                      <TableRow key={item.id} className="hover:bg-default-50">
-                        <TableCell>
-                          <User
-                              avatarProps={{src: item.picUrl, size: "sm", radius: "md"}}
-                              name={<span
-                                  className={`text-sm font-bold ${COLORS.text.primary} line-clamp-1`}>{item.spuName}</span>}
-                              description={
-                                <div className="space-y-0.5">
-                                  {item.properties && (
-                                      <p className={`text-tiny ${COLORS.text.muted}`}>
-                                        {item.properties.map((p) => p.valueName).join(" / ")}
-                                      </p>
-                                  )}
-                                  <p className={`text-tiny ${COLORS.text.primary} font-medium`}>
-                                    {item.count} × {fenToYuan(item.price)}
-                                  </p>
-                                </div>
-                              }
-                          />
-                        </TableCell>
-                        <TableCell className={`text-right font-bold text-sm ${COLORS.text.primary}`}>
-                          {fenToYuan(item.payPrice)}
-                        </TableCell>
-                      </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          </div>
-
-          {/* 2. Order Summary区块 - 优化阴影和边框 */}
-          <div className="space-y-2">
-            <h3 className={`px-1 font-bold text-lg ${COLORS.text.primary}`}>Order Summary</h3>
-            <div className={`${COLORS.background.primary} rounded-xl p-3 space-y-3 shadow-sm`}>
-              {[
-                {label: "Subtotal", value: fenToYuan(data.totalPrice)},
-                {label: "Shipping & Handling", value: fenToYuan(data.deliveryPrice)},
-                {label: "Tax", value: "$0.00"},
-                {label: "Grand Total", value: fenToYuan(data.payPrice), bold: true},
-                {label: "Total Paid", value: fenToYuan(data.payPrice * (data.payStatus ? 1 : 0)), small: true},
-                {label: "Total Refunded", value: fenToYuan(data.refundPrice), small: true},
-                {label: "Total Due", value: fenToYuan(data.payPrice * (data.payStatus ? 0 : 1)), bold: true}
-              ].map((item, index) => (
-                  <div key={index}
-                       className={`flex justify-between ${item.bold ? 'font-bold text-base' : 'text-sm'} ${item.small ? COLORS.text.muted + ' text-xs' : ''}`}>
-                    <span className={item.bold ? COLORS.text.primary : COLORS.text.tertiary}>{item.label}</span>
-                    <span className={item.bold ? COLORS.text.primary : COLORS.text.secondary}>{item.value}</span>
-                  </div>
-              ))}
-            </div>
-          </div>
-
-          {/* 3. Shipping & Payment Details区块 - 优化阴影和边框 */}
-          <div className="space-y-2">
-            <h3 className={`px-1 font-bold text-lg ${COLORS.text.primary}`}>{t("shippingPaymentDetails")}</h3>
-            <div className={`${COLORS.background.primary} rounded-xl p-3 space-y-6 shadow-sm`}>
-              {/* 地址信息 - 优化文字颜色 */}
-              <div className="space-y-1">
-                <h4 className={`${COLORS.text.tertiary} text-sm`}>{t("shippingAddress")}</h4>
-                <p className={`font-bold ${COLORS.text.primary}`}>{data.receiverAddress?.companyName || 'comp'}</p>
-                <p className={`text-sm leading-relaxed ${COLORS.text.primary}`}>
-                  {data.receiverAddress?.firstName} {data.receiverAddress?.lastName} {data.receiverAddress?.address} {data.receiverAddress?.city} {data.receiverAddress?.country} ({data.receiverAddress?.postcode})
-                </p>
-                <p className={`text-sm ${COLORS.text.secondary}`}>{t("contact")} : {data.receiverAddress?.phone}</p>
-              </div>
-
-              <div className="space-y-1">
-                <h4 className={`${COLORS.text.tertiary} text-sm`}>{t("billingAddress")}</h4>
-                <p className={`font-bold ${COLORS.text.primary}`}>{data.billingAddress?.companyName || 'comp'}</p>
-                <p className={`text-sm leading-relaxed ${COLORS.text.primary}`}>
-                  {data.billingAddress?.firstName} {data.billingAddress?.lastName} {data.billingAddress?.address} {data.billingAddress?.city} {data.billingAddress?.country} ({data.billingAddress?.postcode})
-                </p>
-                <p className={`text-sm ${COLORS.text.secondary}`}>{t("contact")} : {data.billingAddress?.phone}</p>
-              </div>
-
-              <div className="space-y-1">
-                <h4 className={`${COLORS.text.tertiary} text-sm`}>{t("shippingMethod")}</h4>
-                <p className={`text-sm font-medium ${COLORS.text.secondary}`}>{data.logisticsName || t("freeShipping")} - {data.logisticsNo || t("freeShipping")}</p>
-              </div>
-
-              <div className="space-y-1">
-                <h4 className={`${COLORS.text.tertiary} text-sm`}>{t("paymentMethod")}</h4>
-                <p className={`text-sm font-medium ${COLORS.text.secondary}`}>{data.payChannelName || t("moneyTransfer")}</p>
-              </div>
-            </div>
-          </div>
-
-          {/* 4. 订单时间线 - 优化阴影和边框 */}
-          <div className="space-y-2">
-            <h3 className={`px-1 font-bold text-lg ${COLORS.text.primary}`}>{t("orderTimeline")}</h3>
-            <div className="space-y-4">
-              {data.createTime && (
-                  <div className="flex gap-3 group">
-                    <div className="flex flex-col items-center">
-                      <div
-                          className="w-2.5 h-2.5 rounded-full bg-primary shadow-sm ring-2 ring-primary/20 group-hover:ring-primary/40 transition-all duration-300"/>
-                      <div className="w-0.5 h-10 bg-default-200"/>
-                    </div>
-                    <div className="flex-1">
-                      <p className={`font-medium text-sm ${COLORS.text.primary}`}>Order Placed</p>
-                      <p className={`text-tiny ${COLORS.text.tertiary}`}>{formatDate(data.createTime)}</p>
-                    </div>
-                  </div>
-              )}
-              {data.payTime && (
-                  <div className="flex gap-3 group">
-                    <div className="flex flex-col items-center">
-                      <div
-                          className="w-2.5 h-2.5 rounded-full bg-primary shadow-sm ring-2 ring-primary/20 group-hover:ring-primary/40 transition-all duration-300"/>
-                      <div className="w-0.5 h-10 bg-default-200"/>
-                    </div>
-                    <div className="flex-1">
-                      <p className={`font-medium text-sm ${COLORS.text.primary}`}>Payment Confirmed</p>
-                      <p className={`text-tiny ${COLORS.text.tertiary}`}>{formatDate(data.payTime)}</p>
-                      <p className={`text-tiny ${COLORS.text.tertiary}`}>{data.payChannelName}</p>
-                    </div>
-                  </div>
-              )}
-              {data.deliveryTime && (
-                  <div className="flex gap-3 group">
-                    <div className="flex flex-col items-center">
-                      <div
-                          className="w-2.5 h-2.5 rounded-full bg-primary shadow-sm ring-2 ring-primary/20 group-hover:ring-primary/40 transition-all duration-300"/>
-                      <div className="w-0.5 h-10 bg-default-200"/>
-                    </div>
-                    <div className="flex-1">
-                      <p className={`font-medium text-sm ${COLORS.text.primary}`}>Order Shipped</p>
-                      <p className={`text-tiny ${COLORS.text.tertiary}`}>{formatDate(data.deliveryTime)}</p>
-                      {data.logisticsName && (
-                          <p className={`text-tiny ${COLORS.text.tertiary}`}>{data.logisticsName} - {data.logisticsNo}</p>
-                      )}
-                    </div>
-                  </div>
-              )}
-              {data.receiveTime && (
-                  <div className="flex gap-3 group">
-                    <div className="flex flex-col items-center">
-                      <div
-                          className="w-2.5 h-2.5 rounded-full bg-primary shadow-sm ring-2 ring-primary/20 group-hover:ring-primary/40 transition-all duration-300"/>
-                    </div>
-                    <div className="flex-1">
-                      <p className={`font-medium text-sm ${COLORS.text.primary}`}>Order Delivered</p>
-                      <p className={`text-tiny ${COLORS.text.tertiary}`}>{formatDate(data.receiveTime)}</p>
-                    </div>
-                  </div>
-              )}
-              {data.cancelTime && (
-                  <div className="flex gap-3 group">
-                    <div className="flex flex-col items-center">
-                      <div
-                          className="w-2.5 h-2.5 rounded-full bg-danger shadow-sm ring-2 ring-danger/20 group-hover:ring-danger/40 transition-all duration-300"/>
-                    </div>
-                    <div className="flex-1">
-                      <p className={`font-medium text-sm text-danger ${COLORS.text.primary}`}>Order Cancelled</p>
-                      <p className={`text-tiny ${COLORS.text.tertiary}`}>{formatDate(data.cancelTime)}</p>
-                    </div>
-                  </div>
-              )}
-              {data.finishTime && (
-                  <div className="flex gap-3 group">
-                    <div className="flex flex-col items-center">
-                      <div
-                          className="w-2.5 h-2.5 rounded-full bg-success shadow-sm ring-2 ring-success/20 group-hover:ring-success/40 transition-all duration-300"/>
-                    </div>
-                    <div className="flex-1">
-                      <p className={`font-medium text-sm text-success ${COLORS.text.primary}`}>Order Completed</p>
-                      <p className={`text-tiny ${COLORS.text.tertiary}`}>{formatDate(data.finishTime)}</p>
-                    </div>
-                  </div>
-              )}
-            </div>
-          </div>
-
+          )}
+          <div>
+            <h1 className={`text-2xl font-bold ${COLORS.text.primary}`}>
+              {t("orderNo")} #{data.no || data.id}
+            </h1>
         </div>
-
-        {/* PC端 */}
-        <div className="hidden md:block py-8 px-4 space-y-8">
-          {/* 1. 顶部标题与操作栏 - 优化边框和文字颜色 */}
-          <div className={`flex justify-between items-end border-b-2 ${COLORS.border.light} pb-4`}>
-            <div className="flex items-center gap-4">
-              {onBack && (
-                  <Button variant="light" radius="sm" className={`font-semibold px-4 ${COLORS.text.primary}`}
-                          onPress={onBack}>
-                    <ChevronLeftIcon className="w-5 h-5"/>
-                  </Button>
-              )}
-              <h1 className={`text-2xl font-bold ${COLORS.text.primary}`}>Order #{data.no || data.id}</h1>
-            </div>
-            <div className="flex gap-3">
-              <Button
-                  variant="bordered"
-                  radius="sm"
-                  className={`font-semibold px-6 ${COLORS.border.dark} hover:bg-default-50 active:bg-default-100 transition-colors duration-150`}
-              >
-                Reorder
-              </Button>
-              {data.status === 0 && (
-                  <Button
-                      variant="bordered"
-                      radius="sm"
-                      className={`font-semibold px-6 ${COLORS.border.dark} hover:bg-default-50 active:bg-default-100 transition-colors duration-150`}
-                  >
-                    Cancel
-                  </Button>
-              )}
-            </div>
-          </div>
-
-          {/* 2. Information 标题区块 - 优化背景和边框 */}
-          <div className="space-y-4">
-            <div className={`${COLORS.background.primary} p-4 rounded-t-sm border-l-4 ${COLORS.border.dark}`}>
-              <h2 className={`text-xl font-bold ${COLORS.text.primary}`}>Information</h2>
-            </div>
-            <div className={`px-1 ${COLORS.text.secondary} font-medium`}>
-              Placed On {formatDate(data.createTime)}
-            </div>
-          </div>
-
-          {/* 3. 商品明细表格 (PC端五列布局) - 优化表格样式 */}
-          <Table
-              removeWrapper
-              aria-label="Order Items Table"
+          <Chip
+              variant="flat"
+              color={COLORS.getStatusColor(data.status) as any}
+              size="lg"
               classNames={{
-                base: `border-t ${COLORS.border.light}`,
-                th: `${COLORS.background.primary} ${COLORS.text.tertiary} font-bold py-4 text-xs uppercase tracking-wider first:rounded-none last:rounded-none`,
-                td: `py-5 border-b ${COLORS.border.light} ${COLORS.text.primary} hover:bg-default-50 transition-colors duration-150`
+                base: "ml-4",
+                content: "font-semibold",
               }}
           >
-            <TableHeader>
-              <TableColumn className="font-semibold">SKU</TableColumn>
-              <TableColumn width={400} className="font-semibold">Name</TableColumn>
-              <TableColumn className="font-semibold">Price</TableColumn>
-              <TableColumn className="font-semibold">Item Status</TableColumn>
-              <TableColumn className={`text-right font-semibold ${COLORS.text.tertiary}`}>Subtotal</TableColumn>
-            </TableHeader>
-            <TableBody>
-              {data.items?.map((item) => (
-                  <TableRow key={item.id} className="hover:bg-default-50">
-                    {/* SKU: 接口中一般对应 skuId 或自定义编号 */}
-                    <TableCell className={`font-medium ${COLORS.text.secondary}`}>SKU-{item.skuId}</TableCell>
-                    <TableCell>
-                      <div className={`font-bold ${COLORS.text.primary}`}>{item.spuName}</div>
-                      {item.properties && (
-                          <div className={`text-tiny ${COLORS.text.muted} mt-1`}>
-                            {item.properties.map(p => p.valueName).join(' / ')}
-                          </div>
-                      )}
-                    </TableCell>
-                    <TableCell className={COLORS.text.secondary}>{fenToYuan(item.price)}</TableCell>
-                    <TableCell>
-                      <span className={`font-bold ${COLORS.text.primary}`}>Ordered ({item.count})</span>
-                    </TableCell>
-                    <TableCell className={`text-right font-bold ${COLORS.text.primary}`}>
-                      {fenToYuan(item.payPrice)}
-                    </TableCell>
-                  </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+            {getStatusText(data.status)}
+          </Chip>
+        </div>
 
-          {/* 4. 结算区块 (右对齐) - 优化文字颜色和边框 */}
-          <div className="flex justify-end pr-4">
-            <div className="w-80 space-y-3">
-              <div className="flex justify-between text-sm">
-                <span className={COLORS.text.tertiary}>Subtotal</span>
-                <span className={`font-medium ${COLORS.text.secondary}`}>{fenToYuan(data.totalPrice)}</span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span className={COLORS.text.tertiary}>Shipping & Handling</span>
-                <span className={`font-medium ${COLORS.text.secondary}`}>{fenToYuan(data.deliveryPrice)}</span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span className={COLORS.text.tertiary}>Tax</span>
-                <span className={`font-medium ${COLORS.text.secondary}`}>$0.00</span>
-              </div>
-              <div className={`flex justify-between text-base font-bold pt-2 border-t ${COLORS.border.light}`}>
-                <span className={COLORS.text.primary}>Grand Total</span>
-                <span className={COLORS.text.primary}>{fenToYuan(data.payPrice)}</span>
-              </div>
-              <div className={`flex justify-between text-sm ${COLORS.text.tertiary}`}>
-                <span>Total Paid</span>
-                <span className={COLORS.text.secondary}>{fenToYuan(data.payPrice * (data.payStatus ? 1 : 0))}</span>
-              </div>
-              <div className={`flex justify-between text-sm ${COLORS.text.tertiary}`}>
-                <span>Total Refunded</span>
-                <span className={COLORS.text.secondary}>{fenToYuan(data.refundPrice)}</span>
-              </div>
-              <div className={`flex justify-between text-base font-bold ${COLORS.text.primary}`}>
-                <span>Total Due</span>
-                <span className={COLORS.text.primary}>{fenToYuan(data.payPrice * (data.payStatus ? 0 : 1))}</span>
-              </div>
+        {/* ========== 移动端标题栏 ========== */}
+        <div className="md:hidden -mx-4 px-4 py-3 border-b border-default-100 mb-4">
+          <div className="flex items-center gap-3">
+            {onBack && (
+                <Button isIconOnly size="sm" variant="light" radius="full" onPress={onBack}>
+                  <ChevronLeftIcon className="w-5 h-5"/>
+                </Button>
+            )}
+            <div className="flex-1">
+              <h1 className="text-lg font-bold text-default-900">{t("orderNo")} #{data.no || data.id}</h1>
             </div>
-          </div>
-
-          {/* 5. 底部地址与方式 (五列平铺) - 优化边框和文字颜色 */}
-          <div className={`grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-8 pt-12 border-t ${COLORS.border.light}`}>
-            {/* Billing Address */}
-            <div className="space-y-10">
-              <h3 className={`${COLORS.text.tertiary} font-medium`}>Billing Address</h3>
-              <div className="text-sm leading-relaxed space-y-1">
-                <p className={`font-bold ${COLORS.text.primary}`}>{data.billingAddress?.companyName || 'comp'}</p>
-                <p className={`font-bold ${COLORS.text.primary}`}>
-                  {data.billingAddress?.firstName} {data.billingAddress?.lastName}
-                </p>
-                <p className={COLORS.text.secondary}>{data.billingAddress?.address}</p>
-                <p className={COLORS.text.secondary}>{data.billingAddress?.city} {data.billingAddress?.state} {data.billingAddress?.country} ({data.billingAddress?.postcode})</p>
-                <p className={`pt-2 ${COLORS.text.tertiary}`}>Contact : {data.billingAddress?.phone}</p>
-              </div>
-            </div>
-
-            {/* Shipping Address */}
-            <div className="space-y-10">
-              <h3 className="text-default-400 font-medium">Shipping Address</h3>
-              <div className="text-sm leading-relaxed space-y-1">
-                <p className="font-bold text-default-800">{data.receiverAddress?.companyName || 'comp'}</p>
-                <p className="font-bold text-default-800">
-                  {data.receiverAddress?.firstName} {data.receiverAddress?.lastName}
-                </p>
-                <p>{data.receiverAddress?.address}</p>
-                <p>{data.receiverAddress?.city} {data.receiverAddress?.state} {data.receiverAddress?.country} ({data.receiverAddress?.postcode})</p>
-                <p className="pt-2 text-default-500">Contact : {data.receiverAddress?.phone}</p>
-              </div>
-            </div>
-
-            {/* Business Address */}
-            <div className="space-y-3">
-              <h3 className="text-default-400 font-medium">Business Address</h3>
-              <div className="text-sm leading-relaxed space-y-1">
-                <p className="font-bold text-default-800">{data.businessAddress?.companyName || 'comp'}</p>
-                <p className="font-bold text-default-800">
-                  {data.businessAddress?.firstName} {data.businessAddress?.lastName}
-                </p>
-                <p>{data.businessAddress?.address}</p>
-                <p>{data.businessAddress?.city} {data.businessAddress?.state} {data.businessAddress?.country} ({data.businessAddress?.postcode})</p>
-                <p className="pt-2 text-default-500">Contact : {data.businessAddress?.phone}</p>
-              </div>
-            </div>
-
-            {/* Shipping Method */}
-            <div className="space-y-3">
-              <h3 className="text-default-400 font-medium">Shipping Method</h3>
-              <p className="text-sm font-medium text-default-800">
-                {data.logisticsName || 'Free Shipping'} - {data.logisticsNo || 'Free Shipping'}
-              </p>
-            </div>
-
-            {/* Payment Method */}
-            <div className="space-y-3">
-              <h3 className="text-default-400 font-medium">Payment Method</h3>
-              <p className="text-sm font-medium text-default-800">
-                {data.payChannelName || 'Money Transfer'}
-              </p>
-            </div>
-          </div>
-
-          {/* 6. 订单时间线 - 优化文字颜色 */}
-          <div className="space-y-4">
-            <h3 className={`text-xl font-bold ${COLORS.text.primary}`}>Order Timeline</h3>
-            <div className="space-y-4">
-              {data.createTime && (
-                  <div className="flex gap-4 group">
-                    <div className="flex flex-col items-center">
-                      <div
-                          className="w-3 h-3 rounded-full bg-primary shadow-md ring-2 ring-primary/20 group-hover:ring-primary/40 transition-all duration-300"/>
-                      <div className="w-0.5 h-12 bg-default-200"/>
-                    </div>
-                    <div className="flex-1">
-                      <p className={`font-medium ${COLORS.text.primary}`}>Order Placed</p>
-                      <p className={`text-sm ${COLORS.text.tertiary}`}>{formatDate(data.createTime)}</p>
-                    </div>
-                  </div>
-              )}
-              {data.payTime && (
-                  <div className="flex gap-4 group">
-                    <div className="flex flex-col items-center">
-                      <div
-                          className="w-3 h-3 rounded-full bg-primary shadow-md ring-2 ring-primary/20 group-hover:ring-primary/40 transition-all duration-300"/>
-                      <div className="w-0.5 h-12 bg-default-200"/>
-                    </div>
-                    <div className="flex-1">
-                      <p className={`font-medium ${COLORS.text.primary}`}>Payment Confirmed</p>
-                      <p className={`text-sm ${COLORS.text.tertiary}`}>{formatDate(data.payTime)}</p>
-                      <p className={`text-sm ${COLORS.text.tertiary}`}>{data.payChannelName}</p>
-                    </div>
-                  </div>
-              )}
-              {data.deliveryTime && (
-                  <div className="flex gap-4 group">
-                    <div className="flex flex-col items-center">
-                      <div
-                          className="w-3 h-3 rounded-full bg-primary shadow-md ring-2 ring-primary/20 group-hover:ring-primary/40 transition-all duration-300"/>
-                      <div className="w-0.5 h-12 bg-default-200"/>
-                    </div>
-                    <div className="flex-1">
-                      <p className={`font-medium ${COLORS.text.primary}`}>Order Shipped</p>
-                      <p className={`text-sm ${COLORS.text.tertiary}`}>{formatDate(data.deliveryTime)}</p>
-                      {data.logisticsName && (
-                          <p className={`text-sm ${COLORS.text.tertiary}`}>{data.logisticsName} - {data.logisticsNo}</p>
-                      )}
-                    </div>
-                  </div>
-              )}
-              {data.receiveTime && (
-                  <div className="flex gap-4 group">
-                    <div className="flex flex-col items-center">
-                      <div
-                          className="w-3 h-3 rounded-full bg-primary shadow-md ring-2 ring-primary/20 group-hover:ring-primary/40 transition-all duration-300"/>
-                    </div>
-                    <div className="flex-1">
-                      <p className={`font-medium ${COLORS.text.primary}`}>Order Delivered</p>
-                      <p className={`text-sm ${COLORS.text.tertiary}`}>{formatDate(data.receiveTime)}</p>
-                    </div>
-                  </div>
-              )}
-              {data.cancelTime && (
-                  <div className="flex gap-4 group">
-                    <div className="flex flex-col items-center">
-                      <div
-                          className="w-3 h-3 rounded-full bg-danger shadow-md ring-2 ring-danger/20 group-hover:ring-danger/40 transition-all duration-300"/>
-                    </div>
-                    <div className="flex-1">
-                      <p className={`font-medium text-danger ${COLORS.text.primary}`}>Order Cancelled</p>
-                      <p className={`text-sm ${COLORS.text.tertiary}`}>{formatDate(data.cancelTime)}</p>
-                    </div>
-                  </div>
-              )}
-              {data.finishTime && (
-                  <div className="flex gap-4 group">
-                    <div className="flex flex-col items-center">
-                      <div
-                          className="w-3 h-3 rounded-full bg-success shadow-md ring-2 ring-success/20 group-hover:ring-success/40 transition-all duration-300"/>
-                    </div>
-                    <div className="flex-1">
-                      <p className={`font-medium text-success ${COLORS.text.primary}`}>Order Completed</p>
-                      <p className={`text-sm ${COLORS.text.tertiary}`}>{formatDate(data.finishTime)}</p>
-                    </div>
-                  </div>
-              )}
-            </div>
+            <Chip
+                variant="flat"
+                color={COLORS.getStatusColor(data.status) as any}
+                size="sm"
+            >
+              {getStatusText(data.status)}
+            </Chip>
           </div>
         </div>
 
+        {/* ========== 主体内容区 - 桌面端 ========== */}
+        <div className="hidden md:block space-y-6">
+          {/* ========== 1. 订单基本信息卡片 ========== */}
+          <div className="p-5 rounded-xl border border-default-200 bg-white">
+            <h3 className={`font-bold text-lg ${COLORS.text.primary} mb-4`}>
+              {t("orderInfo")}
+            </h3>
+            <div className="grid grid-cols-2 lg:grid-cols-3 gap-6">
+              <div>
+                <p className={`text-sm ${COLORS.text.tertiary} mb-1`}>{t("orderDate")}</p>
+                <p className={`font-medium ${COLORS.text.secondary}`}>
+                  {new Date(data.createTime).toLocaleDateString('zh-CN')}
+                </p>
+              </div>
+              <div>
+                <p className={`text-sm ${COLORS.text.tertiary} mb-1`}>{t("paymentMethod")}</p>
+                <p className={`font-medium ${COLORS.text.secondary}`}>
+                  {data.paymentMethodName || data.payChannelName || "-"}
+                </p>
+              </div>
+              <div>
+                <p className={`text-sm ${COLORS.text.tertiary} mb-1`}>{t("paymentStatus")}</p>
+                <Chip
+                    variant="flat"
+                    color={data.payStatus ? "success" : "warning"}
+                    size="sm"
+                    className="mt-0.5"
+                >
+                  {data.payStatus ? t("paid") : t("unpaid")}
+                </Chip>
+              </div>
+              {data.logisticsNo && (
+                  <div>
+                    <p className={`text-sm ${COLORS.text.tertiary} mb-1`}>{t("trackingNo")}</p>
+                    <p className={`font-medium ${COLORS.text.secondary}`}>{data.logisticsNo}</p>
+                  </div>
+              )}
+              {isB2BOrder && data.currency && (
+                  <div>
+                    <p className={`text-sm ${COLORS.text.tertiary} mb-1`}>{t("currency")}</p>
+                    <p className={`font-medium ${COLORS.text.secondary}`}>{data.currency}</p>
+                  </div>
+              )}
+              {isB2BOrder && data.incoterms && (
+                  <div>
+                    <p className={`text-sm ${COLORS.text.tertiary} mb-1`}>{t("incoterms")}</p>
+                    <p className={`font-medium ${COLORS.text.secondary}`}>{data.incoterms}</p>
+                  </div>
+              )}
+              {isB2BOrder && data.contractNo && (
+                  <div>
+                    <p className={`text-sm ${COLORS.text.tertiary} mb-1`}>{t("contractNo")}</p>
+                    <p className={`font-medium ${COLORS.text.secondary}`}>{data.contractNo}</p>
+                  </div>
+              )}
+            </div>
+          </div>
+
+          {/* ========== 2. 商品明细表格 ========== */}
+          <div className="p-5 rounded-xl border border-default-200 bg-white overflow-hidden">
+            <h3 className={`font-bold text-lg ${COLORS.text.primary} mb-4`}>
+              {t("productList")}
+            </h3>
+            <Table
+                removeWrapper
+                aria-label="Order Items"
+            >
+              <TableHeader className="bg-default-50">
+                <TableColumn
+                    className="text-default-500 font-bold h-12 text-xs uppercase tracking-wider">{t("product")}</TableColumn>
+                <TableColumn
+                    className="text-right text-default-500 font-bold h-12 text-xs uppercase tracking-wider">{t("unitPrice")}</TableColumn>
+                <TableColumn
+                    className="text-center text-default-500 font-bold h-12 text-xs uppercase tracking-wider">{t("quantity")}</TableColumn>
+                <TableColumn
+                    className="text-right text-default-500 font-bold h-12 text-xs uppercase tracking-wider">{t("subtotal")}</TableColumn>
+              </TableHeader>
+              <TableBody>
+                {items.map((item) => (
+                    <TableRow key={item.id} className="hover:bg-default-50/50">
+                      <TableCell className="py-4 border-b border-default-100">
+                        <div className="flex items-center gap-3">
+                          <div
+                              className="relative h-14 w-14 rounded-lg overflow-hidden border border-default-200 bg-white">
+                            <img
+                                src={item.picUrl || "/placeholder.png"}
+                                alt={item.spuName}
+                                className="h-full w-full object-cover"
+                            />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className={`font-semibold ${COLORS.text.primary} truncate`}>
+                              {item.spuName}
+                            </p>
+                            {item.skuName && (
+                                <p className={`text-sm ${COLORS.text.tertiary} truncate mt-0.5`}>
+                                  {item.skuName}
+                                </p>
+                            )}
+                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell
+                          className={`py-4 border-b border-default-100 text-right font-medium ${COLORS.text.secondary}`}>
+                        {fenToYuan(item.price)}
+                      </TableCell>
+                      <TableCell className="py-4 border-b border-default-100 text-center">
+                        <span
+                            className="inline-flex items-center justify-center px-3 py-1 rounded-full bg-default-100 text-sm font-medium">
+                          {item.count}
+                        </span>
+                      </TableCell>
+                      <TableCell
+                          className={`py-4 border-b border-default-100 text-right font-bold ${COLORS.text.primary}`}>
+                        {fenToYuan(item.payPrice)}
+                      </TableCell>
+                    </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+
+          {/* ========== 3. 费用明细卡片 ========== */}
+          <div className="p-5 rounded-xl border border-default-200 bg-white">
+            <h3 className={`font-bold text-lg ${COLORS.text.primary} mb-4`}>
+              {t("priceSummary")}
+            </h3>
+            <div className="bg-default-50 rounded-lg p-4 space-y-1">
+              <FeeRow label={t("subtotal")} value={fenToYuan(data.totalPrice)}/>
+              {data.discountPrice > 0 && (
+                  <FeeRow label={t("discount")} value={`- ${fenToYuan(data.discountPrice)}`}/>
+              )}
+              {data.couponPrice > 0 && (
+                  <FeeRow label={t("couponDiscount")} value={`- ${fenToYuan(data.couponPrice)}`}/>
+              )}
+              {data.deliveryPrice > 0 && (
+                  <FeeRow label={t("deliveryFee")} value={fenToYuan(data.deliveryPrice)}/>
+              )}
+              {feeItems.map((fee, index) => (
+                  <FeeRow key={index} label={fee.feeTypeName || fee.feeName} value={fenToYuan(fee.amount)}/>
+              ))}
+              {data.adjustPrice !== 0 && (
+                  <FeeRow
+                      label={data.adjustPrice > 0 ? t("surcharge") : t("adjustDiscount")}
+                      value={`${data.adjustPrice > 0 ? '+' : ''}${fenToYuan(data.adjustPrice)}`}
+                  />
+              )}
+              <div className="border-t border-default-200 my-2"/>
+              <FeeRow label={t("grandTotal")} value={fenToYuan(data.payPrice)} isBold={true}/>
+              {isB2BOrder && data.paidPrice !== undefined && data.paidPrice > 0 && (
+                  <FeeRow label={t("amountPaid")} value={fenToYuan(data.paidPrice)}/>
+              )}
+              {data.refundPrice > 0 && (
+                  <FeeRow label={t("refundAmount")} value={`- ${fenToYuan(data.refundPrice)}`}/>
+              )}
+            </div>
+          </div>
+
+          {/* ========== 4. 地址信息卡片网格 ========== */}
+          <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
+            <AddressCard
+                title={t("billingAddress")}
+                icon={CreditCardIcon}
+                address={data.billingAddress}
+                colorClass="text-primary"
+                bgClass="bg-primary/10"
+                t={t}
+            />
+            <AddressCard
+                title={t("shippingAddress")}
+                icon={MapPinIcon}
+                address={data.receiverAddress}
+                colorClass="text-success"
+                bgClass="bg-success/10"
+                t={t}
+            />
+            {data.importerAddress && (
+                <AddressCard
+                    title={t("importerAddress")}
+                    icon={TruckIcon}
+                    address={data.importerAddress}
+                    colorClass="text-warning"
+                    bgClass="bg-warning/10"
+                    t={t}
+                />
+            )}
+          </div>
+
+          {/* ========== 5. 订单时间线 ========== */}
+          <OrderTimeline data={data}/>
+        </div>
+
+        {/* ========== 主体内容区 - 手机端（简洁设计，无外框） ========== */}
+        <div className="md:hidden space-y-0 divide-y divide-default-100">
+          {/* ========== 1. 订单基本信息 ========== */}
+          <div className="-mx-4 px-4 py-4">
+            <h3 className={`font-bold text-base ${COLORS.text.primary} mb-3`}>
+              {t("orderInfo")}
+            </h3>
+            <div className="space-y-3">
+              <div className="flex justify-between">
+                <p className={`text-sm ${COLORS.text.tertiary}`}>{t("orderDate")}</p>
+                <p className={`text-sm font-medium ${COLORS.text.secondary}`}>
+                  {new Date(data.createTime).toLocaleDateString('zh-CN')}
+                </p>
+              </div>
+              <div className="flex justify-between">
+                <p className={`text-sm ${COLORS.text.tertiary}`}>{t("paymentMethod")}</p>
+                <p className={`text-sm font-medium ${COLORS.text.secondary}`}>
+                  {data.paymentMethodName || data.payChannelName || "-"}
+                </p>
+              </div>
+              <div className="flex justify-between items-center">
+                <p className={`text-sm ${COLORS.text.tertiary}`}>{t("paymentStatus")}</p>
+                <Chip
+                    variant="flat"
+                    color={data.payStatus ? "success" : "warning"}
+                    size="sm"
+                >
+                  {data.payStatus ? t("paid") : t("unpaid")}
+                </Chip>
+              </div>
+              {data.logisticsNo && (
+                  <div className="flex justify-between">
+                    <p className={`text-sm ${COLORS.text.tertiary}`}>{t("trackingNo")}</p>
+                    <p className={`text-sm font-medium ${COLORS.text.secondary}`}>{data.logisticsNo}</p>
+                  </div>
+              )}
+              {isB2BOrder && data.currency && (
+                  <div className="flex justify-between">
+                    <p className={`text-sm ${COLORS.text.tertiary}`}>{t("currency")}</p>
+                    <p className={`text-sm font-medium ${COLORS.text.secondary}`}>{data.currency}</p>
+                  </div>
+              )}
+              {isB2BOrder && data.incoterms && (
+                  <div className="flex justify-between">
+                    <p className={`text-sm ${COLORS.text.tertiary}`}>{t("incoterms")}</p>
+                    <p className={`text-sm font-medium ${COLORS.text.secondary}`}>{data.incoterms}</p>
+                  </div>
+              )}
+            </div>
+          </div>
+
+          {/* ========== 2. 商品明细 ========== */}
+          <div className="-mx-4 px-4 py-4">
+            <h3 className={`font-bold text-base ${COLORS.text.primary} mb-3`}>
+              {t("productList")}
+            </h3>
+            <div className="space-y-3">
+              {items.map((item, index) => (
+                  <div key={item.id} className={index > 0 ? "pt-3 border-t border-default-100" : ""}>
+                    <User
+                        avatarProps={{src: item.picUrl, size: "md", radius: "md"}}
+                        name={<span
+                            className={`text-sm font-bold ${COLORS.text.primary} line-clamp-1`}>{item.spuName}</span>}
+                        description={
+                          <div className="space-y-0.5">
+                            {item.skuName && (
+                                <p className={`text-tiny ${COLORS.text.tertiary}`}>{item.skuName}</p>
+                            )}
+                            <div className="flex justify-between items-center mt-1">
+                              <span className="text-tiny text-default-500">
+                                {t("unitPrice")}: <span
+                                  className="font-medium text-default-700">{fenToYuan(item.price)}</span>
+                              </span>
+                              <span className="text-tiny text-default-500">
+                                {t("quantity")}: <span className="font-medium text-default-700">{item.count}</span>
+                              </span>
+                            </div>
+                            <div className="text-right mt-1">
+                              <span className="text-sm font-bold text-default-900">
+                                {t("subtotal")}: {fenToYuan(item.payPrice)}
+                              </span>
+                            </div>
+                          </div>
+                        }
+                    />
+                  </div>
+              ))}
+            </div>
+          </div>
+
+          {/* ========== 3. 费用明细 ========== */}
+          <div className="-mx-4 px-4 py-4">
+            <h3 className={`font-bold text-base ${COLORS.text.primary} mb-3`}>
+              {t("priceSummary")}
+            </h3>
+            <div className="bg-default-50 rounded-lg p-3 space-y-1">
+              <FeeRow label={t("subtotal")} value={fenToYuan(data.totalPrice)}/>
+              {data.discountPrice > 0 && (
+                  <FeeRow label={t("discount")} value={`- ${fenToYuan(data.discountPrice)}`}/>
+              )}
+              {data.couponPrice > 0 && (
+                  <FeeRow label={t("couponDiscount")} value={`- ${fenToYuan(data.couponPrice)}`}/>
+              )}
+              {data.deliveryPrice > 0 && (
+                  <FeeRow label={t("deliveryFee")} value={fenToYuan(data.deliveryPrice)}/>
+              )}
+              {feeItems.map((fee, index) => (
+                  <FeeRow key={index} label={fee.feeTypeName || fee.feeName} value={fenToYuan(fee.amount)}/>
+              ))}
+              {data.adjustPrice !== 0 && (
+                  <FeeRow
+                      label={data.adjustPrice > 0 ? t("surcharge") : t("adjustDiscount")}
+                      value={`${data.adjustPrice > 0 ? '+' : ''}${fenToYuan(data.adjustPrice)}`}
+                  />
+              )}
+              <div className="border-t border-default-200 my-1"/>
+              <FeeRow label={t("grandTotal")} value={fenToYuan(data.payPrice)} isBold={true}/>
+              {isB2BOrder && data.paidPrice !== undefined && data.paidPrice > 0 && (
+                  <FeeRow label={t("amountPaid")} value={fenToYuan(data.paidPrice)}/>
+              )}
+              {data.refundPrice > 0 && (
+                  <FeeRow label={t("refundAmount")} value={`- ${fenToYuan(data.refundPrice)}`}/>
+              )}
+            </div>
+          </div>
+
+          {/* ========== 4. 地址信息 ========== */}
+          <div>
+            <AddressCard
+                title={t("billingAddress")}
+                icon={CreditCardIcon}
+                address={data.billingAddress}
+                colorClass="text-primary"
+                bgClass="bg-primary/10"
+                t={t}
+                isMobile={true}
+            />
+            <AddressCard
+                title={t("shippingAddress")}
+                icon={MapPinIcon}
+                address={data.receiverAddress}
+                colorClass="text-success"
+                bgClass="bg-success/10"
+                t={t}
+                isMobile={true}
+            />
+            {data.importerAddress && (
+                <AddressCard
+                    title={t("importerAddress")}
+                    icon={TruckIcon}
+                    address={data.importerAddress}
+                    colorClass="text-warning"
+                    bgClass="bg-warning/10"
+                    t={t}
+                    isMobile={true}
+                />
+            )}
+          </div>
+
+          {/* ========== 5. 订单时间线 ========== */}
+          <OrderTimeline data={data} isMobile={true}/>
+        </div>
       </div>
   );
 };
-
-export default OrderDetailView;

@@ -10,9 +10,9 @@ import CheckBox from "@components/theme/ui/element/Checkbox";
 import {useAppDispatch, useAppSelector} from "@/store/hooks";
 import {
   setBillingAddress,
-  setBusinessAddress,
+  setImporterAddress,
   setReceiverAddress,
-  toggleBusinessUseBilling,
+  toggleImporterUseBilling,
   toggleReceiveUseBilling
 } from "@/store/slices/checkout-slice";
 import {AddressLine} from "@/types/api/address/type";
@@ -26,7 +26,7 @@ import {AddressFormSection} from "@components/checkout/stepper/address/AddressFo
 const ADDRESS_TYPES = {
   BILLING: 1,
   RECEIVER: 2,
-  BUSINESS: 3,
+  IMPORTER: 3,
 } as const;
 
 
@@ -44,8 +44,8 @@ const ADDRESS_TYPE_CONFIG: Record<AddressType, AddressTypeConfig> = {
     showCompanyFields: true,
     showVatEoriFields: false,
   },
-  business: {
-    title: "Business Address",
+  importer: {
+    title: "Importer Address",
     addressType: 3,
     showCompanyFields: true,
     showVatEoriFields: true,
@@ -85,27 +85,33 @@ const createAddressData = (formData: AddressFormData, type: number): AddressLine
 const generateFormDefaultValues = (
     billingAddress: AddressLine | null,
     receiverAddress: AddressLine | null,
-    businessAddress: AddressLine | null,
+    importerAddress: AddressLine | null,
     email: string | null,
     receiveUseBilling: boolean,
-    businessUseBilling: boolean
+    importerUseBilling: boolean
 ): CheckoutFormData => ({
   billing: createAddressFormData(billingAddress, email),
   receiver: createAddressFormData(receiverAddress, email),
-  business: createAddressFormData(businessAddress, email),
+  importer: createAddressFormData(importerAddress, email),
   receiveUseBilling,
-  businessUseBilling,
+  importerUseBilling,
 });
 
 
-export const AddAddressForm: FC = () => {
+interface AddAddressFormProps {
+  autoNavigate?: boolean;
+  onNextStep?: () => void;
+  showButton?: boolean;
+}
+
+export const AddAddressForm: FC<AddAddressFormProps> = ({autoNavigate = true, onNextStep, showButton = true}) => {
   const dispatch = useAppDispatch();
   const {
     billingAddress,
     receiverAddress,
-    businessAddress,
+    importerAddress,
     receiveUseBilling,
-    businessUseBilling,
+    importerUseBilling,
     email,
   } = useAppSelector((state) => state.checkout);
 
@@ -119,12 +125,12 @@ export const AddAddressForm: FC = () => {
   const [selectedAddresses, setSelectedAddresses] = useState<Record<AddressType, AddressLine | null>>({
     billing: null,
     receiver: null,
-    business: null,
+    importer: null,
   });
 
   const [isOpen, setIsOpen] = useState(
-      isObject(receiverAddress) && isObject(billingAddress) && isObject(businessAddress)
-  );
+      isObject(receiverAddress) && isObject(billingAddress) && isObject(importerAddress)
+    );
 
   const {
     register,
@@ -137,10 +143,10 @@ export const AddAddressForm: FC = () => {
     defaultValues: generateFormDefaultValues(
         billingAddress,
         receiverAddress,
-        businessAddress,
+        importerAddress,
         email,
         receiveUseBilling,
-        businessUseBilling
+        importerUseBilling
     ),
   });
 
@@ -148,12 +154,12 @@ export const AddAddressForm: FC = () => {
     reset(generateFormDefaultValues(
         billingAddress,
         receiverAddress,
-        businessAddress,
+        importerAddress,
         email,
         receiveUseBilling,
-        businessUseBilling
+        importerUseBilling
     ));
-  }, [billingAddress, receiverAddress, businessAddress, reset, email, receiveUseBilling, businessUseBilling]);
+  }, [billingAddress, receiverAddress, importerAddress, reset, email, receiveUseBilling, importerUseBilling]);
   const {isLoadingToSave} = useCheckout();
   const router = useRouter();
 
@@ -163,10 +169,10 @@ export const AddAddressForm: FC = () => {
     defaultValue: receiveUseBilling,
   });
 
-  const watchBusinessUseBilling = useWatch({
+  const watchImporterUseBilling = useWatch({
     control,
-    name: "businessUseBilling",
-    defaultValue: businessUseBilling,
+    name: "importerUseBilling",
+    defaultValue: importerUseBilling,
   });
 
   const formValues = useWatch({
@@ -174,33 +180,38 @@ export const AddAddressForm: FC = () => {
     defaultValue: {
       billing: createAddressFormData(billingAddress, email),
       receiver: createAddressFormData(receiverAddress, email),
-      business: createAddressFormData(businessAddress, email),
+      importer: createAddressFormData(importerAddress, email),
       receiveUseBilling,
-      businessUseBilling,
+      importerUseBilling,
     },
   });
 
   const addGuestAddress = useCallback(async (data: CheckoutFormData) => {
-    const {billing, receiver, business, receiveUseBilling, businessUseBilling} = data;
+    const {billing, receiver, importer, receiveUseBilling, importerUseBilling} = data;
 
     const receiverSource = receiveUseBilling ? billing : receiver;
-    const businessSource = businessUseBilling ? billing : business;
+    const importerSource = importerUseBilling ? billing : importer;
 
     try {
       dispatch(setBillingAddress(createAddressData(billing, ADDRESS_TYPES.BILLING)));
       dispatch(setReceiverAddress(createAddressData(receiverSource, ADDRESS_TYPES.RECEIVER)));
-      dispatch(setBusinessAddress(createAddressData(businessSource, ADDRESS_TYPES.BUSINESS)));
+      dispatch(setImporterAddress(createAddressData(importerSource, ADDRESS_TYPES.IMPORTER)));
       dispatch(toggleReceiveUseBilling(receiveUseBilling));
-      dispatch(toggleBusinessUseBilling(businessUseBilling));
-      router.replace("/checkout?step=shipping");
+      dispatch(toggleImporterUseBilling(importerUseBilling));
+
+      if (autoNavigate) {
+        router.replace("/checkout?step=shipping");
+      } else if (onNextStep) {
+        onNextStep();
+      }
     } catch (error) {
       console.error("Failed to save checkout address", error);
     }
-  }, [dispatch, router]);
+  }, [dispatch, router, autoNavigate, onNextStep]);
 
   const handleSelectAddress = useCallback((address: AddressLine | null, type: AddressType) => {
     const currentReceiveUseBilling = watchReceiveUseBilling;
-    const currentBusinessUseBilling = watchBusinessUseBilling;
+    const currentImporterUseBilling = watchImporterUseBilling;
 
     // 更新选中状态
     setSelectedAddresses(prev => ({...prev, [type]: address}));
@@ -210,8 +221,8 @@ export const AddAddressForm: FC = () => {
       if (currentReceiveUseBilling) {
         setSelectedAddresses(prev => ({...prev, receiver: null}));
       }
-      if (currentBusinessUseBilling) {
-        setSelectedAddresses(prev => ({...prev, business: null}));
+      if (currentImporterUseBilling) {
+        setSelectedAddresses(prev => ({...prev, importer: null}));
       }
     }
 
@@ -219,18 +230,18 @@ export const AddAddressForm: FC = () => {
     const newFormData = {
       billing: formValues.billing,
       receiver: formValues.receiver,
-      business: formValues.business,
+      importer: formValues.importer,
       receiveUseBilling: currentReceiveUseBilling,
-      businessUseBilling: currentBusinessUseBilling,
+      importerUseBilling: currentImporterUseBilling,
     };
 
     // 更新对应类型的地址数据
     newFormData[type] = address ? createAddressFormData(address, email) : createAddressFormData(null, email);
 
     reset(newFormData);
-  }, [formValues, watchReceiveUseBilling, watchBusinessUseBilling, email, reset]);
+  }, [formValues, watchReceiveUseBilling, watchImporterUseBilling, email, reset]);
 
-  const showSummary = isObject(receiverAddress) && (isObject(billingAddress) || watchReceiveUseBilling) && (isObject(businessAddress) || watchBusinessUseBilling);
+  const showSummary = isObject(receiverAddress) && (isObject(billingAddress) || watchReceiveUseBilling) && (isObject(importerAddress) || watchImporterUseBilling);
   if (showSummary && isOpen) {
     return (
         <>
@@ -247,8 +258,8 @@ export const AddAddressForm: FC = () => {
                   className="flex"
               />
               <AddressDisplay
-                  title="Business Address"
-                  address={businessAddress}
+                  title="Importer Address"
+                  address={importerAddress}
                   className="flex"
                   showVat={true}
               />
@@ -276,8 +287,8 @@ export const AddAddressForm: FC = () => {
                   className="flex justify-between flex-1 wrap"
               />
               <AddressDisplay
-                  title="Business Address"
-                  address={businessAddress}
+                  title="Importer Address"
+                  address={importerAddress}
                   className="flex justify-between flex-1 wrap"
                   showVat={true}
               />
@@ -335,29 +346,31 @@ export const AddAddressForm: FC = () => {
 
         <CheckBox
             className="mt-4 mb-2 flex-row items-center whitespace-nowrap"
-            defaultValue={watchBusinessUseBilling}
-            id="businessUseBilling"
-            label="Use billing address as business address"
-            {...register("businessUseBilling")}
+            defaultValue={watchImporterUseBilling}
+            id="importerUseBilling"
+            label="Use billing address as importer address"
+            {...register("importerUseBilling")}
         />
 
-        {/* 商务地址表单 */}
+        {/* 进口商地址表单 */}
         <AddressFormSection
-            type="business"
-            config={ADDRESS_TYPE_CONFIG.business}
+            type="importer"
+            config={ADDRESS_TYPE_CONFIG.importer}
             register={register}
             control={control}
             errors={errors}
-            isVisible={!watchBusinessUseBilling}
+            isVisible={!watchImporterUseBilling}
             savedAddresses={savedAddresses.filter(addr => addr.type === 3)}
-            selectedAddress={selectedAddresses.business}
-            onSelectAddress={(address) => handleSelectAddress(address, 'business')}
-            showAddressSelector={!watchBusinessUseBilling}
+            selectedAddress={selectedAddresses.importer}
+            onSelectAddress={(address) => handleSelectAddress(address, 'importer')}
+            showAddressSelector={!watchImporterUseBilling}
         />
 
-        <div className="justify-self-end">
-          <ProceedToCheckout buttonName="Next" pending={isLoadingToSave}/>
-        </div>
+        {showButton && (
+            <div className="justify-self-end">
+              <ProceedToCheckout buttonName="Next" pending={isLoadingToSave}/>
+            </div>
+        )}
       </form>
   );
 };

@@ -3,6 +3,7 @@ import {Price} from "@components/theme/ui/Price";
 import {Accordion, AccordionItem} from "@heroui/accordion";
 import {ChevronLeftIcon, ChevronRightIcon} from "@heroicons/react/24/outline";
 import {createUrl} from "@utils/helper";
+import {NOT_IMAGE} from "@utils/constants";
 import Image from "next/image";
 import Link from "@/components/common/Link";
 import {Cart, CartItem} from "@/types/api/trade/cart";
@@ -94,7 +95,7 @@ export default function CartItemAccordion({
                             width={64}
                             height={64}
                             alt={item?.spu?.name}
-                            src={item?.sku?.picUrl || item?.spu?.picUrl || ""}
+                            src={item?.sku?.picUrl || item?.spu?.picUrl || NOT_IMAGE}
                           />
                         </div>
 

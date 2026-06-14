@@ -60,9 +60,9 @@ export interface AddressFormData {
 export interface CheckoutFormData {
   billing: AddressFormData;
   receiver: AddressFormData;
-  business: AddressFormData;
+  importer: AddressFormData;
   receiveUseBilling: boolean;
-  businessUseBilling: boolean;
+  importerUseBilling: boolean;
 }
 
 // 地址类型配置接口
@@ -74,4 +74,4 @@ export interface AddressTypeConfig {
   requiredFields?: string[];
 }
 
-export type AddressType = 'billing' | 'receiver' | 'business';
+export type AddressType = 'billing' | 'receiver' | 'importer';

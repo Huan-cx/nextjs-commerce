@@ -1,4 +1,4 @@
-import {del, get, post, put} from "@utils/request/request";
+import {del, get, post, put} from "@utils/request/client";
 import {AddressAddRequest, AddressLine, AddressUpdateRequest, Geo,} from "@/types/api/address/type";
 
 /**

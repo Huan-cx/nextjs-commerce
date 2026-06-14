@@ -1,5 +1,5 @@
 // src/utils/api/cart.ts
-import {del, get, post, put} from "@utils/request/request";
+import {del, get, post, put} from "@utils/request/client";
 import {Cart, CartItem} from "@/types/api/trade/cart";
 
 
@@ -56,7 +56,7 @@ export async function updateCartItem(id: number, count: number): Promise<boolean
 
 // 批量获取购物车商品 SKU 信息（主要用于游客购物车）
 export async function getCartSkuInfo(skuIds: number[]): Promise<CartItem[]> {
-  return get<CartItem[]>("trade/cart/sku/info", {skuIds, requiresAuth: false});
+  return get<CartItem[]>("trade/cart/sku/info", {skuIds}, {requiresAuth: false});
 }
 
 // 合并购物车（用户登录时）

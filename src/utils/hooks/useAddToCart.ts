@@ -1,9 +1,9 @@
 import {useCallback} from "react";
 import {useCustomToast} from "./useToast";
 import {useAppDispatch} from "@/store/hooks";
-import {addItem, addItemLocal, removeItemLocal, updateItemQuantityLocal,} from "@/store/slices/cart-slice";
+import {addItemLocal, removeItemLocal, updateItemQuantityLocal,} from "@/store/slices/cart-slice";
 import {useMutation, useQueryClient} from "@tanstack/react-query";
-import {addToCart, getCartInfo, removeFromCart, updateCartItem,} from "@utils/api/cart";
+import {addToCart, removeFromCart, updateCartItem,} from "@utils/api/cart";
 import {CartItem} from "@/types/api/trade/cart";
 import {useAuthStatus} from "@utils/hooks/useAuthStatus";
 
@@ -16,20 +16,16 @@ export const useCart = () => {
 
   const handleSuccess = useCallback(
       async (message: string, isGuest: boolean = false) => {
-        // For logged-in users, refetch the cart from the server to ensure consistency.
+        // 对于登录用户，让 React Query 统一管理购物车同步
+        // ✅ 修复：移除此处的手动同步，避免与 useCartDetail 的 effect 重复触发
+        // 之前：这里手动 getCartInfo + dispatch(addItem)
+        // 问题：invalidateQueries 后 useCartDetail 会再次查询并 dispatch，
+        //      虽然 addItem 是覆盖操作不会翻倍，但会造成重复渲染
         if (!isGuest) {
-          try {
-            const cartInfo = await getCartInfo();
-            dispatch(addItem(cartInfo));
-          } catch (error) {
-            console.error("Error fetching cart info after operation:", error);
-            showToast("Operation successful, but failed to refresh cart", "warning");
-            return; // Exit if fetching updated cart fails
-          }
-      }
+          // 只让 React Query 重新查询，由 useCartDetail 统一同步到 Redux
+          await queryClient.invalidateQueries({queryKey: ["cart"]});
+        }
         showToast(message, "success");
-        // Invalidate queries to reflect changes, especially after login/merge.
-        await queryClient.invalidateQueries({queryKey: ["cart"]});
       },
       [dispatch, showToast, queryClient],
   );

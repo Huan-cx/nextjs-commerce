@@ -1,4 +1,4 @@
-import {get, post, put} from "@utils/request/request";
+import {get, post, put} from "@utils/request/client";
 
 // ======================= 重置密码 API =======================
 
@@ -41,9 +41,16 @@ export async function resetPassword(
 
 /**
  * 退出登录
+ *
+ * 【修复说明】
+ * 必须显式声明 requiresAuth: true，防止重构时默认值变化导致安全漏洞
+ * 退出登录必须携带 access token 告知后端，否则后端 token 仍然有效！
  */
 export async function logout(): Promise<boolean> {
-  return await post<boolean>("member/auth/logout");
+  return await post<boolean>("member/auth/logout", {}, {
+    requiresAuth: true,  // ✅ 显式声明：必须带 token
+    contentType: true,
+  });
 }
 
 // ======================= 发送验证码 API =======================

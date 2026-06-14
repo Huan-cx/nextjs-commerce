@@ -29,9 +29,9 @@ export interface CheckoutState {
   paymentMethod: number; // 支付方式
   receiverAddress: AddressLine | null; // 收货地址
   billingAddress: AddressLine | null; // 账单地址
-  businessAddress: AddressLine | null; // 公司地址
+  importerAddress: AddressLine | null; // 进口商地址
   receiveUseBilling: boolean; // 是否使用账单地址作为收货地址
-  businessUseBilling: boolean; // 是否使用账单地址作为公司地址
+  importerUseBilling: boolean; // 是否使用账单地址作为进口商地址
   couponId: number | null; // 优惠券ID
   pointStatus: boolean; // 是否使用积分
   settlementData: OrderSettlement | null;
@@ -46,9 +46,9 @@ const initialState: CheckoutState = {
   paymentMethod: 1, // 默认为在线支付
   receiverAddress: null,
   billingAddress: null,
-  businessAddress: null,
+  importerAddress: null,
   receiveUseBilling: true,
-  businessUseBilling: true,
+  importerUseBilling: true,
   couponId: null,
   pointStatus: false,
   settlementData: null,
@@ -78,17 +78,17 @@ export const checkoutSlice = createSlice({
     setBillingAddress: (state, action: PayloadAction<AddressLine | null>) => {
       state.billingAddress = action.payload;
     },
-    // 设置公司地址
-    setBusinessAddress: (state, action: PayloadAction<AddressLine | null>) => {
-      state.businessAddress = action.payload;
+    // 设置进口商地址
+    setImporterAddress: (state, action: PayloadAction<AddressLine | null>) => {
+      state.importerAddress = action.payload;
     },
     // 切换“收货地址是否使用账单地址”
     toggleReceiveUseBilling: (state, action: PayloadAction<boolean>) => {
       state.receiveUseBilling = action.payload;
     },
-    // 切换“公司地址是否使用账单地址”
-    toggleBusinessUseBilling: (state, action: PayloadAction<boolean>) => {
-      state.businessUseBilling = action.payload;
+    // 切换“进口商地址是否使用账单地址”
+    toggleImporterUseBilling: (state, action: PayloadAction<boolean>) => {
+      state.importerUseBilling = action.payload;
     },
     // 设置优惠券ID
     setCouponId: (state, action: PayloadAction<number | null>) => {
@@ -127,9 +127,9 @@ export const {
   setPaymentMethod,
   setReceiverAddress,
   setBillingAddress,
-  setBusinessAddress,
+  setImporterAddress,
   toggleReceiveUseBilling,
-  toggleBusinessUseBilling,
+  toggleImporterUseBilling,
   setCouponId,
   setPointStatus,
   setEmail,

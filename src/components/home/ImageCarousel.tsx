@@ -28,7 +28,7 @@ const ImageCarousel: FC<ImageCarouselProps> = ({ options }) => {
             return imagePath;
         }
 
-        const backendUrl = process.env.NEXT_PUBLIC_BAGISTO_ENDPOINT;
+        const backendUrl = process.env.NEXT_PUBLIC_API_URL;
         if (!backendUrl) return "";
 
         const cleanPath = imagePath.startsWith('/') ? imagePath.slice(1) : imagePath;

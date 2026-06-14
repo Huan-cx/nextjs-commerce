@@ -17,7 +17,7 @@ export default function OrderReview({
   const {
     receiverAddress,
     billingAddress,
-    businessAddress,
+    importerAddress,
     deliveryType,
     paymentMethod
   } = useAppSelector(state => state.checkout);
@@ -104,11 +104,11 @@ export default function OrderReview({
                 {receiverAddress?.firstName}, {receiverAddress?.lastName}, {receiverAddress?.address}, {receiverAddress?.city}, {receiverAddress?.state}, {receiverAddress?.postcode}, {receiverAddress?.country}
               </th>
             </tr>
-            {businessAddress && (
+            {importerAddress && (
                 <tr className="">
-                  <td className="py-2">Business Address</td>
+                  <td className="py-2">Importer Address</td>
                   <th className="break-all px-6 py-2 font-medium text-gray-900 dark:text-white" scope="row">
-                    {businessAddress?.firstName}, {businessAddress?.lastName}, {businessAddress?.address}, {businessAddress?.city}, {businessAddress?.state}, {businessAddress?.postcode}, {businessAddress?.country}
+                    {importerAddress?.firstName}, {importerAddress?.lastName}, {importerAddress?.address}, {importerAddress?.city}, {importerAddress?.state}, {importerAddress?.postcode}, {importerAddress?.country}
                   </th>
                 </tr>
             )}

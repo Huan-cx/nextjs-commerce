@@ -1,4 +1,4 @@
-import {get, post} from "@utils/request/request";
+import {get, post} from "@utils/request/client";
 import {AddressLine} from "@/types/api/address/type";
 import {Spu} from "@/types/api/product/type";
 
@@ -29,7 +29,7 @@ export interface OrderSettlement {
   price: OrderSettlementPrice;
   receiverAddress: AddressLine;
   billingAddress: AddressLine;
-  businessAddress: AddressLine;
+  importerAddress: AddressLine;
   shippingAmount: number;
   taxAmount: number;
   grandTotal: number;
@@ -56,9 +56,9 @@ export interface SubmitOrderRequest {
   deliveryType?: number | null;
   receiverAddress?: AddressLine | null;
   billingAddress?: AddressLine | null;
-  businessAddress?: AddressLine | null;
+  importerAddress?: AddressLine | null;
   receiveUseBilling?: boolean;
-  businessUseBilling?: boolean;
+  importerUseBilling?: boolean;
   couponId: number | null;
   pointStatus?: boolean;
   paymentMethod?: number | null;
@@ -149,6 +149,8 @@ export interface OrderItem {
   spuId: number;
   spuName: string;
   skuId: number;
+  skuName: string;
+  skuCode?: string; // SKU编号/编码
   properties: {
     propertyId: number;
     propertyName: string;
@@ -162,6 +164,16 @@ export interface OrderItem {
   payPrice: number;
   afterSaleId: number;
   afterSaleStatus: number;
+  // ========== SKU 扩展字段 ==========
+  barCode?: string; // 条形码
+  minQty?: number; // 最小起订量
+  unit?: string; // 单位
+  weight?: number; // 重量，单位：kg
+  hsCode?: string; // 海关编码
+  packagingWay?: string; // 包装方式
+  pcsPerCtn?: number; // 每箱数量(PC/CTN)
+  nwPerCtn?: number; // 净重/箱，单位：kg
+  gwPerCtn?: number; // 毛重/箱，单位：kg
 }
 
 // 订单地址响应类型
@@ -179,6 +191,16 @@ export interface OrderAddress {
   phone: string;
   vat: string;
   eori: string;
+}
+
+// 增值费用项
+export interface OrderFeeItem {
+  feeType: string;
+  feeTypeName?: string;
+  feeName: string;
+  amount: number;
+  description?: string;
+  optional?: boolean;
 }
 
 // 订单详情响应类型
@@ -214,7 +236,7 @@ export interface OrderDetail {
   receiverPhone: string;
   receiverAddress: OrderAddress;
   billingAddress: OrderAddress;
-  businessAddress: OrderAddress;
+  importerAddress: OrderAddress;
   pickUpStoreId: number;
   pickUpVerifyCode: string;
   refundStatus: number;
@@ -225,6 +247,18 @@ export interface OrderDetail {
   vipPrice: number;
   combinationRecordId: number;
   items: OrderItem[];
+  // ========== B2B 订单专属字段 ==========
+  rfqId?: number;
+  quotationId?: number;
+  currency?: string;
+  incoterms?: string;
+  paymentMethod?: string;
+  paymentMethodName?: string;
+  contractNo?: string;
+  payProgressStatus?: number;
+  paidPrice?: number;
+  feeItems?: OrderFeeItem[];
+  statusName?: string;
 }
 
 // 订单列表项响应类型

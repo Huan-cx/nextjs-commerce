@@ -9,7 +9,7 @@ const nextConfig: NextConfig = {
   typescript: {
     ignoreBuildErrors: false,
   },
-  allowedDevOrigins: ['10.0.0.9'],
+  allowedDevOrigins: ['10.0.0.9', '10.0.0.25'],
   images: {
     unoptimized: true,
     remotePatterns: [],

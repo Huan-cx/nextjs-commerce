@@ -39,7 +39,7 @@ export type ReceiverAddress = CheckoutAddress;
 export interface CheckoutStepperProps {
   billingAddress?: BillingAddress;
   receiverAddress?: ReceiverAddress;
-  businessAddress?: CheckoutAddress
+  importerAddress?: CheckoutAddress
   currentStep: string;
   selectedPayment?: string;
   selectedPaymentTitle?: string;

@@ -95,6 +95,7 @@ export interface Spu {
 export interface Sku {
   id?: number; // 商品 SKU 编号
   name?: string; // 商品 SKU 名称
+  skuCode?: string; // SKU编号/编码
   spuId?: number; // SPU 编号
   properties: Property[]; // 属性数组
   price?: number | string; // 商品价格
@@ -105,6 +106,16 @@ export interface Sku {
   stock?: number; // 库存
   weight?: number; // 商品重量，单位：kg 千克
   volume?: number; // 商品体积，单位：m^3 平米
+  minQty?: number; // 最小起订量
+  unit?: string; // 单位
+  length?: number; // 长，单位：cm 厘米
+  width?: number; // 宽，单位：cm 厘米
+  height?: number; // 高，单位：cm 厘米
+  hsCode?: string; // 海关编码
+  packagingWay?: string; // 包装方式
+  pcsPerCtn?: number; // 每箱数量(PC/CTN)
+  nwPerCtn?: number; // 净重/箱，单位：kg
+  gwPerCtn?: number; // 毛重/箱，单位：kg
   firstBrokeragePrice?: number | string; // 一级分销的佣金
   secondBrokeragePrice?: number | string; // 二级分销的佣金
   salesCount?: number; // 商品销量

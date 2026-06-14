@@ -1,4 +1,4 @@
-import {NEXT_AUTH_SECRET} from "./constants";
+import {NEXTAUTH_SECRET} from "./constants";
 
 /**
  * 使用 AES 加密保护敏感数据（如 token）
@@ -8,7 +8,7 @@ import {NEXT_AUTH_SECRET} from "./constants";
 // 生成加密密钥
 async function getCryptoKey(): Promise<CryptoKey> {
   const encoder = new TextEncoder();
-  const keyMaterial = encoder.encode(NEXT_AUTH_SECRET);
+  const keyMaterial = encoder.encode(NEXTAUTH_SECRET);
 
   return await crypto.subtle.importKey(
       'raw',

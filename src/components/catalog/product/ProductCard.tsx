@@ -27,7 +27,7 @@ export const ProductCard: FC<ProductCardProps> = ({
   const specialPrice = product.combinationPrice?.toString() || product.seckillPrice?.toString();
   const imageUrl = getImageUrl(
       product?.picUrl || "",
-      process.env.NEXT_PUBLIC_BAGISTO_ENDPOINT,
+      process.env.NEXT_PUBLIC_API_URL,
       NOT_IMAGE
   );
   const isSaleable = product.skus && product.skus.length > 0;

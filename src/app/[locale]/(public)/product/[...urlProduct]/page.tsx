@@ -123,7 +123,7 @@ export default async function ProductPage({
                   <HeroCarousel
                       images={[
                         {
-                          src: imageUrl || "",
+                          src: imageUrl || NOT_IMAGE,
                           altText: product?.name || "product image",
                         },
                       ]}
