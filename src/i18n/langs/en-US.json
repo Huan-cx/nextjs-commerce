@@ -494,8 +494,8 @@
     "title": "My Account"
   },
   "home": {
-    "categoryDescription": "Discover the latest trends! Fresh products just addedÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Âshop new styles, tech, and essentials before they're gone.",
-    "productCarouselDescription": "Discover the latest trends! Fresh products just addedÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Âshop new styles, tech, and essentials before they're gone.",
+    "categoryDescription": "Discover the latest trends! Fresh products just addedÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Âshop new styles, tech, and essentials before they're gone.",
+    "productCarouselDescription": "Discover the latest trends! Fresh products just addedÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Âshop new styles, tech, and essentials before they're gone.",
     "relatedProducts": "Related Products",
     "shopByCategory": "Shop by Category"
   },
@@ -522,7 +522,9 @@
     "welcomeMessage": "Welcome! Successfully logged in."
   },
   "mobileMenu": {
-    "category": "Category"
+    "category": "Category",
+    "searchPlaceholder": "Search categories, products or specs...",
+    "noSubcategories": "No subcategories"
   },
   "navbar": {
     "account": "Account",

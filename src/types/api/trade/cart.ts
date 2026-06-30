@@ -1,5 +1,3 @@
-import {ReactNode} from "react";
-
 export interface Cart {
   id?: number;
   itemsQty: number;
@@ -10,10 +8,9 @@ export interface Cart {
 
 // 新的购物车列表响应类型
 export interface CartItem {
-  skuId: number;
-  name: ReactNode;
-  quantity: ReactNode;
   id: number;
+  skuId: number;
+  name: string;
   count: number;
   selected: boolean;
   spu: {

@@ -28,7 +28,7 @@ export async function getCategoryPage(params: {
   parentId?: number;
   parentIds?: number[];
 }): Promise<Category[]> {
-  return get<Category[]>("product/category/list", params);
+  return get<Category[]>("product/category/tree", params);
 }
 
 /* 获取商品详情 */

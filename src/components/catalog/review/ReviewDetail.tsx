@@ -1,5 +1,6 @@
 "use client";
 import React, {FC} from "react";
+import Image from "next/image";
 import {Rating} from "@/components/common/Rating";
 import {Comment} from "@/types/api/product/type";
 
@@ -38,11 +39,13 @@ export const ReviewDetail: FC<ReviewDetailProps> = ({
                   {review.picUrls && review.picUrls.length > 0 && (
                       <div className="mt-3 flex space-x-2">
                         {review.picUrls.map((url, index) => (
-                            <img
+                            <Image
                                 key={index}
                                 src={url}
                                 alt={`Review image ${index + 1}`}
                                 className="w-16 h-16 object-cover rounded"
+                                width={64}
+                                height={64}
                             />
                         ))}
                       </div>

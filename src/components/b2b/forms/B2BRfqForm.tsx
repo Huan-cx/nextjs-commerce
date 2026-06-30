@@ -30,12 +30,9 @@ export interface B2BRfqFormProps {
  */
 export const B2BRfqForm = ({
                              initialValues,
-                             onSubmit,
                              className,
                            }: B2BRfqFormProps) => {
   const t = useTranslations('b2b.createRfq');
-
-  const expectedDeliveryType = watch('expectedDeliveryType');
 
   const {
     register,
@@ -61,6 +58,8 @@ export const B2BRfqForm = ({
     },
     mode: 'onTouched',
   });
+
+  const expectedDeliveryType = watch('expectedDeliveryType');
 
   // 表单提交由外部 Wizard 控制，这里只渲染字段
   return (

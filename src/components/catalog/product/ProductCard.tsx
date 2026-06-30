@@ -21,7 +21,7 @@ export const ProductCard: FC<ProductCardProps> = ({
                                                     sizes = "(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw",
                                                     priority = false
                                                   }) => {
-  const {getName, locale} = useTranslationData();
+  const {getName} = useTranslationData();
   const productType = product.skus?.length === 1 ? 'simple' : 'configurable';
   const price = product.price?.toString() || "0";
   const specialPrice = product.combinationPrice?.toString() || product.seckillPrice?.toString();

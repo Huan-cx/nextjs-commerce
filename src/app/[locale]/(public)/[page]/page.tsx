@@ -1,4 +1,5 @@
 import {notFound} from "next/navigation";
+import Image from "next/image";
 import Prose from "@components/theme/search/Prose";
 import {getArticle, getArticleBySlug, incrementArticleView} from "@utils/api/footer";
 import {generateMetadataForPage} from "@/utils/helper";
@@ -62,10 +63,12 @@ export default async function Page({
         <div className="flex flex-col gap-4 mx-auto">
           <h1 className="text-2xl md:text-3xl font-bold">{pageData?.metaTitle || pageData?.title}</h1>
           {pageData?.picUrl && (
-              <img
+              <Image
                   src={pageData.picUrl}
                   alt={pageData.title}
                   className="w-full h-auto rounded-lg mb-4"
+                  width={800}
+                  height={400}
               />
           )}
           <Prose className="mb-8" html={pageData?.content}/>

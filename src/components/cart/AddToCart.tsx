@@ -92,6 +92,7 @@ export function AddToCart({
   // const isSaleable = product?.skus && product.skus.length > 0 ||  "";
   const {onAddToCart, isCartLoading} = useCart();
   const {isGuest} = useAuthStatus();
+  const t = useTranslations("cart"); // Move translations hook to top level
   const {handleSubmit, setValue, register, getValues} = useForm<AddToCartFormData>({
     defaultValues: {
       quantity: 1,
@@ -130,6 +131,8 @@ export function AddToCart({
             : String(product.id);
     const sku = product.skus?.find((item: Sku) => item.id === Number(selectedVariantId));
     await onAddToCart({
+      skuId: Number(skuId),
+      name: product.name || "",
       id: Number(skuId),
       count: data.quantity,
       selected: true,
@@ -155,7 +158,7 @@ export function AddToCart({
       <>
         {!checkStock && type === "configurable" && userInteracted && (
             <div className="gap-1 px-2 py-1 my-2 font-bold text-red-500 dark:text-red-400">
-              <h1>{useTranslations("cart")("noStockAvailable")}</h1>
+              <h1>{t("noStockAvailable")}</h1>
             </div>
         )}
         <form className="flex gap-x-4" onSubmit={handleSubmit(actionWithVariant)}>

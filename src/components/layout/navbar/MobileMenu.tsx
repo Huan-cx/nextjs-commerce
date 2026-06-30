@@ -1,20 +1,17 @@
 "use client";
 
-import {AnimatePresence, motion} from "framer-motion";
-import Link from "@/components/common/Link";
-import BottomNavbar from "./BottomNavbar";
-import {MobileSearchBar} from "./MobileSearch";
-import {useState} from "react";
-import {useBodyScrollLock} from "@utils/hooks/useBodyScrollLock";
-import {useTranslations} from "next-intl";
+import {AnimatePresence, motion} from 'framer-motion';
+import BottomNavbar from './BottomNavbar';
+import MobileCategoryMenu from './MobileCategoryMenu';
+import {useState} from 'react';
+import {useBodyScrollLock} from '@utils/hooks/useBodyScrollLock';
 
 export default function MobileMenu({ menu }: { menu: any }) {
-  const t = useTranslations("mobileMenu");
   const [activeTab, setActiveTab] = useState<
-    "home" | "category" | "cart" | "account" | null
-  >("home");
+      'home' | 'category' | 'cart' | 'account' | null
+  >('home');
 
-  const isOpen = activeTab === "category";
+  const isOpen = activeTab === 'category';
 
   useBodyScrollLock(isOpen);
 
@@ -25,7 +22,7 @@ export default function MobileMenu({ menu }: { menu: any }) {
   return (
     <>
       <BottomNavbar
-        onMenuOpen={() => setActiveTab("category")}
+          onMenuOpen={() => setActiveTab('category')}
         setActiveTab={setActiveTab}
         activeTab={activeTab}
       />
@@ -39,48 +36,10 @@ export default function MobileMenu({ menu }: { menu: any }) {
               exit={{ opacity: 0 }}
               onClick={handleClose}
               className="fixed inset-0 z-40 bg-transparent lg:hidden"
-              style={{ top: "68px", bottom: "64px" }}
+              style={{top: '68px', bottom: '64px'}}
             />
 
-            <motion.div
-              initial={{ x: "-100%" }}
-              animate={{ x: 0 }}
-              exit={{ x: "-100%" }}
-              transition={{ type: "spring", damping: 25, stiffness: 200 }}
-              className="fixed left-0 z-50 w-full max-w-[448px] border-r border-neutral-200 bg-white dark:border-neutral-800 dark:bg-black lg:hidden drawer-scrollbar-hidden"
-              style={{
-                top: "68px",
-                bottom: "64px",
-                width: "100%",
-                maxWidth: "448px",
-                height: "calc(var(--visual-viewport-height) - 132px)",
-              }}
-            >
-              <div className="h-full overflow-y-auto px-4 py-4 drawer-scrollbar-hidden">
-                <MobileSearchBar onClose={handleClose} />
-
-                <h1 className="mt-4 px-2 text-2xl font-semibold text-black dark:text-white">
-                  {t("category")}
-                </h1>
-
-                <ul className="mt-2 flex w-full flex-col drawer-scrollbar-hidden">
-                  {menu.map((item: any) => (
-                    <li
-                      key={item.id + item.name}
-                      className="p-2 text-xl text-black dark:text-white"
-                    >
-                      <Link
-                        href={item.slug ? `/search/${item.slug}` : "/search"}
-                        aria-label={`${item?.name}`}
-                        onClick={handleClose}
-                      >
-                        {item.name}
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </motion.div>
+            <MobileCategoryMenu categories={menu} onClose={handleClose}/>
           </>
         )}
       </AnimatePresence>

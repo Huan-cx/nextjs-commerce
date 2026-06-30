@@ -5,6 +5,7 @@ import {ChevronLeftIcon, CreditCardIcon, MapPinIcon, TruckIcon} from "@heroicons
 import {OrderAddress, OrderDetail} from "@utils/api/trade";
 import {fenToYuan} from "@utils/formatNumber";
 import {useTranslations} from "next-intl";
+import Image from "next/image";
 
 interface OrderDetailProps {
   data: OrderDetail;
@@ -272,12 +273,6 @@ export const OrderDetailView = ({data, onBack}: OrderDetailProps) => {
   const isB2BOrder = data.quotationId || data.rfqId;
 
   // 计算总金额（包含增值费用）
-  const calculateTotalWithFees = () => {
-    const itemsTotal = items.reduce((sum, item) => sum + (item.payPrice || 0), 0);
-    const feesTotal = feeItems.reduce((sum, fee) => sum + fee.amount, 0);
-    return itemsTotal + feesTotal;
-  };
-
   if (!data.id) {
     return (
         <div className="max-w-6xl mx-auto p-6">
@@ -424,10 +419,12 @@ export const OrderDetailView = ({data, onBack}: OrderDetailProps) => {
                         <div className="flex items-center gap-3">
                           <div
                               className="relative h-14 w-14 rounded-lg overflow-hidden border border-default-200 bg-white">
-                            <img
+                            <Image
                                 src={item.picUrl || "/placeholder.png"}
                                 alt={item.spuName}
                                 className="h-full w-full object-cover"
+                                width={56}
+                                height={56}
                             />
                           </div>
                           <div className="flex-1 min-w-0">

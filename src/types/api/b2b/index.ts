@@ -21,6 +21,7 @@ export enum RfqStatus {
   EXPIRED = 3,     // 已过期（包含已拒绝）
   CANCELED = 4,    // 已取消
   ORDERED = 5,     // 已下单（单独标签）
+  COMPLETED = 6,   // 已完成
 }
 
 // 报价单状态枚举

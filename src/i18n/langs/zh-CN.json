@@ -522,7 +522,9 @@
     "welcomeMessage": "欢迎！登录成功。"
   },
   "mobileMenu": {
-    "category": "分类"
+    "category": "分类",
+    "searchPlaceholder": "搜索分类、产品或规格...",
+    "noSubcategories": "暂无子分类"
   },
   "navbar": {
     "account": "账户",

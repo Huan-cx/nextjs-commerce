@@ -28,6 +28,8 @@ export default function AddToCartButton({
     }
 
     onAddToCart({
+      skuId: Number(product.sku.id),
+      name: product.spu.name || "",
       sku: {
         id: Number(product.sku.id),
         price: Number(product.sku.price) || 0,

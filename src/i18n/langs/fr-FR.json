@@ -518,7 +518,9 @@
     "welcomeMessage": "Bienvenue ! Connexion réussie."
   },
   "mobileMenu": {
-    "category": "Catégorie"
+    "category": "Catégorie",
+    "searchPlaceholder": "Rechercher des catégories, produits ou spécifications...",
+    "noSubcategories": "Aucune sous-catégorie"
   },
   "navbar": {
     "account": "Compte",

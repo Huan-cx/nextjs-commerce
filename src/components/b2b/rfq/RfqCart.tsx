@@ -49,7 +49,7 @@ const CartItemCard = ({
 
   const picUrl = item.sku?.picUrl || item.spu?.picUrl || (item as any)?.image || NOT_IMAGE;
   const productName = item.spu?.name || (item as any)?.name || "Product";
-  const quantity = item.count || (item as any)?.quantity || 1;
+  const quantity = item.count || 1;
   const price = item.sku?.price || (item as any)?.price || 0;
   const currencyCode = item?.spu ? safeCurrencyCode(item.spu) : "USD";
 
@@ -358,7 +358,7 @@ export default function RfqCart({currentStep, isSubmitting}: RfqCartProps) {
   const subtotal =
       cart?.items?.reduce((total: number, item: CartItem) => {
         const price = item.sku?.price || (item as any)?.price || 0;
-        const quantity = item.count || (item as any)?.quantity || 1;
+        const quantity = item.count || 1;
         return total + price * quantity;
       }, 0) || 0;
 

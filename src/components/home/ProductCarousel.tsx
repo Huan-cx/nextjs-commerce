@@ -32,13 +32,16 @@ const ProductCarousel: FC<ProductCarouselProps> = ({
   }, [filters, itemCount, sortOrder]);
 
   const filterInput = useMemo(() => {
-    const { sort, limit, ...rest } = filters || {};
+    const {sort: _sort, ...rest} = filters || {};
     const filterObject: Record<string, string> = {};
+
+    // Include all filter values except sort (which we handle separately)
     Object.entries(rest).forEach(([key, value]) => {
       if (value !== undefined && value !== null) {
         filterObject[key] = String(value);
       }
     });
+
     return Object.keys(filterObject).length > 0 ? filterObject : undefined;
   }, [filters]);
 
