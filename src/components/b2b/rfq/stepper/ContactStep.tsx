@@ -13,11 +13,42 @@ export default function ContactStep() {
   const {
     register,
     control,
-    formState: {errors, isValid},
+    formState: {errors},
+    watch,
   } = useRfqForm();
 
+  // 获取当前字段值
+  const contactName = watch("contactName");
+  const email = watch("email");
+  const country = watch("country");
+  const city = watch("city");
+  const postalCode = watch("postalCode");
+
+  // 检查当前步骤所有必填字段是否填写
+  const isContactStepValid = () => {
+    // 检查字段是否有错误
+    const hasErrors = !!(
+        errors.contactName ||
+        errors.email ||
+        errors.country ||
+        errors.city ||
+        errors.postalCode
+    );
+
+    // 检查字段是否有值（非空）
+    const hasValues = !!(
+        contactName &&
+        email &&
+        country &&
+        city &&
+        postalCode
+    );
+
+    return !hasErrors && hasValues;
+  };
+
   const handleNext = () => {
-    if (isValid) {
+    if (isContactStepValid()) {
       router.push("/rfqs/create?step=delivery");
     }
   };
@@ -54,6 +85,9 @@ export default function ContactStep() {
             name="country"
             label={t("country")}
             placeholder={t("countryPlaceholder")}
+            errorMsg={errors.country?.message?.toString()}
+            rules={{required: t("countryRequired")}}
+            required
             size="md"
             className="max-w-full"
         />
@@ -62,14 +96,16 @@ export default function ContactStep() {
           <InputText
               label={t("city")}
               placeholder={t("cityPlaceholder")}
-              {...register("city")}
+              {...register("city", {required: t("cityRequired")})}
+              errorMsg={errors.city?.message?.toString()}
               size="md"
               className="max-w-full"
           />
           <InputText
               label={t("postalCode")}
               placeholder={t("postalCodePlaceholder")}
-              {...register("postalCode")}
+              {...register("postalCode", {required: t("postalCodeRequired")})}
+              errorMsg={errors.postalCode?.message?.toString()}
               size="md"
               className="max-w-full"
           />
@@ -80,7 +116,7 @@ export default function ContactStep() {
               color="primary"
               size="lg"
               onPress={handleNext}
-              isDisabled={!isValid}
+              isDisabled={!isContactStepValid()}
               className="font-outfit text-base font-medium"
           >
             {t("next")}

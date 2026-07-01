@@ -37,9 +37,11 @@ export const FormField = ({
             control={control}
             name={fieldName}
             label={field.label}
-            required
+            required={isRequired}
             errorMsg={fieldError}
             className={field.colSpan}
+            size="md"
+            labelPlacement="inside"
         />
     );
   }
@@ -61,6 +63,8 @@ export const FormField = ({
           type={field.isPhone ? 'tel' : undefined}
           inputMode={field.isPhone ? 'tel' : undefined}
           autoComplete={field.isPhone ? 'tel' : undefined}
+          labelPlacement="inside"  // ✅ 使用内部 label
+          showAsterisk={isRequired}
       />
   );
 };

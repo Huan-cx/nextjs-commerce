@@ -17,6 +17,7 @@ import {
 } from "@/store/slices/checkout-slice";
 import {AddressLine} from "@/types/api/address/type";
 import {useCheckout} from "@utils/hooks/useCheckout";
+import {useCustomToast} from "@utils/hooks/useToast";
 
 import {AddressDisplay} from "@components/checkout/stepper/address/AddressDisplay";
 import {AddressFormData, AddressType, AddressTypeConfig, CheckoutFormData} from "@components/checkout/type";
@@ -52,9 +53,6 @@ const ADDRESS_TYPE_CONFIG: Record<AddressType, AddressTypeConfig> = {
     requiredFields: ['companyName', 'vat'],
   },
 };
-
-// 地址类型
-
 
 // 辅助函数：创建地址表单数据
 const createAddressFormData = (address: AddressLine | null, email: string | null): AddressFormData => ({
@@ -102,10 +100,17 @@ interface AddAddressFormProps {
   autoNavigate?: boolean;
   onNextStep?: () => void;
   showButton?: boolean;
+  disableSummary?: boolean;  // ✅ 新增：禁用自动摘要模式
 }
 
-export const AddAddressForm: FC<AddAddressFormProps> = ({autoNavigate = true, onNextStep, showButton = true}) => {
+export const AddAddressForm: FC<AddAddressFormProps> = ({
+                                                          autoNavigate = true,
+                                                          onNextStep,
+                                                          showButton = true,
+                                                          disableSummary = false
+                                                        }) => {
   const dispatch = useAppDispatch();
+  const {showToast} = useCustomToast();
   const {
     billingAddress,
     receiverAddress,
@@ -132,6 +137,15 @@ export const AddAddressForm: FC<AddAddressFormProps> = ({autoNavigate = true, on
       isObject(receiverAddress) && isObject(billingAddress) && isObject(importerAddress)
     );
 
+  const defaultFormValues = generateFormDefaultValues(
+      billingAddress,
+      receiverAddress,
+      importerAddress,
+      email,
+      receiveUseBilling,
+      importerUseBilling
+  );
+
   const {
     register,
     control,
@@ -139,15 +153,8 @@ export const AddAddressForm: FC<AddAddressFormProps> = ({autoNavigate = true, on
     reset,
     formState: {errors},
   } = useForm({
-    mode: "onSubmit",
-    defaultValues: generateFormDefaultValues(
-        billingAddress,
-        receiverAddress,
-        importerAddress,
-        email,
-        receiveUseBilling,
-        importerUseBilling
-    ),
+    mode: "onChange",
+    defaultValues: defaultFormValues,
   });
 
   useEffect(() => {
@@ -160,6 +167,7 @@ export const AddAddressForm: FC<AddAddressFormProps> = ({autoNavigate = true, on
         importerUseBilling
     ));
   }, [billingAddress, receiverAddress, importerAddress, reset, email, receiveUseBilling, importerUseBilling]);
+
   const {isLoadingToSave} = useCheckout();
   const router = useRouter();
 
@@ -177,17 +185,69 @@ export const AddAddressForm: FC<AddAddressFormProps> = ({autoNavigate = true, on
 
   const formValues = useWatch({
     control,
-    defaultValue: {
-      billing: createAddressFormData(billingAddress, email),
-      receiver: createAddressFormData(receiverAddress, email),
-      importer: createAddressFormData(importerAddress, email),
-      receiveUseBilling,
-      importerUseBilling,
-    },
-  });
+    defaultValue: defaultFormValues,
+  }) as CheckoutFormData;
+
+  // 检查当前表单是否有效（考虑联动情况）
+  const isFormValid = () => {
+    // ✅ 添加非空检查
+    if (!formValues || !formValues.billing || !formValues.receiver || !formValues.importer) {
+      return false;
+    }
+
+    // 检查账单地址必填字段
+    const billingValid = !!(
+        formValues.billing.firstName &&
+        formValues.billing.lastName &&
+        formValues.billing.address &&
+        formValues.billing.city &&
+        formValues.billing.country &&
+        formValues.billing.phone
+    );
+
+    // 如果没有勾选使用账单地址作为收货地址，检查收货地址
+    const receiverValid = watchReceiveUseBilling || !!(
+        formValues.receiver.firstName &&
+        formValues.receiver.lastName &&
+        formValues.receiver.address &&
+        formValues.receiver.city &&
+        formValues.receiver.country &&
+        formValues.receiver.phone
+    );
+
+    // 如果没有勾选使用账单地址作为进口商地址，检查进口商地址
+    const importerValid = watchImporterUseBilling || !!(
+        formValues.importer.firstName &&
+        formValues.importer.lastName &&
+        formValues.importer.address &&
+        formValues.importer.city &&
+        formValues.importer.country &&
+        formValues.importer.phone &&
+        formValues.importer.companyName &&
+        formValues.importer.vat
+    );
+
+    return billingValid && receiverValid && importerValid;
+  };
 
   const addGuestAddress = useCallback(async (data: CheckoutFormData) => {
     const {billing, receiver, importer, receiveUseBilling, importerUseBilling} = data;
+
+    // 验证数据
+    if (!billing.firstName || !billing.lastName || !billing.address || !billing.city || !billing.country || !billing.phone) {
+      showToast("Please fill in all required fields for billing address", "danger");
+      return;
+    }
+
+    if (!receiveUseBilling && (!receiver.firstName || !receiver.lastName || !receiver.address || !receiver.city || !receiver.country || !receiver.phone)) {
+      showToast("Please fill in all required fields for receiver address", "danger");
+      return;
+    }
+
+    if (!importerUseBilling && (!importer.firstName || !importer.lastName || !importer.address || !importer.city || !importer.country || !importer.phone || !importer.companyName || !importer.vat)) {
+      showToast("Please fill in all required fields for importer address", "danger");
+      return;
+    }
 
     const receiverSource = receiveUseBilling ? billing : receiver;
     const importerSource = importerUseBilling ? billing : importer;
@@ -206,8 +266,9 @@ export const AddAddressForm: FC<AddAddressFormProps> = ({autoNavigate = true, on
       }
     } catch (error) {
       console.error("Failed to save checkout address", error);
+      showToast("Failed to save address", "danger");
     }
-  }, [dispatch, router, autoNavigate, onNextStep]);
+  }, [dispatch, router, autoNavigate, onNextStep, showToast]);
 
   const handleSelectAddress = useCallback((address: AddressLine | null, type: AddressType) => {
     const currentReceiveUseBilling = watchReceiveUseBilling;
@@ -226,6 +287,11 @@ export const AddAddressForm: FC<AddAddressFormProps> = ({autoNavigate = true, on
       }
     }
 
+    // ✅ 添加非空检查
+    if (!formValues || !formValues.billing || !formValues.receiver || !formValues.importer) {
+      return;
+    }
+
     // 生成新的表单数据
     const newFormData = {
       billing: formValues.billing,
@@ -239,9 +305,44 @@ export const AddAddressForm: FC<AddAddressFormProps> = ({autoNavigate = true, on
     newFormData[type] = address ? createAddressFormData(address, email) : createAddressFormData(null, email);
 
     reset(newFormData);
-  }, [formValues, watchReceiveUseBilling, watchImporterUseBilling, email, reset]);
 
-  const showSummary = isObject(receiverAddress) && (isObject(billingAddress) || watchReceiveUseBilling) && (isObject(importerAddress) || watchImporterUseBilling);
+    // ✅ 关键修复：选择地址时立即更新 Redux 状态
+    if (address) {
+      const addressData = createAddressData(address,
+          type === 'billing' ? ADDRESS_TYPES.BILLING :
+              type === 'receiver' ? ADDRESS_TYPES.RECEIVER : ADDRESS_TYPES.IMPORTER
+      );
+
+      if (type === 'billing') {
+        dispatch(setBillingAddress(addressData));
+        // 如果启用了联动，同时更新其他地址
+        if (currentReceiveUseBilling) {
+          dispatch(setReceiverAddress(addressData));
+        }
+        if (currentImporterUseBilling) {
+          dispatch(setImporterAddress(addressData));
+        }
+        // ✅ 关键修复：当选择账单地址且启用联动时，更新 isOpen 状态以显示地址摘要
+        if (currentReceiveUseBilling && currentImporterUseBilling) {
+          setIsOpen(true);
+        }
+      } else if (type === 'receiver') {
+        dispatch(setReceiverAddress(addressData));
+        // ✅ 检查是否应该显示摘要
+        if (isObject(billingAddress) && (isObject(importerAddress) || currentImporterUseBilling)) {
+          setIsOpen(true);
+        }
+      } else if (type === 'importer') {
+        dispatch(setImporterAddress(addressData));
+        // ✅ 检查是否应该显示摘要
+        if (isObject(billingAddress) && (isObject(receiverAddress) || currentReceiveUseBilling)) {
+          setIsOpen(true);
+        }
+      }
+    }
+  }, [formValues, watchReceiveUseBilling, watchImporterUseBilling, email, reset, dispatch, billingAddress, receiverAddress, importerAddress]);
+
+  const showSummary = !disableSummary && isObject(receiverAddress) && (isObject(billingAddress) || watchReceiveUseBilling) && (isObject(importerAddress) || watchImporterUseBilling);
   if (showSummary && isOpen) {
     return (
         <>
@@ -368,7 +469,7 @@ export const AddAddressForm: FC<AddAddressFormProps> = ({autoNavigate = true, on
 
         {showButton && (
             <div className="justify-self-end">
-              <ProceedToCheckout buttonName="Next" pending={isLoadingToSave}/>
+              <ProceedToCheckout buttonName="Next" pending={isLoadingToSave} isDisabled={!isFormValid()}/>
             </div>
         )}
       </form>

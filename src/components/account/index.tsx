@@ -98,7 +98,13 @@ export const AccountContainer = ({userInfo, activeKey, quotationId}: {
       return (
           <B2BOrderConfirmationView
               rfqId={confirmingQuotationId}
-              onBack={() => setConfirmingQuotationId(null)}
+              onBack={() => {
+                setConfirmingQuotationId(null);
+                // ✅ 返回时同时切换回询价详情页
+                setActiveTab("b2b-rfq");
+                setSelectedRfqId(confirmingQuotationId);
+                setViewQuotation(true);
+              }}
           />
       );
     }
@@ -224,8 +230,8 @@ export const AccountContainer = ({userInfo, activeKey, quotationId}: {
           {/* 移动端顶部标签导航 - 替代侧边栏 */}
           <MobileTabNavigation/>
 
-          {/* 左侧侧边栏 - 仅桌面端显示 */}
-          {isDesktop && (
+          {/* 左侧侧边栏 - 仅桌面端显示，订单确认页不显示 */}
+          {isDesktop && activeTab !== "b2b-order-confirmation" && (
               <AccountSidebar
                   user={userInfo}
                   activeKey={activeTab}

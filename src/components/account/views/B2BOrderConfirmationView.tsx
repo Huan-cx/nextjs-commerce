@@ -2,7 +2,7 @@
 
 import {Button, Card, CardBody, Divider, Spinner, Textarea, User} from "@heroui/react";
 import {ChevronLeftIcon} from "@heroicons/react/24/outline";
-import {createB2BOrder, getFinalQuotation, type AppTradeOrderAddressReqVO} from "@utils/api/b2b";
+import {type AppTradeOrderAddressReqVO, createB2BOrder, getFinalQuotation} from "@utils/api/b2b";
 import type {AddressLine} from "@/types/api/address/type";
 import {useMutation, useQuery} from "@tanstack/react-query";
 import {useLocale, useTranslations} from "next-intl";
@@ -228,6 +228,7 @@ export const B2BOrderConfirmationView = ({rfqId, onBack}: B2BOrderConfirmationVi
                     <AddAddressForm
                         autoNavigate={false}
                         onNextStep={handleNextStep}
+                        disableSummary={true}
                     />
                   </CardBody>
                 </Card>
@@ -376,6 +377,7 @@ export const B2BOrderConfirmationView = ({rfqId, onBack}: B2BOrderConfirmationVi
                 <AddAddressForm
                     autoNavigate={false}
                     onNextStep={handleNextStep}
+                    disableSummary={true}
                 />
               </div>
           ) : (

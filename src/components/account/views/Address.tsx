@@ -151,6 +151,19 @@ export const Address = () => {
     3: t("importer"),
   };
 
+  const getAddressTypeColor = (type: number) => {
+    switch (type) {
+      case 1:
+        return "bg-blue-100 text-blue-700";
+      case 2:
+        return "bg-green-100 text-green-700";
+      case 3:
+        return "bg-purple-100 text-purple-700";
+      default:
+        return "bg-neutral-100 text-neutral-600";
+    }
+  };
+
   return (
       <div className="space-y-6">
         {/* 页面标题 */}
@@ -166,87 +179,14 @@ export const Address = () => {
           </Button>
         </div>
 
-        {/* 地址列表 - 手机端使用简洁分割线设计，桌面端保留 Card */}
-        <div className="md:hidden space-y-0 divide-y divide-default-100 border-y border-default-100 -mx-4 px-4">
+        {/* 地址列表 */}
+        <div className="space-y-4">
           {addresses.map((address) => (
-              <div key={address.id} className="py-4">
-                <div className="flex flex-col gap-3">
-                  {/* 地址信息 */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex flex-wrap items-center gap-2 mb-2">
-                      <p className="font-bold text-default-900 text-base">
-                        {address.firstName} {address.lastName}
-                      </p>
-                      <span className="px-2 py-0.5 text-xs font-semibold rounded-full bg-primary/10 text-primary">
-                        {addressTypeLabels[address.type] || t("unknown")}
-                      </span>
-                      {address.defaultStatus && (
-                          <span
-                              className="px-2 py-0.5 text-xs font-semibold rounded-full bg-success/10 text-success">
-                            {t("default")}
-                          </span>
-                      )}
-                    </div>
-
-                    <div className="space-y-0.5">
-                      <p className="text-default-700 text-sm">{address.address}</p>
-                      {address.street && <p className="text-default-600 text-sm">{address.street}</p>}
-                      <p className="text-default-600 text-sm">
-                        {address.city}, {address.state}, {address.country} {address.postcode}
-                      </p>
-                      <p className="text-default-500 text-xs">{t("phone")}: {address.phone}</p>
-                      {address.companyName && (
-                          <p className="text-default-500 text-xs">{t("company")}: {address.companyName}</p>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* 操作按钮 */}
-                  <div className="flex gap-2 flex-wrap">
-                    <Button
-                        size="sm"
-                        variant="light"
-                        startContent={<Pencil size={14}/>}
-                        onPress={() => handleEdit(address)}
-                        className="font-medium h-8 min-w-0"
-                    >
-                      {t("edit")}
-                    </Button>
-                    {!address.defaultStatus && (
-                        <Button
-                            size="sm"
-                            variant="flat"
-                            color="primary"
-                            onPress={() => handleSetDefault(address)}
-                            className="font-medium h-8 min-w-0"
-                        >
-                          {t("setDefault")}
-                        </Button>
-                    )}
-                    <Button
-                        size="sm"
-                        color="danger"
-                        variant="light"
-                        startContent={<Trash2 size={14}/>}
-                        onPress={() => handleDelete(address.id)}
-                        className="font-medium h-8 min-w-0"
-                    >
-                      {t("delete")}
-                    </Button>
-                  </div>
-                </div>
-              </div>
-          ))}
-        </div>
-
-        {/* 桌面端地址列表 - 保留 Card 设计 */}
-        <div className="hidden md:block space-y-4">
-          {addresses.map((address) => (
-              <Card key={address.id} shadow="sm" className="border border-default-100">
-                <CardBody className="p-5">
-                  <div className="flex flex-row items-start gap-4">
+              <Card key={address.id} shadow="sm" className="border border-default-100 overflow-hidden">
+                <CardBody className="p-0">
+                  <div className="flex flex-col md:flex-row">
                     {/* 左侧：地址信息 */}
-                    <div className="flex-1 min-w-0">
+                    <div className="flex-1 p-5">
                       <div className="flex flex-wrap items-center gap-2 mb-3">
                         <div className="flex items-center gap-2">
                           <MapPin size={18} className="text-default-400"/>
@@ -254,7 +194,8 @@ export const Address = () => {
                             {address.firstName} {address.lastName}
                           </p>
                         </div>
-                        <span className="px-2.5 py-0.5 text-xs font-semibold rounded-full bg-primary/10 text-primary">
+                        <span
+                            className={`px-2.5 py-0.5 text-xs font-semibold rounded-full ${getAddressTypeColor(address.type)}`}>
                           {addressTypeLabels[address.type] || t("unknown")}
                         </span>
                         {address.defaultStatus && (
@@ -265,21 +206,28 @@ export const Address = () => {
                         )}
                       </div>
 
-                      <div className="space-y-1">
+                      <div className="space-y-1 text-sm">
                         <p className="text-default-700">{address.address}</p>
-                        {address.street && <p className="text-default-600 text-sm">{address.street}</p>}
+                        {address.street && <p className="text-default-600">{address.street}</p>}
                         <p className="text-default-600">
                           {address.city}, {address.state}, {address.country} {address.postcode}
                         </p>
-                        <p className="text-default-500 text-sm">{t("phone")}: {address.phone}</p>
+                        <p className="text-default-500">{t("phone")}: {address.phone}</p>
                         {address.companyName && (
-                            <p className="text-default-500 text-sm">{t("company")}: {address.companyName}</p>
+                            <p className="text-default-500">{t("company")}: {address.companyName}</p>
+                        )}
+                        {address.vat && (
+                            <p className="text-default-500">VAT: {address.vat}</p>
+                        )}
+                        {address.eori && (
+                            <p className="text-default-500">EORI: {address.eori}</p>
                         )}
                       </div>
                     </div>
 
                     {/* 右侧：操作按钮 */}
-                    <div className="flex flex-col gap-2 flex-nowrap w-auto">
+                    <div
+                        className="flex flex-col md:flex-row md:items-center gap-2 p-5 border-t md:border-t-0 md:border-l border-default-100">
                       <Button
                           size="sm"
                           variant="flat"
@@ -319,20 +267,22 @@ export const Address = () => {
 
         {/* 空状态 */}
         {addresses.length === 0 && (
-            <div className="flex flex-col items-center justify-center py-12 text-default-400">
-              <MapPin size={48} className="mb-4 opacity-50"/>
-              <p className="text-lg font-medium">{t("noAddresses")}</p>
-              <p className="text-sm mt-1">{t("addFirstAddress")}</p>
-              <Button
-                  color="primary"
-                  variant="flat"
-                  startContent={<Plus size={18}/>}
-                  onPress={handleAddNew}
-                  className="mt-4 font-semibold"
-              >
-                {t("addNew")}
-              </Button>
-            </div>
+            <Card className="border border-dashed border-default-200">
+              <CardBody className="py-12 text-center">
+                <MapPin size={48} className="mx-auto mb-4 opacity-50 text-default-400"/>
+                <p className="text-lg font-medium text-default-600 mb-1">{t("noAddresses")}</p>
+                <p className="text-sm text-default-400 mb-4">{t("addFirstAddress")}</p>
+                <Button
+                    color="primary"
+                    variant="flat"
+                    startContent={<Plus size={18}/>}
+                    onPress={handleAddNew}
+                    className="font-semibold"
+                >
+                  {t("addNew")}
+                </Button>
+              </CardBody>
+            </Card>
         )}
 
         {/* 添加/编辑地址弹窗 */}
@@ -360,7 +310,7 @@ export const Address = () => {
                     value={selectedAddressType.toString()}
                     onValueChange={(value) => setSelectedAddressType(parseInt(value))}
                     orientation="horizontal"
-                    className="flex-wrap gap-3"
+                    className="flex-wrap gap-4"
                 >
                   <Radio value="2" classNames={{label: "text-sm font-medium"}}>{t("shipping")}</Radio>
                   <Radio value="1" classNames={{label: "text-sm font-medium"}}>{t("billing")}</Radio>

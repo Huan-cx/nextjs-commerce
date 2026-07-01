@@ -1,5 +1,5 @@
 import {del, get, post, put} from "@utils/request/client";
-import {AddressAddRequest, AddressLine, AddressUpdateRequest, Geo,} from "@/types/api/address/type";
+import {AddressAddRequest, AddressLine, AddressUpdateRequest} from "@/types/api/address/type";
 
 /**
  * 获取地址列表
@@ -41,15 +41,5 @@ export async function deleteAddress(id: number): Promise<boolean> {
   return await del<boolean>("member/address/delete", {id}, {
     contentType: 'urlencoded',
     requiresAuth: true
-  });
-}
-
-/**
- * 获取地址列表
- */
-export async function getGeoList(): Promise<Geo[]> {
-  return await get<Geo[]>("system/area/tree", {}, {
-    contentType: 'urlencoded',
-    requiresAuth: false
   });
 }

@@ -13,21 +13,14 @@ interface InputTextProps
   typeName?: string;
   placeholder?: string;
   size?: "sm" | "md" | "lg";
+  showAsterisk?: boolean;
   labelPlacement?: "inside" | "outside" | "outside-left";
-  rounded?: "sm" | "md" | "lg";
-  showAsterisk?: boolean; // Show asterisk if true
 }
 
 const sizeClasses = {
-  sm: "text-sm px-2 py-1",
-  md: "text-base px-3 py-2",
+  sm: "text-sm px-2 py-2",
+  md: "text-base px-3 py-2.5",
   lg: "text-lg px-4 py-3",
-};
-
-const roundedClasses = {
-  sm: "rounded-sm",
-  md: "rounded-md",
-  lg: "rounded-lg",
 };
 
 const InputText = forwardRef<HTMLInputElement, InputTextProps>(
@@ -41,10 +34,9 @@ const InputText = forwardRef<HTMLInputElement, InputTextProps>(
       typeName = "text",
       placeholder,
       size = "sm",
-      labelPlacement = "outside",
-      rounded = "sm",
       required,
       showAsterisk = true,
+      labelPlacement: _labelPlacement,
       ...rest
     },
     ref
@@ -53,60 +45,52 @@ const InputText = forwardRef<HTMLInputElement, InputTextProps>(
 
     const borderColorClass = hasError
       ? "border-red-500"
-      : "border-gray-300 dark:border-gray-500";
+        : "border-gray-300 dark:border-gray-500 focus:border-blue-500";
 
     return (
-      <div className={clsx("max-w-full mb-2.5", className)}>
-        {labelPlacement !== "inside" && (
+        <div className={clsx("max-w-full", className)}>
+          {/* 外部标签 */}
           <label
-            className={clsx(
-              "px-1 mb-1 block font-medium text-black dark:text-white"
-            )}
-            htmlFor={name}
+              className="px-1 mb-1.5 block font-medium text-black dark:text-white text-sm"
+              htmlFor={name}
           >
-            {label} {showAsterisk && <span className="text-red-500">*</span>}
+            {label} {showAsterisk && required && <span className="text-red-500">*</span>}
           </label>
-        )}
-        <div className="relative">
+
+          {/* 输入框 */}
           <input
-            ref={ref}
-            className={clsx(
-              "w-full !rounded-[0.62rem] border bg-transparent text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-white",
-              borderColorClass,
-              sizeClasses[size],
-              roundedClasses[rounded],
-              labelPlacement === "inside"
-                ? "placeholder-input-color dark:placeholder-selected-color-dark"
-                : ""
-            )}
-            defaultValue={defaultValue}
-            id={name}
-            name={name}
-            placeholder={labelPlacement === "inside" ? label : placeholder}
-            type={typeName}
-            required={required}
-            {...rest}
-          />
-          {hasError && (
-            <ul className="absolute -bottom-8 py-2 text-sm text-red-500">
-              {isArray(errorMsg) ? (
-                (errorMsg as string[]).map((msg, index) => (
-                  <li key={index} className="flex items-center gap-1">
-                    <ExclamationCircleIcon className="h-5 w-5" />
-                    {msg}
-                  </li>
-                ))
-              ) : (
-                <li className="flex items-center gap-1 text-xs sm:text-sm">
-                  <ExclamationCircleIcon className="size-[18px]" />
-                  {typeof errorMsg === "string"
-                    ? errorMsg
-                    : JSON.stringify(errorMsg)}
-                </li>
+              ref={ref}
+              className={clsx(
+                  "w-full !rounded-[0.62rem] border bg-transparent text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-white",
+                  borderColorClass,
+                  sizeClasses[size]
               )}
-            </ul>
+              defaultValue={defaultValue}
+              id={name}
+              name={name}
+              placeholder={placeholder}
+              type={typeName}
+              required={required}
+              {...rest}
+          />
+
+          {/* 错误提示 */}
+          {hasError && (
+              <div className="mt-1 flex items-start gap-1.5 text-xs text-red-500">
+                <ExclamationCircleIcon className="h-4 w-4 flex-shrink-0 mt-0.5"/>
+                <div>
+              {isArray(errorMsg) ? (
+                  <ul className="space-y-0.5">
+                    {(errorMsg as string[]).map((msg, index) => (
+                        <li key={index}>{msg}</li>
+                    ))}
+                  </ul>
+              ) : (
+                  <span>{typeof errorMsg === "string" ? errorMsg : JSON.stringify(errorMsg)}</span>
+              )}
+                </div>
+              </div>
           )}
-        </div>
       </div>
     );
   }

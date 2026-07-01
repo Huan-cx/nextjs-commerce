@@ -23,9 +23,9 @@ export interface RfqFormData {
   targetPrice: string;
   contactName: string;
   email: string;
-  country?: string;
-  city?: string;
-  postalCode?: string;
+  country: string;
+  city: string;
+  postalCode: string;
   incoterms: string;
   deliveryPort: string;
   expectedDeliveryType?: string;

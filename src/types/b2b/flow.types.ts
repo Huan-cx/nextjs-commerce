@@ -33,9 +33,9 @@ export interface RfqFormData {
   phone?: string;
 
   // 地址信息
-  country?: string;
-  city?: string;
-  postalCode?: string;
+  country: string;
+  city: string;
+  postalCode: string;
   address?: string;
 
   // 国际贸易信息

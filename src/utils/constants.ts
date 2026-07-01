@@ -271,6 +271,7 @@ export const ORDER_ID = "order_id";
 
 export const EMAIL_REGEX = /^(?![.-])(?!.*[.-]@)(?!.*\.\.)[a-zA-Z0-9._-]+@[a-zA-Z0-9-]+(\.[a-zA-Z]{2,})+$/;
 
-export const IS_VALID_INPUT = /^[a-zA-Z0-9\s]*$/;
+// ✅ 支持中文、英文、数字和空格
+export const IS_VALID_INPUT = /^[\u4e00-\u9fa5a-zA-Z0-9\s]*$/;
 export const IS_VALID_ADDRESS = /^[a-zA-Z0-9\s,\/-]*$/;
 export const IS_VALID_PHONE = /^[0-9]{10}$/;

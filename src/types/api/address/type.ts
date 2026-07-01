@@ -22,16 +22,6 @@ export interface AddressLine {
   eori: string;
 }
 
-
-/**
- * 地 国家/地区列表响应
- */
-export interface Geo {
-  id: number;
-  name: string;
-  code: string;
-}
-
 /**
  * 地址添加请求
  */
