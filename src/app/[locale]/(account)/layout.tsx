@@ -1,8 +1,8 @@
 import {ReactNode} from "react";
 import {authOptions} from "@utils/auth";
 import {getServerSession} from "next-auth/next";
-import {getToken} from "next-auth/jwt";
 import {redirect} from "next/navigation";
+import {getAuthTokenFromCookies} from "@utils/request/server";
 
 /**
  * 账户路由根 Layout - 全局认证保护
@@ -34,16 +34,7 @@ export default async function AccountRootLayout({
   const {cookies} = await import("next/headers");
   const cookieStore = await cookies();
 
-  const token = await getToken({
-    req: {
-      cookies: Object.fromEntries(
-          cookieStore.getAll().map(c => [c.name, c.value])
-      ),
-      headers: {cookie: cookieStore.getAll().map((c) => `${c.name}=${c.value}`).join("; ")},
-    } as any,
-    secret: process.env.NEXTAUTH_SECRET,
-    cookieName: "next-auth.session-token",
-  });
+  const token = await getAuthTokenFromCookies(cookieStore);
 
   if (!token?.accessToken) {
     // ❌ 没有 accessToken，重定向到登录页

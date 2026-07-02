@@ -17,7 +17,7 @@
  * ✅ 手动附加 Authorization Header
  */
 
-import {REST_URL, TENANT_ID} from "@/utils/constants";
+import {NEXTAUTH_SECURE_TOKEN, NEXTAUTH_TOKEN, REST_URL, TENANT_ID} from "@/utils/constants";
 
 type HttpMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
 
@@ -38,6 +38,46 @@ interface ApiResponse<T = any> {
   code: number;
   msg: string;
   data: T;
+}
+
+/**
+ * 从 Cookie 中解析 NextAuth JWT Token（服务端专用）
+ *
+ * 【为什么需要这个函数】
+ * NextAuth 在 HTTPS 环境下会自动启用 useSecureCookies，
+ * Cookie 名变为 `__Secure-next-auth.session-token`；
+ * HTTP 环境下则是 `next-auth.session-token`。
+ *
+ * 在 SSR/Middleware 中手动构造 req 对象调用 getToken 时，
+ * NextAuth 无法自动判断协议，必须显式指定 cookieName，
+ * 否则在 HTTPS 生产环境会拿不到 token（返回 null）。
+ *
+ * 这里根据 NEXTAUTH_URL 协议动态选择 cookieName。
+ */
+export async function getAuthTokenFromCookies(cookieStore: any) {
+  const {getToken} = await import("next-auth/jwt");
+
+  // 根据 NEXTAUTH_URL 协议动态选择 cookieName
+  // HTTPS: __Secure-next-auth.session-token
+  // HTTP:  next-auth.session-token
+  const isSecureCookie = (process.env.NEXTAUTH_URL ?? "").startsWith("https");
+  const cookieName = isSecureCookie ? NEXTAUTH_SECURE_TOKEN : NEXTAUTH_TOKEN;
+
+  const cookieHeader = cookieStore
+      .getAll()
+      .map((c: any) => `${c.name}=${c.value}`)
+      .join("; ");
+
+  return getToken({
+    req: {
+      cookies: Object.fromEntries(
+          cookieStore.getAll().map((c: any) => [c.name, c.value])
+      ),
+      headers: {cookie: cookieHeader},
+    } as any,
+    secret: process.env.NEXTAUTH_SECRET,
+    cookieName,
+  });
 }
 
 /**
@@ -100,7 +140,6 @@ async function buildHeaders(
     // getServerSession() 返回的 session 没有 accessToken（被 session callback 过滤了）
     try {
       const {cookies} = await import("next/headers");
-      const {getToken} = await import("next-auth/jwt");
 
       // 尝试获取 cookieStore，如果失败（如在 generateStaticParams 中）则跳过
       let cookieStore;
@@ -112,23 +151,7 @@ async function buildHeaders(
         return headers;
       }
 
-      const cookieHeader = cookieStore
-          .getAll()
-          .map((c) => `${c.name}=${c.value}`)
-          .join("; ");
-
-      // ✅ 关键修复：必须传 secret + cookieName + cookies 对象
-      // 才能确保 getToken 正确解密 JWT
-      const token = await getToken({
-        req: {
-          cookies: Object.fromEntries(
-              cookieStore.getAll().map(c => [c.name, c.value])
-          ),
-          headers: {cookie: cookieHeader},
-        } as any,
-        secret: process.env.NEXTAUTH_SECRET,
-        cookieName: "next-auth.session-token",
-      });
+      const token = await getAuthTokenFromCookies(cookieStore);
       console.warn("[Server Request] Token ----------------:", token);
 
       if (token?.accessToken) {
@@ -200,7 +223,6 @@ export async function serverRequest<T = any>(
     try {
       // 调用 refreshAccessToken 刷新 token
       const {refreshAccessToken} = await import("@utils/api/auth");
-      const {getToken} = await import("next-auth/jwt");
       const {cookies} = await import("next/headers");
 
       // 尝试获取 cookieStore，如果失败（如在 generateStaticParams 中）则跳过
@@ -212,21 +234,7 @@ export async function serverRequest<T = any>(
         throw new Error(result.msg || "Request failed");
       }
 
-      const cookieHeader = cookieStore
-          .getAll()
-          .map((c) => `${c.name}=${c.value}`)
-          .join("; ");
-
-      const token = await getToken({
-        req: {
-          cookies: Object.fromEntries(
-              cookieStore.getAll().map(c => [c.name, c.value])
-          ),
-          headers: {cookie: cookieHeader},
-        } as any,
-        secret: process.env.NEXTAUTH_SECRET,
-        cookieName: "next-auth.session-token",
-      });
+      const token = await getAuthTokenFromCookies(cookieStore);
 
       if (token?.refreshToken) {
         const refreshResult = await refreshAccessToken(token.refreshToken as string);

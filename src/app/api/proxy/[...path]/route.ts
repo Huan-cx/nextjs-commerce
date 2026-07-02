@@ -1,6 +1,6 @@
 import {getToken} from "next-auth/jwt";
 import {NextRequest, NextResponse} from "next/server";
-import {REST_URL, TENANT_ID} from "@/utils/constants";
+import {NEXTAUTH_SECURE_TOKEN, NEXTAUTH_TOKEN, REST_URL, TENANT_ID} from "@/utils/constants";
 
 /**
  * 服务端 API 代理 - NextAuth 社区标准实现
@@ -219,7 +219,13 @@ async function forwardRequest(request: NextRequest, path: string[]): Promise<Res
   // - 高效：不经过 Session Callback
   // - 可靠：JWT 中包含完整的 accessToken（JWT Callback 保证了
   // - 安全：仅在服务端内存中解密
-  const token = await getToken({req: request});
+  // 显式传入 secret 和 cookieName 确保在 HTTPS 生产环境下也能正确读取
+  const isSecureCookie = (process.env.NEXTAUTH_URL ?? "").startsWith("https");
+  const token = await getToken({
+    req: request,
+    secret: process.env.NEXTAUTH_SECRET,
+    cookieName: isSecureCookie ? NEXTAUTH_SECURE_TOKEN : NEXTAUTH_TOKEN,
+  });
   const userId = token?.userId;
 
   // 5. 构建后端请求 URL

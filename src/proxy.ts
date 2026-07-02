@@ -3,6 +3,7 @@ import {NextResponse} from 'next/server'
 import {getToken} from 'next-auth/jwt'
 import createMiddleware from 'next-intl/middleware';
 import {routing} from './i18n/routing';
+import {NEXTAUTH_SECURE_TOKEN, NEXTAUTH_TOKEN} from '@/utils/constants';
 
 // 创建国际化中间件
 const intlMiddleware = createMiddleware(routing);
@@ -20,9 +21,12 @@ export async function proxy(request: NextRequest) {
     const restrictedPaths = ['/customer/login', '/customer/register']
 
     if (restrictedPaths.some((path) => pathname.includes(path))) {
+        // 显式指定 cookieName，确保 HTTPS 生产环境下也能正确读取
+        const isSecureCookie = (process.env.NEXTAUTH_URL ?? '').startsWith('https');
         const token = await getToken({
             req: request,
-          secret: process.env.NEXTAUTH_SECRET
+            secret: process.env.NEXTAUTH_SECRET,
+            cookieName: isSecureCookie ? NEXTAUTH_SECURE_TOKEN : NEXTAUTH_TOKEN,
         })
 
         if (token) {
