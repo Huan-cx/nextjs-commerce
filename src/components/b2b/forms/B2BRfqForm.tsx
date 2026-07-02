@@ -1,6 +1,6 @@
 'use client';
 
-import {useForm} from 'react-hook-form';
+import {useForm, useWatch} from 'react-hook-form';
 import {Input, Select, SelectItem, Textarea,} from '@heroui/react';
 import {RfqFormData} from '@/types/b2b/flow.types';
 import {
@@ -36,7 +36,7 @@ export const B2BRfqForm = ({
 
   const {
     register,
-    watch,
+    control,
     formState: {errors},
   } = useForm<RfqFormData>({
     defaultValues: {
@@ -59,7 +59,10 @@ export const B2BRfqForm = ({
     mode: 'onTouched',
   });
 
-  const expectedDeliveryType = watch('expectedDeliveryType');
+  const expectedDeliveryType = useWatch({
+    control,
+    name: 'expectedDeliveryType',
+  });
 
   // 表单提交由外部 Wizard 控制，这里只渲染字段
   return (

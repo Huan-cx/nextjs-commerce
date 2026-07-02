@@ -16,6 +16,7 @@ interface CountrySelectProps {
   placeholder?: string;
   size?: "sm" | "md" | "lg";
   showAsterisk?: boolean;
+  labelPlacement?: "inside" | "outside" | "outside-left";
   rules?: {
     required?: string | boolean;
   };
@@ -38,6 +39,7 @@ const CountrySelect = ({
                          required,
                          control,
                          rules,
+                         labelPlacement: _labelPlacement,
                        }: CountrySelectProps) => {
 
   const locale = useLocale();

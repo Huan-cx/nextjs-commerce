@@ -29,20 +29,14 @@ export function CategoriesMenu() {
       }))
     }))
   }));
-
-  const filteredCategories = translatedCategories
+  translatedCategories
       .map((cat: any) => ({
         id: cat.id,
         name: cat.name,
         slug: cat.slug || cat.name || "",
       }))
       .filter((item: any) => item.name && item.slug);
-
-  const menuData = [
-    {name: t("all"), slug: "", id: ""},
-    ...filteredCategories,
-  ];
-
+  t("all");
   return (
       <>
         {/* 对于移动设备和平板设备，使用移动端菜单 */}

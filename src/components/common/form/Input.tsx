@@ -13,6 +13,7 @@ interface InputTextProps
   typeName?: string;
   placeholder?: string;
   size?: "sm" | "md" | "lg";
+  rounded?: "sm" | "md" | "lg" | "xl";
   showAsterisk?: boolean;
   labelPlacement?: "inside" | "outside" | "outside-left";
 }
@@ -34,6 +35,7 @@ const InputText = forwardRef<HTMLInputElement, InputTextProps>(
       typeName = "text",
       placeholder,
       size = "sm",
+      rounded: _rounded,
       required,
       showAsterisk = true,
       labelPlacement: _labelPlacement,
