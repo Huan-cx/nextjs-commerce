@@ -9,7 +9,6 @@ interface PriceProps {
   currencyCode?: string;
   forceShow?: boolean;
   variant?: "default" | "hidden";
-  children?: React.ReactNode;
 }
 
 export const Price = ({
@@ -18,7 +17,6 @@ export const Price = ({
                         currencyCode = "USD",
                         forceShow = false,
                         variant = "default",
-                        children,
                         ...rest
                       }: PriceProps & React.ComponentProps<"p">) => {
   const context = useGlobalContext();
