@@ -3,7 +3,7 @@ import {FC} from "react";
 import Grid from "@/components/theme/ui/grid/Grid";
 import AddToCartButton from "@/components/theme/ui/AddToCartButton";
 import {NextImage} from "@/components/common/NextImage";
-import {Price} from "@/components/theme/ui/Price";
+import {Price, PriceWrapper} from '@/components/theme/ui/Price';
 import {Sku, Spu} from "@/types/api/product/type";
 import {getImageUrl, NOT_IMAGE} from "@utils/constants";
 import {useTranslationData} from "@/hooks/useTranslationData";
@@ -87,30 +87,28 @@ export const ProductCard: FC<ProductCardProps> = ({
           </h3>
 
 
-          <div className="flex items-center gap-2">
-            {productType === "configurable" && (
-                <span className="text-xs text-gray-600 dark:text-gray-400 md:text-sm">
-              As low as
-            </span>
-            )}
-            {productType === "simple" && specialPrice ? (
-                <>
-                  <div className="flex items-center gap-2">
-                    <Price
-                        amount={specialPrice}
-                        className="text-xs font-semibold md:text-sm"
-                        currencyCode={currency}
-                    />
-                  </div>
-                </>
-            ) : (
-                <Price
-                    amount={price}
-                    className="text-xs font-semibold md:text-sm"
-                    currencyCode={currency}
-                />
-            )}
-          </div>
+          <PriceWrapper>
+            <div className="flex items-center gap-2">
+              {productType === "configurable" && (
+                  <span className="text-xs text-gray-600 dark:text-gray-400 md:text-sm">
+                As low as
+              </span>
+              )}
+              {productType === "simple" && specialPrice ? (
+                  <Price
+                      amount={specialPrice}
+                      className="text-xs font-semibold md:text-sm"
+                      currencyCode={currency}
+                  />
+              ) : (
+                  <Price
+                      amount={price}
+                      className="text-xs font-semibold md:text-sm"
+                      currencyCode={currency}
+                  />
+              )}
+            </div>
+          </PriceWrapper>
         </div>
       </Grid.Item>
   );

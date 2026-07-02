@@ -8,6 +8,7 @@ import {useMutation, useQuery, useQueryClient} from "@tanstack/react-query";
 import {useTranslations} from "next-intl";
 import {fenToYuan} from "@utils/formatNumber";
 import {useCustomToast} from "@utils/hooks/useToast";
+import {PriceWrapper} from '@/components/theme/ui/Price';
 
 // 统一色彩系统 - 与 OrderDetailView 保持一致
 const COLORS = {
@@ -280,7 +281,7 @@ export const B2BRfqDetailView = ({rfqId, onBack, onViewQuotation}: B2BRfqDetailV
               </div>
           )}
 
-          {/* Price Info区块 */}
+          <PriceWrapper>
           {(rfqData.targetCurrency || rfqData.targetPrice || rfqData.targetPriceUnit) && (
               <div className="-mx-4 px-4 py-4">
                 <h3 className="font-semibold text-base mb-3">{t("priceInfo")}</h3>
@@ -306,6 +307,7 @@ export const B2BRfqDetailView = ({rfqId, onBack, onViewQuotation}: B2BRfqDetailV
                 </div>
               </div>
           )}
+          </PriceWrapper>
 
           {/* Requirement区块 */}
           {rfqData.requirement && (
@@ -332,9 +334,11 @@ export const B2BRfqDetailView = ({rfqId, onBack, onViewQuotation}: B2BRfqDetailV
                             </p>
                             <p className={`text-tiny ${COLORS.text.primary} font-medium`}>
                               {t("quantity")}: {item.count}
-                              {item.expectedPrice && (
-                                  <span className="ml-4">{t("expectedPrice")}: {fenToYuan(item.expectedPrice)}</span>
-                              )}
+                              <PriceWrapper>
+                                {item.expectedPrice && (
+                                    <span className="ml-4">{t("expectedPrice")}: {fenToYuan(item.expectedPrice)}</span>
+                                )}
+                              </PriceWrapper>
                             </p>
                           </div>
                         }
@@ -478,7 +482,7 @@ export const B2BRfqDetailView = ({rfqId, onBack, onViewQuotation}: B2BRfqDetailV
               </Card>
           )}
 
-          {/* 价格信息卡片 */}
+          <PriceWrapper>
           {(rfqData.targetCurrency || rfqData.targetPrice || rfqData.targetPriceUnit) && (
               <Card>
                 <CardBody className="space-y-4">
@@ -506,6 +510,7 @@ export const B2BRfqDetailView = ({rfqId, onBack, onViewQuotation}: B2BRfqDetailV
                 </CardBody>
               </Card>
           )}
+          </PriceWrapper>
 
           {/* 需求描述卡片 */}
           {rfqData.requirement && (
@@ -533,9 +538,12 @@ export const B2BRfqDetailView = ({rfqId, onBack, onViewQuotation}: B2BRfqDetailV
                               <p className={`text-sm ${COLORS.text.tertiary}`}>{item.skuName}</p>
                               <p className={`text-sm ${COLORS.text.primary} font-medium`}>
                                 {t("quantity")}: {item.count}
-                                {item.expectedPrice && (
-                                    <span className="ml-4">{t("expectedPrice")}: {fenToYuan(item.expectedPrice)}</span>
-                                )}
+                                <PriceWrapper>
+                                  {item.expectedPrice && (
+                                      <span
+                                          className="ml-4">{t("expectedPrice")}: {fenToYuan(item.expectedPrice)}</span>
+                                  )}
+                                </PriceWrapper>
                               </p>
                             </div>
                           }

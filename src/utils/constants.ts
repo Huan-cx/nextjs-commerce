@@ -69,6 +69,20 @@ export const TENANT_ID = "1";
 export const OPERATION_TO_ROUTE_MAP: Record<string, string> = {
 };
 
+/**
+ * 价格显示配置
+ * 用于 B2B 场景控制商品价格的全局显示行为
+ * - showPrice: 是否显示商品价格（关闭后所有商品价格区域都会隐藏，包括"As low as"等文案）
+ *   注：报价单、订单、结账流程等通过 Price 组件的 forceShow 属性强制显示
+ */
+export interface PriceConfig {
+  showPrice: boolean;
+}
+
+export const DEFAULT_PRICE_CONFIG: PriceConfig = {
+  showPrice: false,
+};
+
 // -----Pagination--------//
 export const PAGE = "page";
 export const LIMIT = "limit";

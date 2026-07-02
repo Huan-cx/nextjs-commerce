@@ -1,6 +1,7 @@
 'use client';
 
 import {Card, CardBody, cn, Divider} from '@heroui/react';
+import {PriceWrapper} from '@/components/theme/ui/Price';
 
 export interface PriceItem {
   label: string;
@@ -17,6 +18,7 @@ export interface B2BPriceSummaryProps {
   compact?: boolean;
   className?: string;
   priceFormatter?: (price: number) => string;
+  forceShow?: boolean;
 }
 
 const defaultPriceFormatter = (price: number): string => {
@@ -50,9 +52,11 @@ export const B2BPriceSummary = ({
                                   compact = false,
                                   className,
                                   priceFormatter = defaultPriceFormatter,
+                                  forceShow = false,
                                 }: B2BPriceSummaryProps) => {
   const content = (
-      <div className="space-y-2">
+      <PriceWrapper forceShow={forceShow}>
+        <div className="space-y-2">
         {items.map((item, index) => (
             <div key={index} className="flex justify-between items-start">
               <div>
@@ -85,7 +89,8 @@ export const B2BPriceSummary = ({
             {priceFormatter(totalPrice)}
         </span>
         </div>
-      </div>
+        </div>
+      </PriceWrapper>
   );
 
   if (compact) {

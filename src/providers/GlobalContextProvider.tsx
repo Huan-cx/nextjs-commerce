@@ -1,23 +1,18 @@
 "use client";
 
-
-import {
-  Dispatch,
-  SetStateAction,
-  createContext,
-  useContext,
-  useState,
-} from "react";
-
+import {createContext, Dispatch, SetStateAction, useContext, useState,} from "react";
+import {DEFAULT_PRICE_CONFIG, PriceConfig} from "@/utils/constants";
 
 interface ContextProps {
   countryCode: string;
   setCountryCode: Dispatch<SetStateAction<string>>;
+  priceConfig: PriceConfig;
 }
 
 const GlobalContext = createContext<ContextProps>({
   countryCode: "",
   setCountryCode: (): string => "",
+  priceConfig: DEFAULT_PRICE_CONFIG,
 });
 
 export const GlobalContextProvider = ({
@@ -28,7 +23,7 @@ export const GlobalContextProvider = ({
   const [countryCode, setCountryCode] = useState("");
 
   return (
-    <GlobalContext.Provider value={{ countryCode, setCountryCode }}>
+      <GlobalContext.Provider value={{countryCode, setCountryCode, priceConfig: DEFAULT_PRICE_CONFIG}}>
       {children}
     </GlobalContext.Provider>
   );

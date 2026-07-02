@@ -7,7 +7,7 @@ import {ShoppingCartIcon} from "@heroicons/react/24/outline";
 import {DEFAULT_OPTION} from "@/utils/constants";
 import {useAppSelector} from "@/store/hooks";
 import OpenCart from "./OpenCart";
-import {Price} from "../theme/ui/Price";
+import {Price, PriceWrapper} from '@/components/theme/ui/Price';
 import CloseCart from "../common/icons/cart/CloseCart";
 import {DeleteItemButton} from "../common/icons/cart/DeleteItemButton";
 import {EditItemQuantityButton} from "../common/icons/cart/EditItemQuantityButton";
@@ -186,7 +186,7 @@ export default function CartModal({
                                     <Price
                                         amount={item?.sku?.price}
                                         className="flex justify-end text-right font-outfit text-sm md:text-base font-medium w-full"
-                                      currencyCode={"USD"}
+                                        currencyCode={"USD"}
                                     />
                                     <div className="flex items-center gap-x-1.5 md:gap-x-2">
                                       <DeleteItemButton item={item} />
@@ -216,16 +216,18 @@ export default function CartModal({
                       </ul>
 
                       <div className="border-0 border-t border-solid border-neutral-200 dark:border-dark-grey py-4 text-sm text-neutral-500 dark:text-neutral-400">
-                        <div className="mb-3 flex items-center justify-between pb-1">
-                          <p className="text-base font-normal text-black/[60%] dark:text-white">
-                            {t("total")}
-                          </p>
-                          <Price
-                              amount={grandTotal}
-                            className="text-right text-base font-medium text-black dark:text-white"
-                            currencyCode={"USD"}
-                          />
-                        </div>
+                        <PriceWrapper>
+                          <div className="mb-3 flex items-center justify-between pb-1">
+                            <p className="text-base font-normal text-black/[60%] dark:text-white">
+                              {t("total")}
+                            </p>
+                            <Price
+                                amount={grandTotal}
+                                className="text-right text-base font-medium text-black dark:text-white"
+                                currencyCode={"USD"}
+                            />
+                          </div>
+                        </PriceWrapper>
                       </div>
 
                       {isAuthenticated && (
@@ -369,7 +371,7 @@ export default function CartModal({
                                     <Price
                                         amount={item?.sku?.price}
                                         className="flex justify-end text-right font-outfit text-sm md:text-base font-medium w-full"
-                                      currencyCode={"USD"}
+                                        currencyCode={"USD"}
                                     />
                                     <div className="flex items-center gap-x-1.5 md:gap-x-2">
                                       <DeleteItemButton item={item} />
@@ -399,16 +401,18 @@ export default function CartModal({
                       </ul>
 
                       <div className="border-0 border-t border-solid border-neutral-200 dark:border-dark-grey py-4 text-sm text-neutral-500 dark:text-neutral-400">
-                        <div className="mb-3 flex items-center justify-between pb-1">
-                          <p className="text-base font-normal text-black/[60%] dark:text-white">
-                            {t("total")}
-                          </p>
-                          <Price
-                              amount={String(grandTotal / 100)}
-                            className="text-right text-base font-medium text-black dark:text-white"
-                            currencyCode={"USD"}
-                          />
-                        </div>
+                        <PriceWrapper>
+                          <div className="mb-3 flex items-center justify-between pb-1">
+                            <p className="text-base font-normal text-black/[60%] dark:text-white">
+                              {t("total")}
+                            </p>
+                            <Price
+                                amount={String(grandTotal / 100)}
+                                className="text-right text-base font-medium text-black dark:text-white"
+                                currencyCode={"USD"}
+                            />
+                          </div>
+                        </PriceWrapper>
 
                         {isAuthenticated && (
                             <button

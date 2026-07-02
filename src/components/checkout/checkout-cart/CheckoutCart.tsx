@@ -1,5 +1,5 @@
 import {GridTileImage} from "@components/theme/ui/grid/Tile";
-import {Price} from "@components/theme/ui/Price";
+import {Price} from '@/components/theme/ui/Price';
 import CartItemAccordion from "./CartItemAccordian";
 import {NOT_IMAGE} from "@utils/constants";
 import Link from "@/components/common/Link";
@@ -77,7 +77,7 @@ export default function CheckoutCart({
                           Quantity : {item?.count}
                         </span>
                           <div className="block h-16 xl:hidden">
-                            <Price
+                            <Price forceShow={true}
                                 amount={item?.sku?.price}
                                 className="space-y-2 text-start font-outfit text-lg font-medium xl:text-right"
                                 currencyCode={currencyCode}
@@ -86,7 +86,7 @@ export default function CheckoutCart({
                         </div>
                       </Link>
                       <div className="hidden h-16 xl:block">
-                        <Price
+                        <Price forceShow={true}
                             amount={item?.sku?.price}
                             className="space-y-2 text-start font-outfit text-lg font-medium xl:text-right"
                             currencyCode={currencyCode}
@@ -103,7 +103,7 @@ export default function CheckoutCart({
             <p className="text-black[60%] font-outfit text-base font-normal">
               Subtotal
             </p>
-            <Price
+            <Price forceShow={true}
                 amount={(settlementData?.price.totalPrice ?? preSettlementSubtotal)}
                 className="text-right text-base text-black dark:text-white"
                 currencyCode={currencyCode}
@@ -114,7 +114,7 @@ export default function CheckoutCart({
               Shipping
             </p>
             {settlementData?.price.deliveryPrice != null ? (
-                <Price
+                <Price forceShow={true}
                     amount={settlementData.price.deliveryPrice}
                     className="text-right text-base text-black dark:text-white"
                     currencyCode={currencyCode}
@@ -129,7 +129,7 @@ export default function CheckoutCart({
             <p className="text-black[60%] font-outfit text-base font-normal">
               Discount
             </p>
-            <Price
+            <Price forceShow={true}
                 amount={(settlementData?.price.discountPrice ?? 0)}
                 className="text-right text-base text-black dark:text-white"
                 currencyCode={currencyCode}
@@ -139,7 +139,7 @@ export default function CheckoutCart({
             <p className="font-outfit text-2xl font-normal text-black/[60%] dark:text-white">
               Grand Total
             </p>
-            <Price
+            <Price forceShow={true}
                 amount={(settlementData?.price.payPrice ?? preSettlementSubtotal)}
                 className="text-right font-outfit text-2xl font-normal text-black dark:text-white"
                 currencyCode={currencyCode}

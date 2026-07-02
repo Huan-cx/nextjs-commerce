@@ -3,7 +3,7 @@
 import {Accordion, AccordionItem, Button, Divider, Input} from "@heroui/react";
 import {ChevronLeftIcon, ChevronRightIcon, TagIcon} from "@heroicons/react/24/outline";
 import {GridTileImage} from "@components/theme/ui/grid/Tile";
-import {Price} from "@components/theme/ui/Price";
+import {Price, PriceWrapper} from '@/components/theme/ui/Price';
 import Link from "@/components/common/Link";
 import {useAppSelector} from "@/store/hooks";
 import {NOT_IMAGE} from "@utils/constants";
@@ -288,16 +288,18 @@ const CartSummary = ({
 
   return (
       <div className="py-4 text-sm text-neutral-500 dark:text-neutral-400">
-        <div className="mb-3 flex items-center justify-between pb-1">
-          <p className="text-black/60 font-outfit text-base font-normal dark:text-white">
-            {t("subtotal")}
-          </p>
-          <Price
-              className="text-right text-base text-black dark:text-white"
-              amount={subtotal.toString()}
-              currencyCode={currencyCode}
-          />
-        </div>
+        <PriceWrapper>
+          <div className="mb-3 flex items-center justify-between pb-1">
+            <p className="text-black/60 font-outfit text-base font-normal dark:text-white">
+              {t("subtotal")}
+            </p>
+            <Price
+                className="text-right text-base text-black dark:text-white"
+                amount={subtotal.toString()}
+                currencyCode={currencyCode}
+            />
+          </div>
+        </PriceWrapper>
         <div className="mb-3 flex items-center justify-between pb-1 pt-1">
           <p className="text-black/60 font-outfit text-base font-normal dark:text-white">
             {t("totalItems")}

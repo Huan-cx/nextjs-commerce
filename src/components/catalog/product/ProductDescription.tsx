@@ -1,6 +1,6 @@
 "use client";
 
-import {Price} from "@/components/theme/ui/Price";
+import {Price, PriceWrapper} from '@/components/theme/ui/Price';
 import {Rating} from "@/components/common/Rating";
 import {AddToCart} from "@/components/cart/AddToCart";
 import {VariantSelector} from "./VariantSelector";
@@ -105,28 +105,28 @@ export function ProductDescription({
 
           <div
               className="flex w-auto justify-between items-baseline gap-y-2 py-4 xs:flex-row xs:gap-y-0 sm:py-6 flex-wrap">
-            <div className="flex gap-4 items-baseline">
-              {(Array.isArray(product?.skus) ? product.skus.length > 1 : false) && (
-                  <p className="text-base text-gray-600 dark:text-gray-400">
-                    As low as
-                  </p>
-              )}
-              {(Array.isArray(product?.skus) ? product.skus.length <= 1 : false) ? (
-                  <>
+            <PriceWrapper>
+              <div className="flex gap-4 items-baseline">
+                {(Array.isArray(product?.skus) ? product.skus.length > 1 : false) && (
+                    <p className="text-base text-gray-600 dark:text-gray-400">
+                      As low as
+                    </p>
+                )}
+                {(Array.isArray(product?.skus) ? product.skus.length <= 1 : false) ? (
                     <Price
                         amount={String(product?.price)}
                         currencyCode={currencyCode}
                         className="font-outfit text-xl md:text-2xl font-semibold"
                     />
-                  </>
-              ) : (
-                  <Price
-                      amount={String(priceValue)}
-                      currencyCode={currencyCode}
-                      className="font-outfit text-xl md:text-2xl font-semibold"
-                  />
-              )}
-            </div>
+                ) : (
+                    <Price
+                        amount={String(priceValue)}
+                        currencyCode={currencyCode}
+                        className="font-outfit text-xl md:text-2xl font-semibold"
+                    />
+                )}
+              </div>
+            </PriceWrapper>
 
             <Rating
                 length={5}

@@ -1,5 +1,5 @@
 import {useScrollTo} from "@/utils/hooks/useScrollTo";
-import {Price} from "@components/theme/ui/Price";
+import {Price} from '@/components/theme/ui/Price';
 import {Accordion, AccordionItem} from "@heroui/accordion";
 import {ChevronLeftIcon, ChevronRightIcon} from "@heroicons/react/24/outline";
 import {createUrl} from "@utils/helper";
@@ -70,6 +70,7 @@ export default function CartItemAccordion({
               className=""
               amount={(settlementData?.price?.payPrice ?? preSettlementSubtotal).toString()}
               currencyCode={"USD"}
+              forceShow={true}
             />
           }
         >
@@ -114,7 +115,7 @@ export default function CartItemAccordion({
                         </div>
                       </Link>
                       <div className="flex h-16 flex-col justify-between text-black/[60%] dark:!text-neutral-300">
-                        <Price
+                        <Price forceShow={true}
                           className="flex justify-end space-y-2 text-right text-sm"
                           amount={(item?.sku?.price).toString()}
                           currencyCode={"USD"}
@@ -130,7 +131,7 @@ export default function CartItemAccordion({
                 <p className="text-black[60%] font-outfit text-base font-normal dark:text-white">
                   Subtotal
                 </p>
-                <Price
+                <Price forceShow={true}
                   className="text-right text-base text-black dark:text-white"
                   amount={(settlementData?.price?.totalPrice ?? preSettlementSubtotal).toString()}
                   currencyCode={"USD"}
@@ -141,7 +142,7 @@ export default function CartItemAccordion({
                   Shipping
                 </p>
                 {settlementData?.price?.deliveryPrice ? (
-                  <Price
+                    <Price forceShow={true}
                       amount={(settlementData.price.deliveryPrice).toString()}
                     className="text-right text-base text-black dark:text-white"
                     currencyCode={"USD"}
@@ -156,7 +157,7 @@ export default function CartItemAccordion({
                 <p className="text-black[60%] font-outfit text-base font-normal dark:text-white">
                   Tax
                 </p>
-                <Price
+                <Price forceShow={true}
                     amount={(settlementData?.price ?? 0).toString()}
                     className="text-right text-base text-black dark:text-white"
                     currencyCode={"USD"}
@@ -164,7 +165,7 @@ export default function CartItemAccordion({
               </div>
               <div className="mb-3 flex items-center justify-between pb-1 pt-1">
                 <p className="text-xl font-bold dark:text-white">Total</p>
-                <Price
+                <Price forceShow={true}
                   className="text-right text-base text-black dark:text-white"
                   amount={(settlementData?.price?.payPrice ?? preSettlementSubtotal).toString()}
                   currencyCode={"USD"}

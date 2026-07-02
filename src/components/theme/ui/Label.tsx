@@ -1,6 +1,6 @@
 import clsx from "clsx";
 import {LeftArrow} from "@components/common/icons/LeftArrow";
-import {Price} from "./Price";
+import {Price} from '@/components/theme/ui/Price';
 
 const Label = ({
   title,
