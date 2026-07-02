@@ -2,6 +2,7 @@ import {useEffect, useRef, useState} from 'react';
 import Link from '@/components/common/Link';
 import type {Category} from '@/types/api/product/type';
 import {Card, CardBody} from '@heroui/react';
+import {useTranslations} from 'next-intl';
 
 interface EnhancedB2BTemplateProps {
   categories: Category[];
@@ -15,7 +16,25 @@ export default function EnhancedB2BTemplate({
                                               setHoveredCategory
                                             }: EnhancedB2BTemplateProps) {
   const menuRef = useRef<HTMLDivElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [menuTop, setMenuTop] = useState(70);
+  const t = useTranslations('navbar');
+
+  // 动态计算菜单顶部位置
+  useEffect(() => {
+    const updateMenuPosition = () => {
+      if (buttonRef.current) {
+        const buttonRect = buttonRef.current.getBoundingClientRect();
+        const navbarHeight = buttonRect.bottom;
+        setMenuTop(navbarHeight);
+      }
+    };
+
+    updateMenuPosition();
+    window.addEventListener('resize', updateMenuPosition);
+    return () => window.removeEventListener('resize', updateMenuPosition);
+  }, []);
 
   // 点击外部区域关闭菜单
   useEffect(() => {
@@ -53,21 +72,23 @@ export default function EnhancedB2BTemplate({
       <div className="relative">
         {/* 主菜单项 */}
         <ul className="flex items-center space-x-1">
-          <li className="group relative">
+          <li>
             <button
-                className="text-nowrap relative text-neutral-500 before:absolute before:bottom-0 before:left-0 before:h-px before:w-0 before:bg-current before:transition-all before:duration-300 before:content-[''] hover:text-black hover:before:w-full dark:text-neutral-400 dark:hover:text-neutral-300 px-4 py-5 inline-block text-sm font-medium flex items-center gap-1"
+                ref={buttonRef}
+                className="text-nowrap relative text-neutral-500 before:absolute before:bottom-0 before:left-0 before:h-px before:w-0 before:bg-current before:transition-all before:duration-300 before:content-[''] hover:text-black hover:before:w-full dark:text-neutral-400 dark:hover:text-neutral-300 px-4 py-5 inline-flex items-center text-sm font-medium gap-1"
                 onClick={toggleMenu}
             >
 
-              产品
+              {t('products')}
             </button>
 
             {/* 巨型菜单面板 */}
             <div
                 ref={menuRef}
-                className={`fixed inset-x-0 top-[70px] bg-white shadow-2xl border-t border-neutral-200 z-50 transition-all duration-300 ${
+                className={`fixed inset-x-0 bg-white shadow-2xl border-t border-neutral-200 z-50 transition-all duration-300 ${
                     isMenuOpen ? 'opacity-100 visible translate-y-0 pointer-events-auto' : 'opacity-0 invisible -translate-y-2 pointer-events-none'
                 }`}
+                style={{top: `${menuTop}px`}}
             >
               <div className="max-w-screen-2xl mx-auto flex min-h-[480px]">
                 {/* 左侧一级分类 */}
@@ -119,7 +140,7 @@ export default function EnhancedB2BTemplate({
                       </>
                   ) : (
                       <div className="col-span-3 text-center py-10 text-neutral-500">
-                        选择左侧分类查看详细产品
+                        {t('selectCategory')}
                       </div>
                   )}
                 </div>
@@ -127,19 +148,19 @@ export default function EnhancedB2BTemplate({
                 {/* 右侧边栏：B2B 服务 */}
                 <div className="w-64 bg-slate-50 border-l border-neutral-200 p-6 flex flex-col justify-between">
                   <div className="space-y-4">
-                    <h5 className="text-xs font-bold text-neutral-400 dark:text-neutral-500 tracking-wider uppercase">工程大宗采购</h5>
+                    <h5 className="text-xs font-bold text-neutral-400 dark:text-neutral-500 tracking-wider uppercase">{t('bulkPurchase')}</h5>
 
                     <Card className="bg-gradient-to-br from-blue-600 to-blue-700">
                       <CardBody className="p-4">
-                        <h6 className="text-xs font-bold text-white mb-1">大宗工程批量询价</h6>
+                        <h6 className="text-xs font-bold text-white mb-1">{t('bulkQuote')}</h6>
                         <p className="text-[11px] text-blue-100 mb-3 leading-relaxed">
-                          支持上传BOM表，最快2小时专人出具源头厂货报价单。
+                          {t('bulkQuoteDesc')}
                         </p>
                         <Link
                             href="/rfq/create"
                             className="inline-block bg-white text-blue-600 text-[11px] font-bold px-3 py-1.5 rounded-lg shadow-sm hover:bg-blue-50 transition-colors"
                         >
-                          立即发起询价
+                          {t('requestQuote')}
                         </Link>
                       </CardBody>
                     </Card>
@@ -154,15 +175,15 @@ export default function EnhancedB2BTemplate({
                       </svg>
                       <div className="text-[11px]">
                         <span
-                            className="font-semibold text-neutral-700 dark:text-neutral-300 block">2026产品类目选型手册</span>
-                        <span className="text-neutral-400 dark:text-neutral-500 block">PDF / 45.2 MB</span>
+                            className="font-semibold text-neutral-700 dark:text-neutral-300 block">{t('catalogManual')}</span>
+                        <span className="text-neutral-400 dark:text-neutral-500 block">{t('catalogSize')}</span>
                       </div>
                     </Link>
                   </div>
 
                   <div
                       className="text-[11px] text-neutral-400 dark:text-neutral-500 text-center border-t border-neutral-200 dark:border-neutral-700 pt-3">
-                    专属客服热线：400-123-4567
+                    {t('hotline')}
                   </div>
                 </div>
               </div>
@@ -173,17 +194,17 @@ export default function EnhancedB2BTemplate({
           <li>
             <Link
                 href="/b2b/wholesale"
-                className="text-nowrap relative text-neutral-500 before:absolute before:bottom-0 before:left-0 before:h-px before:w-0 before:bg-current before:transition-all before:duration-300 before:content-[''] hover:text-black hover:before:w-full dark:text-neutral-400 dark:hover:text-neutral-300 px-4 py-5 inline-block text-sm font-medium"
+                className="text-nowrap relative text-neutral-500 before:absolute before:bottom-0 before:left-0 before:h-px before:w-0 before:bg-current before:transition-all before:duration-300 before:content-[''] hover:text-black hover:before:w-full dark:text-neutral-400 dark:hover:text-neutral-300 px-4 py-5 inline-flex items-center text-sm font-medium"
             >
-              大宗专区
+              {t('wholesale')}
             </Link>
           </li>
           <li>
             <Link
                 href="/projects"
-                className="text-nowrap relative text-neutral-500 before:absolute before:bottom-0 before:left-0 before:h-px before:w-0 before:bg-current before:transition-all before:duration-300 before:content-[''] hover:text-black hover:before:w-full dark:text-neutral-400 dark:hover:text-neutral-300 px-4 py-5 inline-block text-sm font-medium"
+                className="text-nowrap relative text-neutral-500 before:absolute before:bottom-0 before:left-0 before:h-px before:w-0 before:bg-current before:transition-all before:duration-300 before:content-[''] hover:text-black hover:before:w-full dark:text-neutral-400 dark:hover:text-neutral-300 px-4 py-5 inline-flex items-center text-sm font-medium"
             >
-              工程案例
+              {t('projects')}
             </Link>
           </li>
         </ul>

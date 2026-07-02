@@ -16,8 +16,8 @@ export default function Navbar() {
           <header className="sticky top-0 z-10">
             <nav
                 className="relative flex flex-col items-center justify-between gap-4 bg-neutral-50 p-4 dark:bg-neutral-900 md:flex-row lg:px-6 lg:py-4">
-              <div className="flex w-full items-center justify-between gap-0 sm:gap-4">
-                <div className="flex max-w-fit gap-2 xl:gap-6">
+              <div className="flex w-full items-center justify-between gap-0 sm:gap-4 lg:h-full">
+                <div className="flex max-w-fit items-center gap-2 xl:gap-6">
                   <Link
                       className="flex h-9 w-full scale-95 items-center md:h-9 md:w-auto lg:h-10"
                       href="/"
@@ -31,7 +31,7 @@ export default function Navbar() {
                   </Suspense>
                 </div>
 
-                <div className="hidden flex-1 justify-center md:flex">
+                <div className="hidden flex-1 justify-center md:flex items-center">
                   <Suspense fallback={<SearchSkeleton/>}>
                     <Search search={false}/>
                   </Suspense>

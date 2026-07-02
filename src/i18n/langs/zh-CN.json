@@ -533,9 +533,20 @@
     "account": "账户",
     "all": "全部",
     "browseProducts": "浏览 {name} 产品",
-    "cart": "购物车",
+    "cart": "列表",
     "categories": "分类",
-    "home": "首页"
+    "home": "首页",
+    "products": "产品",
+    "wholesale": "大宗专区",
+    "projects": "工程案例",
+    "selectCategory": "选择左侧分类查看详细产品",
+    "bulkPurchase": "工程大宗采购",
+    "bulkQuote": "大宗工程批量询价",
+    "bulkQuoteDesc": "支持上传BOM表，最快2小时专人出具源头厂货报价单。",
+    "requestQuote": "立即发起询价",
+    "catalogManual": "2026产品类目选型手册",
+    "catalogSize": "PDF / 45.2 MB",
+    "hotline": "专属客服热线：400-123-4567"
   },
   "notFound": {
     "backToHome": "返回首页",

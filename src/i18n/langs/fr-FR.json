@@ -531,7 +531,18 @@
     "browseProducts": "Parcourir les produits {name}",
     "cart": "Liste",
     "categories": "Catégories",
-    "home": "Accueil"
+    "home": "Accueil",
+    "products": "Produits",
+    "wholesale": "Vente en gros",
+    "projects": "Projets",
+    "selectCategory": "Sélectionnez une catégorie pour voir les produits",
+    "bulkPurchase": "Achat en gros d'ingénierie",
+    "bulkQuote": "Devis en gros d'ingénierie",
+    "bulkQuoteDesc": "Prise en charge du téléchargement de BOM, obtenez un devis de prix d'usine dans les 2 heures.",
+    "requestQuote": "Demander un devis",
+    "catalogManual": "Guide de sélection du catalogue de produits 2026",
+    "catalogSize": "PDF / 45,2 Mo",
+    "hotline": "Ligne directe client : 400-123-4567"
   },
   "notFound": {
     "backToHome": "Retour à l'accueil",
