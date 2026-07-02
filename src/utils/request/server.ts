@@ -102,7 +102,16 @@ async function buildHeaders(
       const {cookies} = await import("next/headers");
       const {getToken} = await import("next-auth/jwt");
 
-      const cookieStore = await cookies();
+      // 尝试获取 cookieStore，如果失败（如在 generateStaticParams 中）则跳过
+      let cookieStore;
+      try {
+        cookieStore = await cookies();
+      } catch (_contextError) {
+        // 在非请求上下文中（如 generateStaticParams），cookies() 会抛出错误
+        console.warn("[Server Request] No request context available, skipping token retrieval");
+        return headers;
+      }
+
       const cookieHeader = cookieStore
           .getAll()
           .map((c) => `${c.name}=${c.value}`)
@@ -194,7 +203,15 @@ export async function serverRequest<T = any>(
       const {getToken} = await import("next-auth/jwt");
       const {cookies} = await import("next/headers");
 
-      const cookieStore = await cookies();
+      // 尝试获取 cookieStore，如果失败（如在 generateStaticParams 中）则跳过
+      let cookieStore;
+      try {
+        cookieStore = await cookies();
+      } catch (_contextError) {
+        console.warn("[Server Request] No request context available for token refresh");
+        throw new Error(result.msg || "Request failed");
+      }
+
       const cookieHeader = cookieStore
           .getAll()
           .map((c) => `${c.name}=${c.value}`)

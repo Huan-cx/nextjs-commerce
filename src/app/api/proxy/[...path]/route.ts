@@ -308,12 +308,16 @@ async function forwardRequest(request: NextRequest, path: string[]): Promise<Res
     const responseHeaders = new Headers();
     response.headers.forEach((value, key) => {
       const lowerKey = key.toLowerCase();
-      if (!["set-cookie", "authorization", "www-authenticate"].includes(lowerKey)) {
+      // 过滤敏感响应头和内容编码头
+      if (!["set-cookie", "authorization", "www-authenticate", "content-encoding"].includes(lowerKey)) {
         responseHeaders.set(key, value);
       }
     });
 
-    return new Response(response.body, {
+    // 读取响应体并重新创建响应，避免内容解码问题
+    const responseBody = await response.text();
+
+    return new Response(responseBody, {
       status: response.status,
       statusText: response.statusText,
       headers: responseHeaders,
