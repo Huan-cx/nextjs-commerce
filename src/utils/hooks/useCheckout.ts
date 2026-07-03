@@ -6,11 +6,13 @@ import {ORDER_ID} from "@utils/constants";
 import {useState} from "react";
 import {submitOrder} from "@/utils/api/trade";
 import {useAppSelector} from "@/store/hooks";
+import {useTranslations} from "next-intl";
 
 export const useCheckout = () => {
   const router = useRouter()// const { resetGuestToken } = useGuestCartToken();
   const { showToast } = useCustomToast();
   const [isLoadingToSave] = useState(false);
+  const t = useTranslations("order");
   const [isPlaceOrder, setIsPlaceOrder] = useState(false);
 
   // 从 Redux 中获取地址和支付/配送方式
@@ -52,7 +54,7 @@ export const useCheckout = () => {
         })) || [],
       });
       if (orderData?.payOrderId) {
-        showToast("Order placed successfully!", "success");
+        showToast(t("orderPlaced"), "success");
         setCookie(ORDER_ID, orderData.payOrderId);
 
         // 跳转到成功页面

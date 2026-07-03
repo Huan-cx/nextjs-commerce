@@ -3,21 +3,15 @@ import {Accordion, AccordionItem} from "@heroui/accordion";
 import React, {FC} from "react";
 import {ChevronLeftIcon, ChevronRightIcon} from "@heroicons/react/24/outline";
 import Prose from "@/components/theme/search/Prose";
-import ReviewSection from "../review/ReviewSection";
-import {ReviewDetail} from "../review/ReviewDetail";
 import {additionalDataTypes} from "../type";
-import {Comment} from "@/types/api/product/type";
 import {useTranslations} from "next-intl";
 
 export const ProductMoreDetails: FC<{
   description: string;
   additionalData: additionalDataTypes[];
-  productId: number;
-  reviews: Comment[];
-  totalReview: number;
   expandedKeys: Set<string>;
   setExpandedKeys: (keys: Set<string>) => void;
-}> = ({ description, additionalData, reviews, productId, totalReview, expandedKeys, setExpandedKeys }) => {
+}> = ({description, additionalData, expandedKeys, setExpandedKeys}) => {
   const t = useTranslations("product");
   
   const filterAdditionalData = additionalData.filter((item) => item?.attribute?.isVisibleOnFront == "1");
@@ -93,32 +87,6 @@ export const ProductMoreDetails: FC<{
               </AccordionItem>
 
               : null}
-          <AccordionItem
-              key={filterAdditionalData.length > 0 ? "3" : "2"}
-              classNames={{
-                title: "text-start",
-                trigger: "cursor-pointer",
-              }}
-              indicator={({isOpen}) =>
-                  isOpen ? (
-                      <ChevronLeftIcon className="h-5 w-5 stroke-neutral-800 dark:stroke-white"/>
-                  ) : (
-                      <ChevronRightIcon className="h-5 w-5 stroke-neutral-800 dark:stroke-white"/>
-                  )
-              }
-              aria-label={t("ratings")}
-              title={t("ratings")}
-          >
-            {totalReview > 0 ? (
-                <>
-                  <ReviewDetail
-                      reviewDetails={reviews}
-                  />
-                </>
-            ) : (
-                <ReviewSection productId={productId} totalReview={totalReview}/>
-            )}
-          </AccordionItem>
         </Accordion>
       </div>
   );

@@ -26,6 +26,7 @@ export interface CartItem {
     picUrl: string;
     price: number;
     stock: number;
+    minQty?: number;
     properties: Array<{
       propertyId: number;
       propertyName: string;

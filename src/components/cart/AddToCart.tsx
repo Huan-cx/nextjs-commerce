@@ -10,6 +10,7 @@ import {Sku, Spu} from "@/types/api/product/type";
 import {useCart} from "@utils/hooks/useAddToCart";
 import {useAuthStatus} from "@utils/hooks/useAuthStatus";
 import {useTranslations} from "next-intl";
+import {useRef, useState} from "react";
 
 interface AddToCartFormData {
   quantity: number;
@@ -88,42 +89,66 @@ export function AddToCart({
   product: Spu;
   userInteracted: boolean;
 }) {
-  // 检查是否有库存/是否可销售，临时采用全部可销售
-  // const isSaleable = product?.skus && product.skus.length > 0 ||  "";
   const {onAddToCart, isCartLoading} = useCart();
   const {isGuest} = useAuthStatus();
-  const t = useTranslations("cart"); // Move translations hook to top level
-  const {handleSubmit, setValue, register, getValues} = useForm<AddToCartFormData>({
-    defaultValues: {
-      quantity: 1,
-      isBuyNow: false,
-    },
-  });
+  const t = useTranslations("cart");
+
+  const searchParams = useSearchParams();
+  const type = product?.specType ? "configurable" : "simple";
+
+  const {productid: selectedVariantId, Instock: checkStock} = getVariantInfo(
+      product,
+      searchParams.toString(),
+  );
+
+  const selectedSku = product.skus?.find((item: Sku) => item.id === Number(selectedVariantId));
+  const minQty = selectedSku?.minQty || product.skus?.[0]?.minQty || 0;
+  const effectiveMinQty = minQty > 0 ? minQty : 1;
+
+  const [quantity, setQuantity] = useState(effectiveMinQty);
+  const [isEditing, setIsEditing] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const increment = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    const currentQuantity = getValues("quantity");
-    setValue("quantity", Number(currentQuantity) + 1);
+    setQuantity(prev => prev + 1);
   };
 
   const decrement = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    const currentQuantity = getValues("quantity");
-    setValue("quantity", Math.max(1, Number(currentQuantity) - 1));
+    setQuantity(prev => Math.max(effectiveMinQty, prev - 1));
   };
 
-  const searchParams = useSearchParams();
-  const type = product?.specType ? "configurable" : "simple";
+  const handleQuantityFocus = () => {
+    setIsEditing(true);
+  };
 
-  const { productid: selectedVariantId, Instock: checkStock } = getVariantInfo(
-      product,
-      searchParams.toString(),
-  );
-  const buttonStatus = !!selectedVariantId;
+  const handleQuantityBlur = () => {
+    setIsEditing(false);
+    if (quantity < effectiveMinQty || quantity <= 0 || isNaN(quantity)) {
+      setQuantity(effectiveMinQty);
+    }
+  };
 
-  const actionWithVariant = async (data: AddToCartFormData) => {
+  const handleQuantityKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") {
+      (e.target as HTMLInputElement).blur();
+    } else if (e.key === "Escape") {
+      setIsEditing(false);
+      setQuantity(effectiveMinQty);
+    }
+  };
+
+  const {handleSubmit} = useForm<AddToCartFormData>({
+    defaultValues: {
+      quantity: quantity,
+      isBuyNow: false,
+    },
+  });
+
+  const actionWithVariant = async () => {
     const skuId = type === "configurable"
         ? String(selectedVariantId)
         : product.skus && product.skus.length > 0
@@ -134,7 +159,7 @@ export function AddToCart({
       skuId: Number(skuId),
       name: product.name || "",
       id: Number(skuId),
-      count: data.quantity,
+      count: quantity,
       selected: true,
         sku: {
           id: Number(skuId),
@@ -142,6 +167,7 @@ export function AddToCart({
           stock: sku?.stock || 0,
           picUrl: sku?.picUrl || "",
           properties: sku?.properties || [],
+          minQty: sku?.minQty,
         },
         spu: {
           id: product.id || 0,
@@ -154,6 +180,8 @@ export function AddToCart({
     }, isGuest);
   };
 
+  const buttonStatus = !!selectedVariantId;
+
   return (
       <>
         {!checkStock && type === "configurable" && userInteracted && (
@@ -161,23 +189,58 @@ export function AddToCart({
               <h1>{t("noStockAvailable")}</h1>
             </div>
         )}
+
+        {minQty > 0 && (
+            <div className="text-xs text-neutral-500 dark:text-neutral-400 mb-2">
+              {t("minOrderQty", {minQty})}
+            </div>
+        )}
+
         <form className="flex gap-x-4" onSubmit={handleSubmit(actionWithVariant)}>
           <div className="flex items-center justify-center">
             <div className="flex items-center rounded-full border-2 border-blue-500">
               <div
                   aria-label="Decrease quantity"
                   role="button"
-                  className="flex h-12 w-12 cursor-pointer items-center justify-center rounded-l-full text-gray-600 transition-colors hover:text-gray-800 dark:text-white hover:dark:text-white/[80%]"
+                  className={clsx(
+                      "flex h-12 w-12 cursor-pointer items-center justify-center rounded-l-full text-gray-600 transition-colors hover:text-gray-800 dark:text-white hover:dark:text-white/[80%]",
+                      {"opacity-50 cursor-not-allowed": quantity <= effectiveMinQty}
+                  )}
                   onClick={decrement}
               >
                 <MinusIcon className="h-4 w-4"/>
               </div>
 
-              <input
-                  type="number"
-                  className="w-12 bg-transparent text-center font-medium text-gray-800 dark:text-white focus:outline-none"
-                  {...register("quantity", {valueAsNumber: true, min: 1})}
-              />
+              {isEditing ? (
+                  <input
+                      type="number"
+                      className="w-20 bg-transparent text-center font-medium text-gray-800 dark:text-white focus:outline-none"
+                      value={quantity}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        if (val === "") {
+                          setQuantity(effectiveMinQty);
+                        } else {
+                          const num = Number(val);
+                          if (!isNaN(num) && num > 0) {
+                            setQuantity(num);
+                          }
+                        }
+                      }}
+                      ref={inputRef}
+                      autoFocus
+                      onBlur={handleQuantityBlur}
+                      onKeyDown={handleQuantityKeyDown}
+                      min={effectiveMinQty}
+                  />
+              ) : (
+                  <div
+                      className="w-20 bg-transparent text-center font-medium text-gray-800 dark:text-white cursor-pointer hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-full"
+                      onClick={handleQuantityFocus}
+                  >
+                    {quantity}
+                  </div>
+              )}
 
               <div
                   aria-label="Increase quantity"

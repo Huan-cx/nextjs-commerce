@@ -404,11 +404,16 @@
     "checkout": "生成询价单",
     "createRfq": "创建询价单",
     "empty": "您的清单是空的。",
+    "minOrderQty": "最小起订量：{minQty}",
     "noStockAvailable": "暂无库存",
     "outOfStock": "缺货",
     "selectOption": "请选择一个选项",
     "title": "我的清单",
-    "total": "总计"
+    "total": "总计",
+    "addedSuccess": "成功加入清单",
+    "removedSuccess": "已从清单中移除",
+    "quantityUpdated": "数量更新成功",
+    "mergedSuccess": "清单合并成功"
   },
   "checkout": {
     "address": "地址",

@@ -404,11 +404,16 @@
     "checkout": "Create RFQ",
     "createRfq": "Create RFQ",
     "empty": "Your list is empty.",
+    "minOrderQty": "Min Order Qty: {minQty}",
     "noStockAvailable": "NO STOCK AVAILABLE",
     "outOfStock": "Out of Stock",
     "selectOption": "Please select an option",
     "title": "My List",
-    "total": "Total"
+    "total": "Total",
+    "addedSuccess": "Product added to cart successfully",
+    "removedSuccess": "Cart item removed successfully",
+    "quantityUpdated": "Quantity updated successfully",
+    "mergedSuccess": "Cart merged successfully"
   },
   "checkout": {
     "address": "Address",

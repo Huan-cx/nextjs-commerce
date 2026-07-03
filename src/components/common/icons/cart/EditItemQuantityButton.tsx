@@ -11,15 +11,17 @@ function SubmitButton({
   handleUpdateCart,
   pending,
                         step = 1,
+                        disabled = false,
 }: {
   type: "plus" | "minus";
   handleUpdateCart: (_: "plus" | "minus", step: number) => void;
   pending: boolean;
   step?: number;
+  disabled?: boolean;
 }) {
   return (
     <button
-      aria-disabled={pending}
+        aria-disabled={pending || disabled}
       aria-label={
         type === "plus"
             ? `Increase item quantity by ${step}`
@@ -31,10 +33,11 @@ function SubmitButton({
           "cursor-wait": pending,
           "min-w-[36px] max-w-[36px]": step === 1,
           "min-w-[40px] max-w-[40px] text-xs font-medium": step > 1,
+          "opacity-50 cursor-not-allowed": disabled,
         }
       )}
       type="button"
-      onClick={() => handleUpdateCart(type, step)}
+        onClick={() => !disabled && handleUpdateCart(type, step)}
     >
       {pending ? (
         <LoadingDots className="bg-black dark:bg-white" />
@@ -67,12 +70,17 @@ export function EditItemQuantityButton({
   const {onUpdateItem, isUpdateLoading} = useCart();
   const {isGuest} = useAuthStatus();
 
+  const minQty = item.sku?.minQty || 0;
+  const effectiveMinQty = minQty > 0 ? minQty : 1;
+
+  const isDisabled = type === "minus" && item.count <= effectiveMinQty;
+
   const handleUpdateCart = throttle((type: "plus" | "minus", step: number) => {
     if (isUpdateLoading) return;
 
     const newCount = type === "plus"
         ? item.count + step
-        : Math.max(1, item.count - step);
+        : Math.max(effectiveMinQty, item.count - step);
     onUpdateItem(item, newCount, isGuest);
   }, 200);
 
@@ -83,6 +91,7 @@ export function EditItemQuantityButton({
       pending={isUpdateLoading}
       type={type}
       step={step}
+      disabled={isDisabled}
     />
   );
 }

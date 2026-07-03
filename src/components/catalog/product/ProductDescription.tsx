@@ -1,7 +1,6 @@
 "use client";
 
 import {Price, PriceWrapper} from '@/components/theme/ui/Price';
-import {Rating} from "@/components/common/Rating";
 import {AddToCart} from "@/components/cart/AddToCart";
 import {VariantSelector} from "./VariantSelector";
 import {ProductMoreDetails} from "./ProductMoreDetail";
@@ -11,17 +10,15 @@ import {useSearchParams} from "next/navigation";
 import Prose from "@components/theme/search/Prose";
 import {safeCurrencyCode, safePriceValue} from "@utils/helper";
 import Link from "@/components/common/Link";
-import {Comment, Spu} from "@/types/api/product/type";
+import {Spu} from "@/types/api/product/type";
 import {additionalDataTypes} from "../type";
 import {useTranslationData} from "@/hooks/useTranslationData";
 
-// 从 Spu 中提取附加属性
 const extractAdditionalData = (product: Spu): additionalDataTypes[] => {
   if (!product.skus || product.skus.length === 0) {
     return [];
   }
 
-  // 收集所有唯一的属性
   const attributeMap = new Map<string, additionalDataTypes>();
 
   product.skus.forEach(sku => {
@@ -31,7 +28,7 @@ const extractAdditionalData = (product: Spu): additionalDataTypes[] => {
         if (!attributeMap.has(key)) {
           attributeMap.set(key, {
             attribute: {
-              isVisibleOnFront: "1", // 默认为可见
+              isVisibleOnFront: "1",
               id: prop.propertyId?.toString() || "",
               code: prop.propertyName,
               adminName: prop.propertyName,
@@ -54,15 +51,9 @@ const extractAdditionalData = (product: Spu): additionalDataTypes[] => {
 
 export function ProductDescription({
                                      product,
-                                     reviews,
-                                     totalReview,
-                                     avgRating
                                    }: {
   product: Spu;
   slug: string;
-  reviews: Comment[];
-  avgRating: number;
-  totalReview: number;
 }) {
   const {getName, getIntroduction, getDescription} = useTranslationData();
   const priceValue = safePriceValue(product);
@@ -79,18 +70,13 @@ export function ProductDescription({
       searchParams.toString()
   );
 
-  // 从 Spu 中提取附加属性
   const additionalData = extractAdditionalData(product);
 
   const [expandedKeys, setExpandedKeys] = useState<Set<string>>(new Set());
-  const handleReviewClick = () => {
-    setExpandedKeys(new Set(["2"]));
-  };
 
   return (
       <>
         <div className="mb-2 flex flex-col pb-6">
-          {/* Breadcrumb */}
           <div className="hidden lg:flex flex-col gap-3 shrink-0 mb-2">
             <Link
                 href="/"
@@ -127,14 +113,6 @@ export function ProductDescription({
                 )}
               </div>
             </PriceWrapper>
-
-            <Rating
-                length={5}
-                star={avgRating}
-                reviewCount={totalReview}
-                className="mt-2"
-                onReviewClick={handleReviewClick}
-            />
           </div>
         </div>
 
@@ -159,9 +137,6 @@ export function ProductDescription({
         <ProductMoreDetails
             additionalData={additionalData}
             description={productDescription}
-            reviews={Array.isArray(reviews) ? reviews : []}
-            totalReview={totalReview}
-            productId={product?.id || 0}
             expandedKeys={expandedKeys}
             setExpandedKeys={setExpandedKeys}
         />

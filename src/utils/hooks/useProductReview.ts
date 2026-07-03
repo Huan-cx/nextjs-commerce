@@ -3,9 +3,11 @@
 import {useMutation} from "@tanstack/react-query";
 import {useCustomToast} from "./useToast";
 import {createProductReview, CreateProductReviewRequest} from "@/utils/api/trade";
+import {useTranslations} from "next-intl";
 
 export function useProductReview() {
   const {showToast} = useCustomToast();
+  const t = useTranslations("productReview");
 
   const {
     mutateAsync: createReview,
@@ -14,7 +16,7 @@ export function useProductReview() {
   } = useMutation({
     mutationFn: (reviewData: CreateProductReviewRequest) => createProductReview(reviewData),
     onSuccess: () => {
-      showToast("Product review created successfully", "success");
+      showToast(t("submitSuccess"), "success");
     },
     onError: (error) => {
       const message = error instanceof Error ? error.message : "An unknown error occurred";

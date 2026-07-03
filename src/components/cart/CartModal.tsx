@@ -10,8 +10,9 @@ import OpenCart from "./OpenCart";
 import {Price, PriceWrapper} from '@/components/theme/ui/Price';
 import CloseCart from "../common/icons/cart/CloseCart";
 import {DeleteItemButton} from "../common/icons/cart/DeleteItemButton";
-import {EditItemQuantityButton} from "../common/icons/cart/EditItemQuantityButton";
 import {useCartDetail} from "@utils/hooks/useCartDetail";
+import {useCart} from "@utils/hooks/useAddToCart";
+import {useAuthStatus} from "@utils/hooks/useAuthStatus";
 import Image from "next/image";
 import {NOT_IMAGE} from "@utils/constants";
 import Link from "@/components/common/Link";
@@ -21,6 +22,7 @@ import {useSyncExternalStore} from "react";
 import {createUrl} from "@/utils/helper";
 import {useTranslations} from "next-intl";
 import {useRouter} from "next/navigation";
+import {QuantitySelector} from "@/components/common/QuantitySelector";
 
 type MerchandiseSearchParams = {
   [key: string]: string;
@@ -50,6 +52,8 @@ export default function CartModal({
   const finalOnOpen = isControlled ? onOpen : internalOnOpen;
   const finalOnClose = isControlled ? onClose : internalOnClose;
   const { isLoading } = useCartDetail();
+  const {onUpdateItem} = useCart();
+  const {isGuest} = useAuthStatus();
   const router = useRouter();
   const {isAuthenticated} = useAppSelector((state) => state.user);
   // const email = useAppSelector((state) => state.checkout.email);
@@ -190,23 +194,12 @@ export default function CartModal({
                                     />
                                     <div className="flex items-center gap-x-1.5 md:gap-x-2">
                                       <DeleteItemButton item={item} />
-                                      <div
-                                          className="flex h-7 md:h-9 flex-row items-center rounded-full border border-neutral-200 dark:border-neutral-700">
-                                        {/* 移动端：只显示 - 和 + 按钮，减少宽度 */}
-                                        <div className="hidden md:flex">
-                                          <EditItemQuantityButton item={item} type="minus" step={10}/>
-                                        </div>
-                                        <EditItemQuantityButton item={item} type="minus"/>
-                                        <p className="w-5 md:w-8 text-center">
-                                          <span className="w-full text-xs md:text-sm font-medium">
-                                            {item?.count}
-                                          </span>
-                                        </p>
-                                        <EditItemQuantityButton item={item} type="plus"/>
-                                        <div className="hidden md:flex">
-                                          <EditItemQuantityButton item={item} type="plus" step={10}/>
-                                        </div>
-                                      </div>
+                                      <QuantitySelector
+                                          value={item.count}
+                                          onChange={(newCount) => onUpdateItem(item, newCount, isGuest)}
+                                          min={item.sku?.minQty > 0 ? item.sku.minQty : 1}
+                                          size="sm"
+                                      />
                                     </div>
                                   </div>
                                 </div>
@@ -375,23 +368,12 @@ export default function CartModal({
                                     />
                                     <div className="flex items-center gap-x-1.5 md:gap-x-2">
                                       <DeleteItemButton item={item} />
-                                      <div
-                                          className="flex h-7 md:h-9 flex-row items-center rounded-full border border-neutral-200 dark:border-neutral-700">
-                                        {/* 移动端：只显示 - 和 + 按钮，减少宽度 */}
-                                        <div className="hidden md:flex">
-                                          <EditItemQuantityButton item={item} type="minus" step={10}/>
-                                        </div>
-                                        <EditItemQuantityButton item={item} type="minus"/>
-                                        <p className="w-5 md:w-8 text-center">
-                                          <span className="w-full text-xs md:text-sm font-medium">
-                                            {item?.count}
-                                          </span>
-                                        </p>
-                                        <EditItemQuantityButton item={item} type="plus"/>
-                                        <div className="hidden md:flex">
-                                          <EditItemQuantityButton item={item} type="plus" step={10}/>
-                                        </div>
-                                      </div>
+                                      <QuantitySelector
+                                          value={item.count}
+                                          onChange={(newCount) => onUpdateItem(item, newCount, isGuest)}
+                                          min={item.sku?.minQty > 0 ? item.sku.minQty : 1}
+                                          size="sm"
+                                      />
                                     </div>
                                   </div>
                                 </div>

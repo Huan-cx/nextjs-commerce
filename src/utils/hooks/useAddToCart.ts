@@ -6,6 +6,7 @@ import {useMutation, useQueryClient} from "@tanstack/react-query";
 import {addToCart, removeFromCart, updateCartItem,} from "@utils/api/cart";
 import {CartItem} from "@/types/api/trade/cart";
 import {useAuthStatus} from "@utils/hooks/useAuthStatus";
+import {useTranslations} from "next-intl";
 
 export const useCart = () => {
 
@@ -13,6 +14,7 @@ export const useCart = () => {
   const { showToast } = useCustomToast();
   const queryClient = useQueryClient();
   const {isGuest} = useAuthStatus();
+  const t = useTranslations("cart");
 
   const handleSuccess = useCallback(
       async (message: string, isGuest: boolean = false) => {
@@ -41,7 +43,7 @@ export const useCart = () => {
       useMutation({
         mutationFn: (variables: { skuId: number; count: number }) =>
             addToCart(variables.skuId, variables.count),
-        onSuccess: () => handleSuccess("Product added to cart successfully", isGuest),
+        onSuccess: () => handleSuccess(t("addedSuccess"), isGuest),
         onError: handleError,
       });
 
@@ -50,7 +52,7 @@ export const useCart = () => {
     isPending: isRemoveLoading,
   } = useMutation({
     mutationFn: (ids: number[]) => removeFromCart(ids),
-    onSuccess: () => handleSuccess("Cart item removed successfully", isGuest),
+    onSuccess: () => handleSuccess(t("removedSuccess"), isGuest),
     onError: handleError,
   });
 
@@ -60,7 +62,7 @@ export const useCart = () => {
   } = useMutation({
     mutationFn: (variables: { id: number; count: number }) =>
         updateCartItem(variables.id, variables.count),
-    onSuccess: () => handleSuccess("Quantity updated successfully", isGuest),
+    onSuccess: () => handleSuccess(t("quantityUpdated"), isGuest),
     onError: handleError,
   });
 
@@ -75,13 +77,13 @@ export const useCart = () => {
               ...product,
             };
             dispatch(addItemLocal(localCartItem));
-            showToast("Product added to cart successfully", "success");
+            showToast(t("addedSuccess"), "success");
           } else {
             await addToCartMutation({skuId: skuId, count: product.count});
           }
         }
       },
-      [dispatch, showToast, addToCartMutation],
+      [dispatch, showToast, addToCartMutation, t],
   );
 
   const onRemoveItem = useCallback(
@@ -89,12 +91,12 @@ export const useCart = () => {
 
         if (isGuest) {
           dispatch(removeItemLocal(item.sku.id));
-          showToast("Cart item removed successfully", "success");
+          showToast(t("removedSuccess"), "success");
         } else {
           await removeFromCartMutation([item.id]);
         }
       },
-      [dispatch, showToast, removeFromCartMutation],
+      [dispatch, showToast, removeFromCartMutation, t],
   );
 
   const onUpdateItem = useCallback(
@@ -106,12 +108,12 @@ export const useCart = () => {
         }
         if (isGuest) {
           dispatch(updateItemQuantityLocal({skuId: item.sku.id, count: newCount}));
-          showToast("Quantity updated successfully", "success");
+          showToast(t("quantityUpdated"), "success");
         } else {
           await updateCartItemMutation({id: item.id, count: newCount});
         }
       },
-      [dispatch, showToast, updateCartItemMutation, onRemoveItem],
+      [dispatch, showToast, updateCartItemMutation, onRemoveItem, t],
   );
 
 
