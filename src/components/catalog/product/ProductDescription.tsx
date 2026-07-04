@@ -10,22 +10,40 @@ import {useSearchParams} from "next/navigation";
 import Prose from "@components/theme/search/Prose";
 import {safeCurrencyCode, safePriceValue} from "@utils/helper";
 import Link from "@/components/common/Link";
-import {Spu} from "@/types/api/product/type";
+import {I18nDataVO, Spu} from "@/types/api/product/type";
 import {additionalDataTypes} from "../type";
 import {useTranslationData} from "@/hooks/useTranslationData";
+import {getTranslation} from "@/utils/i18n/translation";
 
-const extractAdditionalData = (product: Spu): additionalDataTypes[] => {
+/**
+ * 从翻译列表中获取指定语言的名称
+ */
+function getTranslatedName(
+    translations: I18nDataVO[] | undefined,
+    locale: string,
+    defaultValue: string
+): string {
+  const translation = getTranslation(translations, locale);
+  return translation?.name || defaultValue;
+}
+
+const extractAdditionalData = (product: Spu, locale?: string): additionalDataTypes[] => {
   if (!product.skus || product.skus.length === 0) {
     return [];
   }
 
   const attributeMap = new Map<string, additionalDataTypes>();
-
   product.skus.forEach(sku => {
     sku.properties?.forEach(prop => {
       if (prop.propertyName && prop.valueName) {
         const key = prop.propertyName;
         if (!attributeMap.has(key)) {
+          const propertyLabel = locale
+              ? getTranslatedName(prop.propertyTranslations, locale, prop.propertyName)
+              : prop.propertyName;
+          const valueLabel = locale
+              ? getTranslatedName(prop.valueTranslations, locale, prop.valueName)
+              : prop.valueName;
           attributeMap.set(key, {
             attribute: {
               isVisibleOnFront: "1",
@@ -36,8 +54,8 @@ const extractAdditionalData = (product: Spu): additionalDataTypes[] => {
             },
             id: prop.propertyId?.toString() || "",
             code: prop.propertyName,
-            label: prop.propertyName,
-            value: prop.valueName,
+            label: propertyLabel,
+            value: valueLabel,
             admin_name: prop.propertyName,
             type: "text"
           });
@@ -51,9 +69,10 @@ const extractAdditionalData = (product: Spu): additionalDataTypes[] => {
 
 export function ProductDescription({
                                      product,
+                                     locale,
                                    }: {
   product: Spu;
-  slug: string;
+  locale: string;
 }) {
   const {getName, getIntroduction, getDescription} = useTranslationData();
   const priceValue = safePriceValue(product);
@@ -67,10 +86,11 @@ export function ProductDescription({
 
   const variantInfo = getVariantInfo(
       product,
-      searchParams.toString()
+      searchParams.toString(),
+      locale
   );
 
-  const additionalData = extractAdditionalData(product);
+  const additionalData = extractAdditionalData(product, locale);
 
   const [expandedKeys, setExpandedKeys] = useState<Set<string>>(new Set());
 

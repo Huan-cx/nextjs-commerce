@@ -1,19 +1,19 @@
 import {notFound} from "next/navigation";
 import React, {Suspense} from "react";
 import {ProductDetailSkeleton, RelatedProductSkeleton,} from "@/components/common/skeleton/ProductSkeleton";
-import {BASE_SCHEMA_URL, baseUrl, getImageUrl, NOT_IMAGE, PRODUCT_TYPE,} from "@/utils/constants";
-import HeroCarousel from "@components/common/slider/HeroCarousel";
-import {isArray} from "@/utils/type-guards";
-import ProductInfo from "@components/catalog/product/ProductInfo";
-import {LRUCache} from "@/utils/LRUCache";
+import {BASE_SCHEMA_URL, PRODUCT_TYPE,} from "@/utils/constants";
 import {MobileSearchBar} from "@components/layout/navbar/MobileSearch";
-import {HeroCarouselShimmer} from "@components/common/slider";
 import {Spu} from "@/types/api/product/type";
 import {getProductSpu, getProductSpuBySlug} from "@utils/api/product";
 import ProductTabs from "@components/catalog/product/ProductTabs";
 import {generateMetadataForPage} from "@/utils/helper";
 import {getTranslationMetaDescription, getTranslationMetaTitle} from "@/utils/i18n/translation";
 import {Metadata} from "next";
+import {ProductGalleryProvider} from "@/components/catalog/product/ProductGalleryContext";
+import {ProductGallery} from "@/components/catalog/product/ProductGallery";
+import {HeroCarouselShimmer} from "@components/common/slider";
+import {LRUCache} from "@/utils/LRUCache";
+import ProductInfo from "@components/catalog/product/ProductInfo";
 
 const productCache = new LRUCache<Spu>(100, 3);
 export const dynamic = "force-static";
@@ -75,15 +75,14 @@ export async function generateMetadata({
 export default async function ProductPage({
                                             params,
                                           }: {
-  params: Promise<{ urlProduct: string[] }>;
+  params: Promise<{ urlProduct: string[], locale: string }>;
   searchParams: Promise<{ type: string }>;
 }) {
-  const {urlProduct} = await params;
+  const {urlProduct, locale} = await params;
   const fullPath = urlProduct.join("/");
   const product = await getSingleProduct(fullPath);
   if (!product) return notFound();
 
-  const imageUrl = getImageUrl(product?.picUrl, baseUrl, NOT_IMAGE);
   const productJsonLd = {
     "@context": BASE_SCHEMA_URL,
     "@type": PRODUCT_TYPE,
@@ -102,44 +101,24 @@ export default async function ProductPage({
             }}
             type="application/ld+json"
         />
-        <div
-            className="flex flex-col gap-y-4 rounded-lg pb-0 pt-4 sm:gap-y-6 md:py-7.5 lg:flex-row w-full max-w-screen-2xl mx-auto px-4 xss:px-7.5 lg:gap-8">
-          <div className="h-full w-full max-w-[885px] max-1366:max-w-[650px] max-lg:max-w-full">
-            <Suspense fallback={<HeroCarouselShimmer/>}>
-              {isArray(VariantImages) ? (
-                  <HeroCarousel
-                      images={
-                          (VariantImages as unknown as [])?.map(
-                              (image) => ({
-                                src:
-                                    getImageUrl(image, baseUrl, NOT_IMAGE) ||
-                                    "",
-                                altText: image || "",
-                              }),
-                          ) || []
-                      }
-                  />
-              ) : (
-                  <HeroCarousel
-                      images={[
-                        {
-                          src: imageUrl || NOT_IMAGE,
-                          altText: product?.name || "product image",
-                        },
-                      ]}
-                  />
-              )}
-            </Suspense>
+        <ProductGalleryProvider product={product as Spu} sliderPicUrls={VariantImages || []}>
+          <div
+              className="flex flex-col gap-y-4 rounded-lg pb-0 pt-4 sm:gap-y-6 md:py-7.5 lg:flex-row w-full max-w-screen-2xl mx-auto px-4 xss:px-7.5 lg:gap-8">
+            <div className="h-full w-full max-w-[885px] max-1366:max-w-[650px] max-lg:max-w-full">
+              <Suspense fallback={<HeroCarouselShimmer/>}>
+                <ProductGallery/>
+              </Suspense>
+            </div>
+            <div className="basis-full lg:basis-4/6">
+              <Suspense fallback={<ProductDetailSkeleton/>}>
+                <ProductInfo
+                    product={product as Spu}
+                    locale={locale}
+                />
+              </Suspense>
+            </div>
           </div>
-          <div className="basis-full lg:basis-4/6">
-            <Suspense fallback={<ProductDetailSkeleton/>}>
-              <ProductInfo
-                  product={product as Spu}
-                  slug={fullPath}
-              />
-            </Suspense>
-          </div>
-        </div>
+        </ProductGalleryProvider>
         <div className="w-full hidden lg:block ">
           <Suspense fallback={<RelatedProductSkeleton/>}>
             <ProductTabs product={product as Spu}/>

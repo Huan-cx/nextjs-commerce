@@ -127,6 +127,8 @@ export interface Property {
   propertyName: string; // 属性名称
   valueId: number; // 属性值编号
   valueName: string; // 属性值名称
+  propertyTranslations?: I18nDataVO[]; // 属性名称多语言翻译列表
+  valueTranslations?: I18nDataVO[]; // 属性值名称多语言翻译列表
 }
 
 /** 商品状态更新请求 */

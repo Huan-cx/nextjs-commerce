@@ -1,9 +1,9 @@
 "use client";
 
-import { AttributeData, AttributeOptionNode } from "@/types/types";
-import { createUrl, getValidTitle } from "@/utils/helper";
+import {AttributeData, AttributeOptionNode} from "@/types/types";
+import {createUrl, getValidTitle} from "@/utils/helper";
 import clsx from "clsx";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import {usePathname, useRouter, useSearchParams} from "next/navigation";
 
 export function VariantSelector({
   variants,
@@ -26,7 +26,7 @@ export function VariantSelector({
         return (
           <dl key={`${option.id} + ${index}` } className="mb-8">
             <dt className="mb-4 text-sm capitalize tracking-wide">
-              {getValidTitle(attributeCode)}
+              {option.label ? getValidTitle(option.label) : getValidTitle(attributeCode)}
             </dt>
 
             <dd className="flex flex-wrap gap-3">

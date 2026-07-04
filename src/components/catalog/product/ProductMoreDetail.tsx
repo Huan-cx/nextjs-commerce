@@ -73,7 +73,7 @@ export const ProductMoreDetails: FC<{
                       <React.Fragment key={item.label}>
                         <div className="grid">
                           <p className="text-base font-normal text-selected-black dark:text-white">
-                            {item?.attribute?.adminName}
+                            {item?.label || item?.attribute?.adminName}
                           </p>
                         </div>
                         <div className="grid">

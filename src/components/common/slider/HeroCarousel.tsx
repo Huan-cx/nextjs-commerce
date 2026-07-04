@@ -9,21 +9,39 @@ import {HeroCarouselShimmer, HeroCarouselThumbnailShimmer,} from "./HeroCarousel
 
 export default function HeroCarousel({
   images,
+                                       currentIndex,
+                                       onIndexChange,
 }: {
   images: { src: string; altText: string }[];
+  currentIndex?: number;
+  onIndexChange?: (index: number) => void;
 }) {
-  const [current, setCurrent] = React.useState(0);
+  const [internalCurrent, setInternalCurrent] = React.useState(0);
   const [isLoading, setIsLoading] = React.useState(true);
 
-  const prevSlide = () => {
+  const isControlled = currentIndex !== undefined && onIndexChange !== undefined;
+  const current = isControlled ? currentIndex : internalCurrent;
+
+  const setCurrent = React.useCallback((index: number) => {
+    if (isControlled) {
+      onIndexChange?.(index);
+    } else {
+      setInternalCurrent(index);
+    }
     setIsLoading(true);
-    setCurrent((prev) => (prev === 0 ? images.length - 1 : prev - 1));
+  }, [isControlled, onIndexChange]);
+
+  const prevSlide = () => {
+    setCurrent(current === 0 ? images.length - 1 : current - 1);
   };
 
   const nextSlide = () => {
-    setIsLoading(true);
-    setCurrent((prev) => (prev === images.length - 1 ? 0 : prev + 1));
+    setCurrent(current === images.length - 1 ? 0 : current + 1);
   };
+
+  React.useEffect(() => {
+    setIsLoading(true);
+  }, [current]);
 
   if (!images || images.length === 0) {
     return (

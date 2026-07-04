@@ -9,7 +9,7 @@ import {getVariantInfo} from "@utils/hooks/useSkuInfo";
 import {Sku, Spu} from "@/types/api/product/type";
 import {useCart} from "@utils/hooks/useAddToCart";
 import {useAuthStatus} from "@utils/hooks/useAuthStatus";
-import {useTranslations} from "next-intl";
+import {useLocale, useTranslations} from "next-intl";
 import {useRef, useState} from "react";
 
 interface AddToCartFormData {
@@ -92,6 +92,7 @@ export function AddToCart({
   const {onAddToCart, isCartLoading} = useCart();
   const {isGuest} = useAuthStatus();
   const t = useTranslations("cart");
+  const locale = useLocale();
 
   const searchParams = useSearchParams();
   const type = product?.specType ? "configurable" : "simple";
@@ -99,6 +100,7 @@ export function AddToCart({
   const {productid: selectedVariantId, Instock: checkStock} = getVariantInfo(
       product,
       searchParams.toString(),
+      locale
   );
 
   const selectedSku = product.skus?.find((item: Sku) => item.id === Number(selectedVariantId));

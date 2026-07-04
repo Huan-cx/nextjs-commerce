@@ -3,15 +3,16 @@ import {Spu} from "@/types/api/product/type";
 
 export default async function ProductInfo({
                                             product,
-                                            slug,
+                                            locale,
                                           }: {
   product: Spu;
-  slug: string;
+
+  locale: string;
 }) {
   return (
       <ProductDescription
           product={product}
-          slug={slug}
+          locale={locale}
       />
   );
 }

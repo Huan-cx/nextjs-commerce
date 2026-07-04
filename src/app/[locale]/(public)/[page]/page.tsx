@@ -15,7 +15,7 @@ async function getPageContent(pageKey: string) {
       return articleBySlug;
     }
   } catch (_error) {
-    console.log("No article found by slug, trying by title");
+    console.error("No article found by slug, trying by title");
   }
 
   // 如果通过slug获取不到，再尝试通过title获取

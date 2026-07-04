@@ -1,45 +1,77 @@
 import {safeParse} from "../helper";
-import {Spu} from "@/types/api/product/type";
+import {I18nDataVO, Spu} from "@/types/api/product/type";
+import {getTranslation} from "@/utils/i18n/translation";
+
+/**
+ * 从翻译列表中获取指定语言的名称
+ */
+function getTranslatedName(
+    translations: I18nDataVO[] | undefined,
+    locale: string,
+    defaultValue: string
+): string {
+  const translation = getTranslation(translations, locale);
+  return translation?.name || defaultValue;
+}
 
 /**
  * 从 Spu 对象中提取超级属性
+ * @param spu 商品 SPU
+ * @param locale 当前语言（可选，传入则使用翻译后的名称）
  */
-export function extractSuperAttributes(spu: Spu): any[] {
+export function extractSuperAttributes(spu: Spu, locale?: string): any[] {
   if (!spu.skus || spu.skus.length === 0) {
     return [];
   }
 
-  // 收集所有唯一的属性代码
-  const attributeCodes = new Set<string>();
+  // 收集所有唯一的属性编号（以 propertyId 为键）
+  const propertyMap = new Map<number, { code: string; label: string }>();
   spu.skus.forEach(sku => {
     sku.properties?.forEach(prop => {
-      if (prop.propertyName) {
-        attributeCodes.add(prop.propertyName);
+      if (prop.propertyName && prop.propertyId) {
+        if (!propertyMap.has(prop.propertyId)) {
+          const label = locale
+              ? getTranslatedName(prop.propertyTranslations, locale, prop.propertyName)
+              : prop.propertyName;
+          propertyMap.set(prop.propertyId, {code: prop.propertyName, label});
+        }
       }
     });
   });
 
   // 为每个属性创建超级属性对象
-  return Array.from(attributeCodes).map(code => {
-    // 收集该属性的所有可能值（使用 valueId 作为键，valueName 作为值）
-    const valueMap = new Map<number, string>();
+  return Array.from(propertyMap.values()).map(({code, label}) => {
+    // 收集该属性的所有可能值（使用 valueId 作为键）
+    const valueMap = new Map<number, { valueName: string; valueTranslations?: any[] }>();
     spu.skus?.forEach(sku => {
       sku.properties?.forEach(prop => {
         if (prop.propertyName === code && prop.valueName && prop.valueId) {
-          valueMap.set(prop.valueId, prop.valueName);
+          if (!valueMap.has(prop.valueId)) {
+            valueMap.set(prop.valueId, {
+              valueName: prop.valueName,
+              valueTranslations: prop.valueTranslations,
+            });
+          }
         }
       });
     });
 
     // 创建选项数组
-    const options = Array.from(valueMap.entries()).map(([id, value]) => ({
-      id: id.toString(),  // 使用 valueId 作为 ID
-      label: value,
-      value: value
-    }));
+    const options = Array.from(valueMap.entries()).map(([id, {valueName, valueTranslations}]) => {
+      const displayLabel = locale
+          ? getTranslatedName(valueTranslations, locale, valueName)
+          : valueName;
+      return {
+        id: id.toString(),  // 使用 valueId 作为 ID
+        label: displayLabel,
+        value: displayLabel,
+        adminName: valueName,  // 保留原始名称
+      };
+    });
 
     return {
       code,
+      label,
       options
     };
   });
@@ -73,13 +105,17 @@ export function createSpuIndex(spu: Spu): Record<string, Record<string, number>>
 
 /**
  * 获取变体信息（泛型版本）
+ * @param spu 商品 SPU
+ * @param params URL 查询参数
+ * @param locale 当前语言（可选，传入则使用翻译后的名称）
  */
 export function getVariantInfo<T extends Spu>(
     spu: T,
-    params: string
+    params: string,
+    locale?: string
 ): any {
   const isConfigurable = spu.specType || false;
-  const superAttributes = extractSuperAttributes(spu);
+  const superAttributes = extractSuperAttributes(spu, locale);
   const index = JSON.stringify(createSpuIndex(spu));
 
   if (!isConfigurable) {
