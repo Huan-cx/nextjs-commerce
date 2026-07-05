@@ -50,6 +50,10 @@ export const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || process.env.NEXTAUTH_
 export const API_URL = process.env.NEXT_PUBLIC_API_URL;
 export const baseUrl = API_URL; // 保持向后兼容
 
+// WebSocket 地址（用于缓存失效通知）
+export const WEB_SOCKET_URL = process.env.NEXT_PUBLIC_WEBSOCKET_URL ||
+    ((process.env.NEXT_PUBLIC_API_URL || '').replace(/^http/, 'ws').replace(/\/$/, '') + '/infra/ws');
+
 // API 请求基础 URL
 export const REST_URL = `${(process.env.NEXT_PUBLIC_API_URL || '').replace(/\/$/, '')}${SERVER_API_ENDPOINT}`;
 

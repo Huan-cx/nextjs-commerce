@@ -6,6 +6,7 @@ import {ToastProvider} from "./ToastProvider";
 import {QueryClientWrapper} from "./ReactQueryWrapper";
 import {StoreProvider} from "./StoreProvider";
 import {SessionManager} from "@/providers/SessionManager";
+import {WEB_SOCKET_URL} from "@/utils/constants";
 
 /**
  * 全局 Provider 聚合层
@@ -22,7 +23,7 @@ export function GlobalProviders({ children }: { children: ReactNode }) {
         <ToastProvider>
           {/* 唯一的 SessionProvider 入口，全应用共享同一份 session 状态 */}
           <SessionManager>
-            <QueryClientWrapper>
+            <QueryClientWrapper websocketUrl={WEB_SOCKET_URL}>
               {children}
             </QueryClientWrapper>
           </SessionManager>
