@@ -78,7 +78,7 @@ export function useWebSocketCacheInvalidation(queryClient: QueryClient, options:
         }
       };
 
-      socket.onerror = (event) => {
+      socket.onerror = (_event) => {
         setError(new Error("WebSocket 连接错误"));
       };
 
