@@ -2,8 +2,8 @@
 
 import React, {createContext, useCallback, useContext, useEffect, useMemo, useRef, useState} from "react";
 import {useSearchParams} from "next/navigation";
-import {Sku, Spu} from "@/types/api/product/type";
-import {getVariantInfo} from "@/utils/hooks/useSkuInfo";
+import {Spu} from "@/types/api/product/type";
+import {getVariantInfo} from "@/utils/hooks/useProductVariant";
 import {baseUrl, getImageUrl, NOT_IMAGE} from "@/utils/constants";
 
 interface ProductGalleryContextType {
@@ -14,15 +14,27 @@ interface ProductGalleryContextType {
 
 const ProductGalleryContext = createContext<ProductGalleryContextType | null>(null);
 
-function getSelectedSku(product: Spu, searchParamsStr: string): Sku | null {
+/**
+ * 从 URL 参数中获取已选属性，查找匹配的 SKU
+ */
+function findSelectedSkuByParams(product: Spu, searchParamsStr: string): any | null {
   if (!product.skus || product.skus.length === 0) return null;
+
+  // 调试：打印 URL 参数
+  console.log("[ProductGallery] 查找 SKU，参数:", searchParamsStr);
 
   const variantInfo = getVariantInfo(product, searchParamsStr);
   const skuId = variantInfo?.productid;
 
+  console.log("[ProductGallery] 计算得到 SKU ID:", skuId, "已选属性:", variantInfo?.selectedAttributes);
+
   if (!skuId) return null;
 
-  return product.skus.find((s) => s.id === Number(skuId)) || null;
+  const sku = product.skus.find((s) => s.id === Number(skuId)) || null;
+
+  console.log("[ProductGallery] 找到 SKU:", sku?.name, "图片:", sku?.picUrl);
+
+  return sku;
 }
 
 export function ProductGalleryProvider({
@@ -48,7 +60,7 @@ export function ProductGalleryProvider({
   }, [sliderPicUrls, product.picUrl, product.name]);
 
   const selectedSku = useMemo(
-      () => getSelectedSku(product, searchParams.toString()),
+      () => findSelectedSkuByParams(product, searchParams.toString()),
       [product, searchParams]
   );
 

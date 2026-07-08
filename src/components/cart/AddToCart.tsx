@@ -5,7 +5,7 @@ import clsx from "clsx";
 import {useSearchParams} from "next/navigation";
 import {useForm} from "react-hook-form";
 import LoadingDots from "@components/common/icons/LoadingDots";
-import {getVariantInfo} from "@utils/hooks/useSkuInfo";
+import {getVariantInfo} from "@utils/hooks/useProductVariant";
 import {Sku, Spu} from "@/types/api/product/type";
 import {useCart} from "@utils/hooks/useAddToCart";
 import {useAuthStatus} from "@utils/hooks/useAuthStatus";
@@ -97,7 +97,7 @@ export function AddToCart({
   const searchParams = useSearchParams();
   const type = product?.specType ? "configurable" : "simple";
 
-  const {productid: selectedVariantId, Instock: checkStock} = getVariantInfo(
+  const {productid: selectedVariantId, instock: checkStock} = getVariantInfo(
       product,
       searchParams.toString(),
       locale

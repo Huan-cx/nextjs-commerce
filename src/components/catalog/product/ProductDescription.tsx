@@ -5,7 +5,7 @@ import {AddToCart} from "@/components/cart/AddToCart";
 import {VariantSelector} from "./VariantSelector";
 import {ProductMoreDetails} from "./ProductMoreDetail";
 import {useState} from "react";
-import {getVariantInfo} from "@utils/hooks/useSkuInfo";
+import {getVariantInfo} from "@utils/hooks/useProductVariant";
 import {useSearchParams} from "next/navigation";
 import Prose from "@components/theme/search/Prose";
 import {safeCurrencyCode, safePriceValue} from "@utils/helper";
@@ -140,7 +140,6 @@ export function ProductDescription({
             <VariantSelector
                 variants={variantInfo?.variantAttributes}
                 setUserInteracted={setUserInteracted}
-                possibleOptions={variantInfo.possibleOptions}
             />
         )}
 
