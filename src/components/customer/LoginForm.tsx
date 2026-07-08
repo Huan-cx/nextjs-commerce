@@ -9,6 +9,7 @@ import {SIGNIN_IMG} from "@/utils/constants";
 import InputText from "@components/common/form/Input";
 import {useCustomToast} from "@/utils/hooks/useToast";
 import {useTranslations} from "next-intl";
+import {useSearchParams} from "next/navigation";
 
 type LoginFormInputs = {
   username: string;
@@ -39,6 +40,7 @@ export default function LoginForm() {
   const { showToast } = useCustomToast();
   const t = useTranslations("auth");
   const loginT = useTranslations("loginForm");
+  const searchParams = useSearchParams();
 
   const {
     register,
@@ -72,11 +74,12 @@ export default function LoginForm() {
       //   4. 失败时停留在当前页显示错误
       //
       // 这是经过百万级项目验证的最可靠方案
+      const callbackUrl = searchParams.get("callbackUrl") || "/";
       await signIn("credentials", {
         redirect: true,
         username: data.username,
         password: data.password,
-        callbackUrl: "/",
+        callbackUrl,
       });
 
       // 注意：signIn(redirect: true) 之后的代码不会执行（页面已跳转

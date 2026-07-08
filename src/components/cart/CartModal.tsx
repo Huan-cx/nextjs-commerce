@@ -223,18 +223,20 @@ export default function CartModal({
                         </PriceWrapper>
                       </div>
 
-                      {isAuthenticated && (
-                          <button
-                              type="button"
-                              className="block w-full rounded-full bg-green-600 p-3 text-center text-sm font-medium text-white opacity-90 hover:opacity-100 cursor-pointer"
-                              onClick={() => {
-                                finalOnClose?.();
-                                router.push("/rfqs/create");
-                              }}
-                          >
-                            {t("createRfq")}
-                          </button>
-                      )}
+                      <button
+                          type="button"
+                          className="block w-full rounded-full bg-green-600 p-3 text-center text-sm font-medium text-white opacity-90 hover:opacity-100 cursor-pointer"
+                          onClick={() => {
+                            finalOnClose?.();
+                            if (!isAuthenticated) {
+                              router.push("/customer/login?callbackUrl=/rfqs/create");
+                            } else {
+                              router.push("/rfqs/create");
+                            }
+                          }}
+                      >
+                        {t("createRfq")}
+                      </button>
                     </div>
                   )}
                 </DrawerBody>
@@ -396,18 +398,20 @@ export default function CartModal({
                           </div>
                         </PriceWrapper>
 
-                        {isAuthenticated && (
-                            <button
-                                type="button"
-                                className="block w-full rounded-full bg-green-600 p-3 text-center text-sm font-medium text-white opacity-90 hover:opacity-100 cursor-pointer"
-                                onClick={() => {
-                                  finalOnClose?.();
-                                  router.push("/rfqs/create");
-                                }}
-                            >
-                              {t("createRfq")}
-                            </button>
-                        )}
+                        <button
+                            type="button"
+                            className="block w-full rounded-full bg-green-600 p-3 text-center text-sm font-medium text-white opacity-90 hover:opacity-100 cursor-pointer"
+                            onClick={() => {
+                              finalOnClose?.();
+                              if (!isAuthenticated) {
+                                router.push("/customer/login?callbackUrl=/rfqs/create");
+                              } else {
+                                router.push("/rfqs/create");
+                              }
+                            }}
+                        >
+                          {t("createRfq")}
+                        </button>
                       </div>
                     </div>
                   )}
@@ -422,4 +426,3 @@ export default function CartModal({
     </>
   );
 }
-
