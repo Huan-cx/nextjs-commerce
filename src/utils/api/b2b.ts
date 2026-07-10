@@ -169,10 +169,16 @@ export interface AppB2BFinalQuotationItem {
 export interface AppB2BFinalQuotationRespVO {
   rfqId: number;
   rfqNo: string;
+  statusName?: string;
   totalPrice: number;
   currency: string;
   incoterms?: string;
+  deliveryPort?: string;
   validUntil?: string;
+  confirmedAt?: string;
+  productionRatio?: number;
+  preDelvRatio?: number;
+  postDelvRatio?: number;
   items: AppB2BFinalQuotationItem[];
 }
 
@@ -182,17 +188,18 @@ export async function getFinalQuotation(rfqId: number): Promise<AppB2BFinalQuota
   });
 }
 
-// 接受报价
-export async function acceptQuotation(quotationId: number): Promise<boolean> {
+// 接受最终报价（基于询价单，客户接受管理员已选择的报价）
+export async function acceptQuotation(rfqId: number): Promise<boolean> {
   return await post<boolean>('trade/b2b/quotation/accept', {}, {
-    params: {rfqId: quotationId},
+    params: {rfqId},
     requiresAuth: true,
   });
 }
 
-// 拒绝报价
-export async function rejectQuotation(quotationId: number): Promise<boolean> {
-  return await post<boolean>('trade/b2b/quotation/reject', {id: quotationId}, {
+// 拒绝最终报价（基于询价单，客户拒绝管理员已选择的报价）
+export async function rejectQuotation(rfqId: number): Promise<boolean> {
+  return await post<boolean>('trade/b2b/quotation/reject', {}, {
+    params: {rfqId},
     requiresAuth: true,
   });
 }

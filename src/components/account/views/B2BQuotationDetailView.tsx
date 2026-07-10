@@ -190,12 +190,6 @@ export const B2BQuotationDetailView = ({rfqId, rfqStatus, onBack, onConfirmOrder
                 <span className={`text-sm ${COLORS.text.tertiary}`}>Currency:</span>
                 <span className="text-sm">{quotationData.currency}</span>
               </div>
-              {quotationData.incoterms && (
-                  <div className="flex justify-between items-center">
-                    <span className={`text-sm ${COLORS.text.tertiary}`}>Incoterms:</span>
-                    <span className="text-sm">{quotationData.incoterms}</span>
-                  </div>
-              )}
               {quotationData.validUntil && (
                   <div className="flex justify-between items-center">
                     <span className={`text-sm ${COLORS.text.tertiary}`}>Valid Until:</span>
@@ -221,6 +215,33 @@ export const B2BQuotationDetailView = ({rfqId, rfqStatus, onBack, onConfirmOrder
               </div>
             </div>
           </div>
+
+          {/* 付款条款区块（移动端） */}
+          {(quotationData.productionRatio !== undefined || quotationData.preDelvRatio !== undefined || quotationData.postDelvRatio !== undefined) && (
+              <div className="-mx-4 px-4 py-4">
+                <h3 className="font-semibold text-base mb-3">{t("paymentTerms")}</h3>
+                <div className="bg-default-50 rounded-lg p-3 space-y-2">
+                  {quotationData.productionRatio !== undefined && (
+                      <div className="flex justify-between items-center">
+                        <span className={`text-sm ${COLORS.text.tertiary}`}>{t("productionPayment")}:</span>
+                        <span className="text-sm font-bold text-primary">{quotationData.productionRatio}%</span>
+                      </div>
+                  )}
+                  {quotationData.preDelvRatio !== undefined && (
+                      <div className="flex justify-between items-center">
+                        <span className={`text-sm ${COLORS.text.tertiary}`}>{t("preDeliveryPayment")}:</span>
+                        <span className="text-sm font-bold text-primary">{quotationData.preDelvRatio}%</span>
+                      </div>
+                  )}
+                  {quotationData.postDelvRatio !== undefined && (
+                      <div className="flex justify-between items-center">
+                        <span className={`text-sm ${COLORS.text.tertiary}`}>{t("postDeliveryPayment")}:</span>
+                        <span className="text-sm font-bold text-primary">{quotationData.postDelvRatio}%</span>
+                      </div>
+                  )}
+                </div>
+              </div>
+          )}
 
           {/* 商品列表区块 */}
           <div className="-mx-4 px-4 py-4">
@@ -311,6 +332,12 @@ export const B2BQuotationDetailView = ({rfqId, rfqStatus, onBack, onConfirmOrder
                         <span className="ml-2">{quotationData.incoterms}</span>
                       </div>
                   )}
+                  {quotationData.deliveryPort && (
+                      <div>
+                        <span className={COLORS.text.tertiary}>{t("deliveryPort")}:</span>
+                        <span className="ml-2">{quotationData.deliveryPort}</span>
+                      </div>
+                  )}
                   {quotationData.validUntil && (
                       <div>
                         <span className={COLORS.text.tertiary}>{t("validUntil")}:</span>
@@ -337,6 +364,35 @@ export const B2BQuotationDetailView = ({rfqId, rfqStatus, onBack, onConfirmOrder
                 </div>
               </CardBody>
             </Card>
+
+            {/* 付款条款卡片 */}
+            {(quotationData.productionRatio !== undefined || quotationData.preDelvRatio !== undefined || quotationData.postDelvRatio !== undefined) && (
+                <Card className="md:col-span-2">
+                  <CardBody className="space-y-4">
+                    <h3 className="font-semibold text-lg">{t("paymentTerms")}</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      {quotationData.productionRatio !== undefined && (
+                          <div className="bg-default-50 rounded-lg p-3">
+                            <p className={`text-sm ${COLORS.text.tertiary}`}>{t("productionPayment")}</p>
+                            <p className="text-xl font-bold text-primary">{quotationData.productionRatio}%</p>
+                          </div>
+                      )}
+                      {quotationData.preDelvRatio !== undefined && (
+                          <div className="bg-default-50 rounded-lg p-3">
+                            <p className={`text-sm ${COLORS.text.tertiary}`}>{t("preDeliveryPayment")}</p>
+                            <p className="text-xl font-bold text-primary">{quotationData.preDelvRatio}%</p>
+                          </div>
+                      )}
+                      {quotationData.postDelvRatio !== undefined && (
+                          <div className="bg-default-50 rounded-lg p-3">
+                            <p className={`text-sm ${COLORS.text.tertiary}`}>{t("postDeliveryPayment")}</p>
+                            <p className="text-xl font-bold text-primary">{quotationData.postDelvRatio}%</p>
+                          </div>
+                      )}
+                    </div>
+                  </CardBody>
+                </Card>
+            )}
           </div>
 
           {/* 商品列表 - 桌面端复用 User 组件 */}
