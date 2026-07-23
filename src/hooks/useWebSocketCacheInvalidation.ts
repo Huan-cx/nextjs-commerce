@@ -1,4 +1,4 @@
-import {useCallback, useEffect, useRef, useState} from "react";
+import {useEffect, useRef, useState} from "react";
 import {QueryClient} from "@tanstack/react-query";
 
 export interface WebSocketMessage {
@@ -15,6 +15,7 @@ export interface WebSocketOptions {
   url: string;
   reconnectDelay?: number;
   maxReconnectAttempts?: number;
+  onInvalidate?: () => void;
 }
 
 export function useWebSocketCacheInvalidation(queryClient: QueryClient, options: WebSocketOptions) {
@@ -24,8 +25,13 @@ export function useWebSocketCacheInvalidation(queryClient: QueryClient, options:
   const reconnectAttemptsRef = useRef(0);
   const reconnectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const connectRef = useRef<(() => void) | null>(null);
+  const optionsRef = useRef(options);
 
-  const handleCacheInvalidation = useCallback((message: WebSocketMessage) => {
+  useEffect(() => {
+    optionsRef.current = options;
+  }, [options]);
+
+  const handleCacheInvalidation = (message: WebSocketMessage) => {
     if (message.invalidateAll) {
       queryClient.clear();
     } else if (message.cacheKeys && message.cacheKeys.length > 0) {
@@ -44,15 +50,22 @@ export function useWebSocketCacheInvalidation(queryClient: QueryClient, options:
         queryClient.refetchQueries();
       }, delay);
     }
-  }, [queryClient]);
 
-  const connect = useCallback(() => {
+    const currentOptions = optionsRef.current;
+    if (currentOptions.onInvalidate) {
+      currentOptions.onInvalidate();
+    }
+  };
+
+  const connect = () => {
     if (socketRef.current?.readyState === WebSocket.OPEN) {
       return;
     }
 
+    const currentOptions = optionsRef.current;
+
     try {
-      const socket = new WebSocket(options.url);
+      const socket = new WebSocket(currentOptions.url);
 
       socket.onopen = () => {
         setIsConnected(true);
@@ -85,9 +98,9 @@ export function useWebSocketCacheInvalidation(queryClient: QueryClient, options:
       socket.onclose = (event) => {
         setIsConnected(false);
 
-        if (event.code !== 1000 && reconnectAttemptsRef.current < (options.maxReconnectAttempts || 10)) {
+        if (event.code !== 1000 && reconnectAttemptsRef.current < (currentOptions.maxReconnectAttempts || 10)) {
           reconnectAttemptsRef.current++;
-          const delay = (options.reconnectDelay || 3000) * reconnectAttemptsRef.current;
+          const delay = (currentOptions.reconnectDelay || 3000) * reconnectAttemptsRef.current;
 
           reconnectTimerRef.current = setTimeout(() => {
             if (connectRef.current) {
@@ -101,9 +114,9 @@ export function useWebSocketCacheInvalidation(queryClient: QueryClient, options:
     } catch (err) {
       setError(err instanceof Error ? err : new Error("WebSocket 连接失败"));
     }
-  }, [options.url, options.reconnectDelay, options.maxReconnectAttempts, handleCacheInvalidation]);
+  };
 
-  const disconnect = useCallback(() => {
+  const disconnect = () => {
     if (reconnectTimerRef.current) {
       clearTimeout(reconnectTimerRef.current);
       reconnectTimerRef.current = null;
@@ -115,7 +128,7 @@ export function useWebSocketCacheInvalidation(queryClient: QueryClient, options:
     }
 
     setIsConnected(false);
-  }, []);
+  };
 
   useEffect(() => {
     connectRef.current = connect;
@@ -126,7 +139,7 @@ export function useWebSocketCacheInvalidation(queryClient: QueryClient, options:
     return () => {
       disconnect();
     };
-  }, [connect, disconnect]);
+  }, []);
 
   return {isConnected, error, disconnect, reconnect: connect};
 }

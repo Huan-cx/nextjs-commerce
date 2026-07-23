@@ -197,7 +197,7 @@ export async function serverRequest<T = any>(
   const baseRequestConfig: RequestInit = {
     method,
     headers: fetchHeaders,
-    cache: "no-store", // 服务端请求默认不缓存（根据业务调整）
+    cache: "no-store", // 默认不缓存，需要缓存的请求使用 cachedRestGet / unstable_cache
   };
 
   if (hasBody) {

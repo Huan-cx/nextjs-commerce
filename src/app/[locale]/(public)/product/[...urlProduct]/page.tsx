@@ -1,45 +1,35 @@
 import {notFound} from "next/navigation";
 import React, {Suspense} from "react";
-import {ProductDetailSkeleton, RelatedProductSkeleton,} from "@/components/common/skeleton/ProductSkeleton";
+import {ProductDetailSkeleton, RelatedProductSkeleton,} from "@components/common/skeleton/ProductSkeleton";
 import {BASE_SCHEMA_URL, PRODUCT_TYPE,} from "@/utils/constants";
 import {MobileSearchBar} from "@components/layout/navbar/MobileSearch";
 import {Spu} from "@/types/api/product/type";
-import {getProductSpu, getProductSpuBySlug} from "@utils/api/product";
+
 import ProductTabs from "@components/catalog/product/ProductTabs";
 import {generateMetadataForPage} from "@/utils/helper";
 import {getTranslationMetaDescription, getTranslationMetaTitle} from "@/utils/i18n/translation";
 import {Metadata} from "next";
-import {ProductGalleryProvider} from "@/components/catalog/product/ProductGalleryContext";
-import {ProductGallery} from "@/components/catalog/product/ProductGallery";
+import {ProductGalleryProvider} from "@components/catalog/product/ProductGalleryContext";
+import {ProductGallery} from "@components/catalog/product/ProductGallery";
 import {HeroCarouselShimmer} from "@components/common/slider";
-import {LRUCache} from "@/utils/LRUCache";
 import ProductInfo from "@components/catalog/product/ProductInfo";
 
-const productCache = new LRUCache<Spu>(100, 3);
-export const dynamic = "force-static";
+import {cachedRestGet} from "@/utils/request/useCahceRest";
+
+// 页面级缓存时间（5分钟）
+export const revalidate = 300;
 
 async function getSingleProduct(urlKey: string) {
-  const cachedProduct = productCache.get(urlKey);
-  if (cachedProduct) {
-    return cachedProduct;
-  }
-
   try {
-    // 判断是ID还是slug
     const isNumeric = /^\d+$/.test(urlKey);
     let product: Spu | null;
 
     if (isNumeric) {
-      // 如果是数字，使用ID获取
-      product = await getProductSpu({id: Number(urlKey)});
+      product = await cachedRestGet<Spu>("product", `product/spu/get-detail?id=${Number(urlKey)}`);
     } else {
-      // 如果不是数字，使用slug获取
-      product = await getProductSpuBySlug({slug: urlKey});
+      product = await cachedRestGet<Spu>("product", `product/spu/get-detail-by-slug?slug=${urlKey}`);
     }
     
-    if (product) {
-      productCache.set(urlKey, product);
-    }
     return product;
   } catch (error) {
     if (error instanceof Error) {
@@ -56,7 +46,7 @@ export async function generateMetadata({
                                          params,
                                        }: {
   params: Promise<{ urlProduct: string[], locale: string }>;
-}): Promise<Metadata> {  // ← 添加这个返回类型
+}): Promise<Metadata> {
   const {urlProduct, locale} = await params;
   const fullPath = urlProduct.join("/");
   const product = await getSingleProduct(fullPath);
@@ -125,8 +115,6 @@ export default async function ProductPage({
           </Suspense>
         </div>
         <Suspense fallback={<RelatedProductSkeleton/>}>
-          {/* TODO 相关商品 */}
-          {/*<RelatedProductsSection fullPath={fullPath} />*/}
         </Suspense>
       </>
   );
