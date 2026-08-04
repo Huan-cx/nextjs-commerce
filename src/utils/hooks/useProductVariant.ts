@@ -95,7 +95,10 @@ export function extractSuperAttributes(
 
   const cacheKey = `${spu.id}-${locale || "default"}`;
   if (useCache && attributeCache.has(cacheKey)) {
-    return attributeCache.get(cacheKey)!;
+    const cachedValue = attributeCache.get(cacheKey);
+    if (cachedValue) {
+      return cachedValue;
+    }
   }
 
   // 收集所有唯一的属性（以 propertyId 为键）
@@ -182,7 +185,10 @@ export function createSpuIndex(
   const cacheKey = String(spu.id);
 
   if (useCache && skuIndexCache.has(cacheKey)) {
-    return skuIndexCache.get(cacheKey)!;
+    const cachedValue = skuIndexCache.get(cacheKey);
+    if (cachedValue) {
+      return cachedValue;
+    }
   }
 
   const index: Record<string, Record<string, number>> = {};
@@ -284,7 +290,10 @@ export function getVariantInfo<T extends Spu>(
   }-${locale || "default"}`;
 
   if (useCache && resultCache.has(cacheKey)) {
-    return resultCache.get(cacheKey)!;
+    const cachedValue = resultCache.get(cacheKey);
+    if (cachedValue) {
+      return cachedValue;
+    }
   }
 
   // 获取 SKU 索引
@@ -349,20 +358,20 @@ export function getVariantInfo<T extends Spu>(
     // 所有属性都已选择，使用精确匹配查找
     const lookupKey = buildAttributeKey(selectedAttributes);
     matchingVariantId = skuLookup.get(lookupKey) || "";
-    console.log("[Variant] 全部属性已选，查找键:", lookupKey, "结果:", matchingVariantId);
+    console.warn("[Variant] 全部属性已选，查找键:", lookupKey, "结果:", matchingVariantId);
   } else if (Object.keys(selectedAttributes).length > 0) {
     // 只选择了部分属性，找到第一个与已选属性兼容的 SKU（用于图片预览等场景）
-    console.log("[Variant] 部分属性已选:", selectedAttributes, "开始遍历 SKU 查找匹配");
+    console.warn("[Variant] 部分属性已选:", selectedAttributes, "开始遍历 SKU 查找匹配");
     for (const [skuId, skuAttrs] of skuEntries) {
       const compatible = isSkuCompatible(skuAttrs, selectedAttributes);
-      console.log(`[Variant] SKU ${skuId}:`, skuAttrs, "匹配:", compatible);
+      console.warn(`[Variant] SKU ${skuId}:`, skuAttrs, "匹配:", compatible);
       if (compatible) {
         matchingVariantId = skuId;
         break;
       }
     }
   } else {
-    console.log("[Variant] 未选择任何属性");
+    console.warn("[Variant] 未选择任何属性");
   }
 
   // 判断库存状态：如果找到匹配的 SKU 且 SKU 有库存，则为有库存
@@ -370,7 +379,7 @@ export function getVariantInfo<T extends Spu>(
   if (matchingVariantId) {
     const matchedSku = spu.skus?.find((s) => String(s.id) === matchingVariantId);
     hasStock = (matchedSku?.stock ?? 0) > 0;
-    console.log("[Variant] 匹配 SKU 库存检查:",
+    console.warn("[Variant] 匹配 SKU 库存检查:",
         {skuId: matchingVariantId, skuName: matchedSku?.name, stock: matchedSku?.stock, hasStock});
   }
 
@@ -516,8 +525,7 @@ export function useProductVariant(
   };
 }
 
-// 导出默认对象（保持向后兼容）
-export default {
+const variantUtils = {
   getVariantInfo,
   extractSuperAttributes,
   createSpuIndex,
@@ -526,3 +534,6 @@ export default {
   getVariantCacheStats,
   useProductVariant,
 };
+
+// 导出默认对象（保持向后兼容）
+export default variantUtils;

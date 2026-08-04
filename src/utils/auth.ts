@@ -89,7 +89,7 @@ async function doRefreshToken(token: JWT, triggerType: "manual" | "auto"): Promi
       userId: token.userId,
       triggerType,
     };
-    console.info(`[Security Audit] ${JSON.stringify(successLog)}`);
+    console.warn(`[Security Audit] ${JSON.stringify(successLog)}`);
 
     return {
       ...token,

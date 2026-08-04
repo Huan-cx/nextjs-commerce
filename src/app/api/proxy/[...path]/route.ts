@@ -305,7 +305,7 @@ async function forwardRequest(request: NextRequest, path: string[]): Promise<Res
     const duration = Date.now() - startTime;
 
     // 安全审计日志
-    console.info(
+    console.warn(
         `[Proxy Audit] ✅ ${method} /${pathStr} -> ${response.status} ` +
         `(userId: ${userId ?? "anonymous"}, IP: ${clientIp}, duration: ${duration}ms)`
     );

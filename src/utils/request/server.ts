@@ -206,7 +206,7 @@ export async function serverRequest<T = any>(
         : JSON.stringify(data);
   }
 
-  console.info(`[Server Request] 🚀 ${method} ${requestUrl}`);
+  console.warn(`[Server Request] 🚀 ${method} ${requestUrl}`);
 
   const response = await fetch(requestUrl, baseRequestConfig);
 

@@ -127,6 +127,7 @@ export default function EnhancedB2BTemplate({
                                         <li key={thirdCat.id}>
                                           <Link
                                               href={thirdCat.slug ? `/category/${thirdCat.slug}` : '#'}
+                                              onClick={() => setIsMenuOpen(false)}
                                               className="text-xs text-neutral-500 hover:text-black dark:text-neutral-400 dark:hover:text-neutral-300 block py-1"
                                           >
                                             {thirdCat.name}
@@ -158,6 +159,7 @@ export default function EnhancedB2BTemplate({
                         </p>
                         <Link
                             href="/rfq/create"
+                            onClick={() => setIsMenuOpen(false)}
                             className="inline-block bg-white text-blue-600 text-[11px] font-bold px-3 py-1.5 rounded-lg shadow-sm hover:bg-blue-50 transition-colors"
                         >
                           {t('requestQuote')}
@@ -167,6 +169,7 @@ export default function EnhancedB2BTemplate({
 
                     <Link
                         href="/catalogs"
+                        onClick={() => setIsMenuOpen(false)}
                         className="flex items-center gap-2 p-2.5 rounded-lg border border-neutral-200 bg-white hover:border-blue-400 transition-colors"
                     >
                       <svg className="w-4 h-4 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">

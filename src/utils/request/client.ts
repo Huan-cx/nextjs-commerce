@@ -128,7 +128,7 @@ export async function clientRequest<T = any>(options: RequestOptions): Promise<T
         : JSON.stringify(data);
   }
 
-  console.info(`[Client Request] 🚀 ${method} ${requestUrl}`);
+  console.warn(`[Client Request] 🚀 ${method} ${requestUrl}`);
 
   const response = await fetch(requestUrl, baseRequestConfig);
 

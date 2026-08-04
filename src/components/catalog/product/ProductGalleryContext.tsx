@@ -21,18 +21,18 @@ function findSelectedSkuByParams(product: Spu, searchParamsStr: string): any | n
   if (!product.skus || product.skus.length === 0) return null;
 
   // 调试：打印 URL 参数
-  console.log("[ProductGallery] 查找 SKU，参数:", searchParamsStr);
+  console.warn("[ProductGallery] 查找 SKU，参数:", searchParamsStr);
 
   const variantInfo = getVariantInfo(product, searchParamsStr);
   const skuId = variantInfo?.productid;
 
-  console.log("[ProductGallery] 计算得到 SKU ID:", skuId, "已选属性:", variantInfo?.selectedAttributes);
+  console.warn("[ProductGallery] 计算得到 SKU ID:", skuId, "已选属性:", variantInfo?.selectedAttributes);
 
   if (!skuId) return null;
 
   const sku = product.skus.find((s) => s.id === Number(skuId)) || null;
 
-  console.log("[ProductGallery] 找到 SKU:", sku?.name, "图片:", sku?.picUrl);
+  console.warn("[ProductGallery] 找到 SKU:", sku?.name, "图片:", sku?.picUrl);
 
   return sku;
 }
