@@ -22,45 +22,19 @@ const ProductGridItems = dynamicImport(
 export const dynamicParams = true;
 
 export async function generateStaticParams() {
-  try {
-    const itemsPerPage = 12;
-    const commonSearches = [""];
-    const params = [];
-    for (const query of commonSearches) {
-      // 使用 getSpuPage 获取商品列表和总数量
-      const response = await getSpuPage({
-        pageNo: 1,
-        pageSize: 1,
-        keyword: query,
-        sortField: "createTime",
-        sortAsc: false,
-      });
-
-      const totalCount = response.total || 0;
-      const totalPages = Math.ceil(totalCount / itemsPerPage);
-
-      for (let i = 0; i < totalPages; i++) {
-        const pageParams: { page: string } = {
-          page: String(i + 1),
-        };
-        params.push(pageParams);
-      }
-    }
-
-    return params;
-  } catch (error) {
-    console.error("Error generating static params:", error);
-    return [];
-  }
+  return [];
 }
 
 export async function generateMetadata({
+                                         params,
                                          searchParams,
                                        }: {
+  params: Promise<{ locale: string }>;
   searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
 }): Promise<Metadata> {
-  const params = await searchParams;
-  const searchQuery = params?.q as string | undefined;
+  const {locale} = await params;
+  const searchParamsResolved = await searchParams;
+  const searchQuery = searchParamsResolved?.q as string | undefined;
 
   return generateMetadataForPage("search", {
     title: searchQuery ? `Search: ${searchQuery}` : "Search Products",
@@ -68,7 +42,7 @@ export async function generateMetadata({
         ? `Search results for "${searchQuery}"`
         : "Search for products in our store",
     image: "/search-og.jpg",
-  });
+  }, locale);
 }
 
 export default async function SearchPage({

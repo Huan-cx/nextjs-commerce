@@ -1,7 +1,6 @@
 import {notFound} from "next/navigation";
-import React, {Suspense} from "react";
+import {Suspense} from "react";
 import {ProductDetailSkeleton, RelatedProductSkeleton,} from "@components/common/skeleton/ProductSkeleton";
-import {BASE_SCHEMA_URL, PRODUCT_TYPE,} from "@/utils/constants";
 import {MobileSearchBar} from "@components/layout/navbar/MobileSearch";
 import {Spu} from "@/types/api/product/type";
 
@@ -13,6 +12,9 @@ import {ProductGalleryProvider} from "@components/catalog/product/ProductGallery
 import {ProductGallery} from "@components/catalog/product/ProductGallery";
 import {HeroCarouselShimmer} from "@components/common/slider";
 import ProductInfo from "@components/catalog/product/ProductInfo";
+import {buildBreadcrumbJsonLd, buildProductJsonLd} from "@/utils/seo-jsonld";
+import {BASE_URL} from "@/utils/constants";
+import {ViewItemTracker} from "@/components/analytics/trackers/ViewItemTracker";
 
 import {cachedRestGet} from "@/utils/request/useCahceRest";
 
@@ -59,7 +61,7 @@ export async function generateMetadata({
     description: metaDescription,
     image: product?.picUrl,
     canonical: `/product/${fullPath}`,
-  });
+  }, locale);
 }
 
 export default async function ProductPage({
@@ -73,24 +75,42 @@ export default async function ProductPage({
   const product = await getSingleProduct(fullPath);
   if (!product) return notFound();
 
-  const productJsonLd = {
-    "@context": BASE_SCHEMA_URL,
-    "@type": PRODUCT_TYPE,
-    name: product?.name,
-    description: product?.description,
-    skus: product?.skus,
-  };
+  const productJsonLd = buildProductJsonLd(product);
+
+  const breadcrumbJsonLd = buildBreadcrumbJsonLd([
+    {name: "Home", url: `${BASE_URL}/${locale}`},
+    {name: product?.name || "Product", url: `${BASE_URL}/${locale}/product/${fullPath}`},
+  ]);
 
   const VariantImages = product?.sliderPicUrls;
+  // 取第一个 SKU 的价格作为 view_item 的 price
+  const defaultSkuPrice = product?.skus?.[0]?.price;
   return (
       <>
-        <MobileSearchBar/>
-        <script
-            dangerouslySetInnerHTML={{
-              __html: JSON.stringify(productJsonLd),
-            }}
-            type="application/ld+json"
+        {/* 产品浏览事件追踪（Client Component） */}
+        <ViewItemTracker
+            productId={product.id}
+            productName={product.name}
+            price={defaultSkuPrice ? Number(defaultSkuPrice) : undefined}
+            categoryId={product.categoryId}
         />
+        <MobileSearchBar/>
+        {productJsonLd && (
+            <script
+                dangerouslySetInnerHTML={{
+                  __html: JSON.stringify(productJsonLd),
+                }}
+                type="application/ld+json"
+            />
+        )}
+        {breadcrumbJsonLd && (
+            <script
+                dangerouslySetInnerHTML={{
+                  __html: JSON.stringify(breadcrumbJsonLd),
+                }}
+                type="application/ld+json"
+            />
+        )}
         <ProductGalleryProvider product={product as Spu} sliderPicUrls={VariantImages || []}>
           <div
               className="flex flex-col gap-y-4 rounded-lg pb-0 pt-4 sm:gap-y-6 md:py-7.5 lg:flex-row w-full max-w-screen-2xl mx-auto px-4 xss:px-7.5 lg:gap-8">

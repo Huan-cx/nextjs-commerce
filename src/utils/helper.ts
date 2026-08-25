@@ -2,9 +2,10 @@ import {ReadonlyURLSearchParams} from "next/navigation";
 import {Metadata} from "next";
 import {FilterDataTypes} from "@/types/types";
 import {isArray} from "./type-guards";
-import {BASE_URL, baseUrl} from "./constants";
+import {BASE_URL, baseUrl, SITE_CONFIG} from "./constants";
 import {Category, Comment, Spu} from "@/types/api/product/type";
 import {CartItem} from "@/types/api/trade/cart";
+import {routing} from "@/i18n/routing";
 
 export const createUrl = (
   pathname: string,
@@ -208,32 +209,39 @@ export async function generateMetadataForPage(
     canonical?: string;
     other?: Record<string, string>;
   },
+  locale?: string,
+  noindex?: boolean,
 ): Promise<Metadata> {
-  const seo: {
-    title?: string;
-    description?: string;
-    image?: string;
-    canonical?: string;
-    other?: Record<string, string>;
-  } = {};
-
-  // Default fallback (from your staticSeo.default)
   const DEFAULT_OTHER = {
     "document-meta-version": "dsv-2025.04.19-7e29",
   };
 
-  const title = seo.title || fallback?.title || "Default Title";
+  const title = fallback?.title || SITE_CONFIG.defaultTitle;
   const description =
-    seo.description || fallback?.description || "Default page description.";
-  const ogImage = seo.image || fallback?.image || "/default-og.png";
+      fallback?.description || SITE_CONFIG.defaultDescription;
+  const ogImage = fallback?.image || "/Logo.webp";
+
+  // 构建 canonical URL，包含语言前缀
+  const effectiveLocale = locale || routing.defaultLocale;
+  const localePath = `/${effectiveLocale}${slug}`;
   const canonicalUrl =
-    seo.canonical || fallback?.canonical || `${BASE_URL}/${slug}`;
+      fallback?.canonical
+          ? (fallback.canonical.startsWith('http') ? fallback.canonical : `${BASE_URL}${fallback.canonical}`)
+          : `${BASE_URL}${localePath}`;
 
   const otherMeta = {
     ...DEFAULT_OTHER,
     ...(fallback?.other || {}),
-    ...(seo.other || {}),
   };
+
+  // 构建 hreflang alternates（多语言 SEO）
+  const languages: Record<string, string> = {};
+  for (const loc of routing.locales) {
+    const locPath = `/${loc}${slug}`;
+    languages[loc] = `${BASE_URL}${locPath}`;
+  }
+  // x-default 指向默认语言版本
+  languages["x-default"] = `${BASE_URL}/${routing.defaultLocale}${slug}`;
 
   return {
     metadataBase: new URL(baseUrl || BASE_URL || "http://localhost:3000"),
@@ -245,7 +253,7 @@ export async function generateMetadataForPage(
       title,
       description,
       url: canonicalUrl,
-      siteName: "Your Store Name",
+      siteName: SITE_CONFIG.name,
       type: "website",
       images: [
         {
@@ -265,7 +273,12 @@ export async function generateMetadataForPage(
 
     alternates: {
       canonical: canonicalUrl,
+      languages,
     },
+
+    robots: noindex
+        ? {index: false, follow: false}
+        : {index: true, follow: true},
 
     other: otherMeta,
   };
@@ -362,7 +375,7 @@ export function throttle<T extends (...args: any[]) => any>(
 
 export function findCategoryBySlug(
     categories: Category[],
-    slug: number,
+    slug: string | number,
 ): Category | null {
   for (const category of categories) {
     // REST API返回的分类直接使用name作为标识，没有translation节点

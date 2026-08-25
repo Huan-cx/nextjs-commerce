@@ -2,8 +2,20 @@
 // import { graphqlRequest } from "../../lib/graphql-fetch";
 import RenderThemeCustomization from "@components/home/RenderThemeCustomization";
 import {ThemeCustomizationResponse} from "@/types/theme/theme-customization";
+import {generateMetadataForPage} from "@/utils/helper";
+import {Metadata} from "next";
+import {staticSeo} from "@/utils/metadata";
 
 export const revalidate = 3600;
+
+export async function generateMetadata({
+                                         params,
+                                       }: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const {locale} = await params;
+  return generateMetadataForPage("", staticSeo.default, locale);
+}
 
 export default async function Home() {
   /*  const data = await graphqlRequest<ThemeCustomizationResponse>(GET_THEME_CUSTOMIZATION, {first: 20}, {

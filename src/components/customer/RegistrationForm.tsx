@@ -10,6 +10,7 @@ import {EMAIL_REGEX, IS_VALID_INPUT, SIGNUP_IMG} from "@utils/constants";
 import {RegisterRequest, registerUser} from "@utils/api/member";
 import {Button} from "@components/common/button/Button";
 import {useTranslations} from "next-intl";
+import {trackEvent} from "@/lib/analytics";
 
 export type RegisterInputs = {
   firstName: string;
@@ -47,6 +48,8 @@ export default function RegistrationForm() {
       const success = await registerUser(payload);
 
       if (success) {
+        // ✅ 注册成功触发 sign_up 事件
+        trackEvent("sign_up", {method: "email"});
         showToast("User created successfully", "success");
         router.replace("/customer/login");
       } else {

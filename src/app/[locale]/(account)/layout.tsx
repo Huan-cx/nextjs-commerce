@@ -3,6 +3,14 @@ import {authOptions} from "@utils/auth";
 import {getServerSession} from "next-auth/next";
 import {redirect} from "next/navigation";
 import {getAuthTokenFromCookies} from "@utils/request/server";
+import {Metadata} from "next";
+
+export async function generateMetadata(): Promise<Metadata> {
+  return {
+    robots: {index: false, follow: false},
+    title: "Account",
+  };
+}
 
 /**
  * 账户路由根 Layout - 全局认证保护

@@ -10,7 +10,7 @@ const ForgetPasswordForm = dynamic(() => import("@components/customer/ForgetPass
 export const revalidate = 3600;
 
 export async function generateMetadata(): Promise<Metadata> {
-  return generateMetadataForPage("", staticSeo.forget);
+  return generateMetadataForPage("", staticSeo.forget, undefined, true);
 }
 
 export default function ForgetPasswordPage() {

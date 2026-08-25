@@ -13,15 +13,21 @@ import {CategoryDetail} from "@components/theme/search/CategoryDetail";
 import {Suspense} from "react";
 import FilterListSkeleton from "@components/common/skeleton/FilterSkeleton";
 import {MobileSearchBar} from "@components/layout/navbar/MobileSearch";
-import {buildProductFilters, extractNumericId, findCategoryBySlug, getFilterAttributes} from "@utils/helper";
+import {
+  buildProductFilters,
+  extractNumericId,
+  findCategoryBySlug,
+  generateMetadataForPage,
+  getFilterAttributes
+} from "@utils/helper";
 
 
 export async function generateMetadata({
                                          params,
                                        }: {
-  params: Promise<{ collection: number }>;
+  params: Promise<{ collection: string; locale: string }>;
 }): Promise<Metadata> {
-  const {collection: categorySlug} = await params;
+  const {collection: categorySlug, locale} = await params;
 
   // 使用新的REST API获取分类树
   const categories = await getCategoryTree();
@@ -29,17 +35,18 @@ export async function generateMetadata({
 
   if (!categoryItem) return notFound();
 
-  return {
+  return generateMetadataForPage(`/search/${categorySlug}`, {
     title: categoryItem.name,
     description: categoryItem.description || `${categoryItem.name} products`,
-  };
+    image: categoryItem.picUrl,
+  }, locale);
 }
 
 export default async function CategoryPage({
                                              searchParams,
                                              params,
                                            }: {
-  params: Promise<{ collection: number }>;
+  params: Promise<{ collection: string; locale: string }>;
   searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
   const {collection: categorySlug} = await params;

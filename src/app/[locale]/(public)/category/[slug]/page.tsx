@@ -35,7 +35,7 @@ export async function generateMetadata({
         title: slug,
         description: `Products in ${slug} category`,
         image: "/category-og.jpg",
-      });
+      }, locale);
     }
 
     // 使用翻译后的名称和描述（使用当前语言locale）
@@ -47,13 +47,13 @@ export async function generateMetadata({
       title: translatedMetaTitle,
       description: translatedMetaDescription,
       image: category.picUrl || "/category-og.jpg",
-    });
+    }, locale);
   } catch (_error) {
     return generateMetadataForPage("category", {
       title: slug,
       description: `Products in ${slug} category`,
       image: "/category-og.jpg",
-    });
+    }, locale);
   }
 }
 

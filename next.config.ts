@@ -11,8 +11,25 @@ const nextConfig: NextConfig = {
   },
   allowedDevOrigins: ['10.0.0.9', '10.0.0.25'],
   images: {
-    unoptimized: true,
-    remotePatterns: [],
+    remotePatterns: [
+      {
+        protocol: 'http',
+        hostname: 'localhost',
+        port: '48080',
+      },
+      {
+        protocol: 'http',
+        hostname: '**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'oss.easyislandsupply.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'api-demo.bagisto.com',
+      },
+    ],
   },
   async headers() {
     return configHeader;

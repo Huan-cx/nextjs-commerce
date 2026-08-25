@@ -6,7 +6,7 @@ import {Metadata} from "next";
 export const revalidate = 60;
 
 export async function generateMetadata(): Promise<Metadata> {
-  return generateMetadataForPage("", staticSeo.register);
+  return generateMetadataForPage("", staticSeo.register, undefined, true);
 }
 
 export default async function Register() {

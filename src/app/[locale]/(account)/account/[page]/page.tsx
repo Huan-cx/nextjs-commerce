@@ -1,5 +1,13 @@
 import {AccountContainer} from "@components/account";
 import {get} from "@utils/request/server"; // ✅ 服务端用 server.ts
+import {Metadata} from "next";
+
+export async function generateMetadata(): Promise<Metadata> {
+  return {
+    robots: {index: false, follow: false},
+    title: "My Account",
+  };
+}
 
 export default async function Page(props: {
   params: Promise<{ page: string }>;

@@ -10,6 +10,8 @@ import InputText from "@components/common/form/Input";
 import {useCustomToast} from "@/utils/hooks/useToast";
 import {useTranslations} from "next-intl";
 import {useSearchParams} from "next/navigation";
+import {useEffect, useRef} from "react";
+import {trackEvent} from "@/lib/analytics";
 
 type LoginFormInputs = {
   username: string;
@@ -41,6 +43,22 @@ export default function LoginForm() {
   const t = useTranslations("auth");
   const loginT = useTranslations("loginForm");
   const searchParams = useSearchParams();
+  // 标记：用户是否主动发起了登录（防止已登录用户访问登录页时触发伪造事件）
+  const loginInProgress = useRef(false);
+  const loginTracked = useRef(false);
+
+  // ✅ 监听登录成功状态变化，触发 login 事件
+  // 仅在 loginInProgress=true（用户主动操作）且未重复触发时才发送
+  useEffect(() => {
+    if (
+        status === "authenticated" &&
+        loginInProgress.current &&
+        !loginTracked.current
+    ) {
+      loginTracked.current = true;
+      trackEvent("login", {method: "email"});
+    }
+  }, [status]);
 
   const {
     register,
@@ -65,6 +83,9 @@ export default function LoginForm() {
     try {
       showToast(loginT("loggingIn"));
 
+      // ✅ 标记用户主动发起登录，用于后续触发 analytics 事件
+      loginInProgress.current = true;
+
       // ✅ NextAuth 官方标准做法 - 仅此一行足矣！
       //
       // redirect: true 意味着：
@@ -86,6 +107,8 @@ export default function LoginForm() {
       // 如果登录失败，NextAuth 会在 URL 带上 error 参数，由页面处理
 
     } catch (error) {
+      // 登录失败，重置标记（组件仍在当前页面，用户可以再次尝试）
+      loginInProgress.current = false;
       console.error(error);
       showToast(loginT("errorMessage"), "danger");
     }
@@ -104,6 +127,7 @@ export default function LoginForm() {
           </p>
         </div>
 
+        {/* eslint-disable-next-line react-hooks/refs -- onSubmit 是事件处理函数，不会在 render 中执行 */}
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           <div>
             <InputText

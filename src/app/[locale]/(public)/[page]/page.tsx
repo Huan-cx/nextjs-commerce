@@ -40,7 +40,7 @@ export async function generateMetadata({
     description: metaDescription,
     image: pageContent?.picUrl,
     canonical: `/${page}`,
-  });
+  }, locale);
 }
 
 

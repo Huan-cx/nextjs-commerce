@@ -11,6 +11,7 @@ import {useCart} from "@utils/hooks/useAddToCart";
 import {useAuthStatus} from "@utils/hooks/useAuthStatus";
 import {useLocale, useTranslations} from "next-intl";
 import {useRef, useState} from "react";
+import {trackAddToCart} from "@/lib/analytics";
 
 interface AddToCartFormData {
   quantity: number;
@@ -180,6 +181,14 @@ export function AddToCart({
           status: product.status || 0,
         },
     }, isGuest);
+
+    // ✅ 加购成功后触发 add_to_cart 事件
+    trackAddToCart({
+      product_id: product.id,
+      quantity: quantity,
+      price: Number(sku?.price) || 0,
+      value: (Number(sku?.price) || 0) * quantity,
+    });
   };
 
   const buttonStatus = !!selectedVariantId;

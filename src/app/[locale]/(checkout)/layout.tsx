@@ -1,5 +1,13 @@
 import Navbar from "@components/layout/navbar";
 import {ReactNode} from "react";
+import {Metadata} from "next";
+
+export async function generateMetadata(): Promise<Metadata> {
+  return {
+    robots: {index: false, follow: false},
+    title: "Checkout",
+  };
+}
 
 export default async function RootLayout({
                                            children,

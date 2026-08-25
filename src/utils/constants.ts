@@ -74,6 +74,16 @@ export const OPERATION_TO_ROUTE_MAP: Record<string, string> = {
 };
 
 /**
+ * SEO / 站点配置 — 集中管理品牌名、货币等
+ */
+export const SITE_CONFIG = {
+  name: process.env.NEXT_PUBLIC_SITE_NAME || "E-Commerce Store",
+  defaultTitle: process.env.NEXT_PUBLIC_SITE_TITLE || "E-Commerce Store",
+  defaultDescription: process.env.NEXT_PUBLIC_SITE_DESCRIPTION || "Modern e-commerce platform with quality products and fast delivery",
+  currency: process.env.NEXT_PUBLIC_CURRENCY || "EUR",
+};
+
+/**
  * 价格显示配置
  * 用于 B2B 场景控制商品价格的全局显示行为
  * - showPrice: 是否显示商品价格（关闭后所有商品价格区域都会隐藏，包括"As low as"等文案）
