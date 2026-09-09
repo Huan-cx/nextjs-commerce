@@ -9,7 +9,7 @@ import {SIGNIN_IMG} from "@/utils/constants";
 import InputText from "@components/common/form/Input";
 import {useCustomToast} from "@/utils/hooks/useToast";
 import {useTranslations} from "next-intl";
-import {useSearchParams} from "next/navigation";
+import {useRouter, useSearchParams} from "next/navigation";
 import {useEffect, useRef} from "react";
 import {trackEvent} from "@/lib/analytics";
 
@@ -19,23 +19,16 @@ type LoginFormInputs = {
 };
 
 /**
- * 登录表单 - NextAuth 官方标准实现
+ * 登录表单 - NextAuth 异步登录实现
  *
- * 【最佳实践原则】：越简单的代码越不容易出 bug
+ * ✅ 使用 signIn({ redirect: false }) 异步模式：
+ *   1. signIn 返回 { ok, error, url }，前端完全可控
+ *   2. 登录成功 → router.push 跳转到 callbackUrl
+ *   3. 登录失败 → 不跳转，停留在当前页，弹出 toast 错误提示
  *
- * ❌ 不要做的事情：
- * - 不要手动跳转（router.push / window.location.href）
- * - 不要手动管理 session 状态
- * - 不要"先验证后跳转"的两步登录
- * - 不要任何花里胡哨的自定义逻辑
- *
- * ✅ NextAuth 标准流程：
- *   1. signIn({ redirect: true, callbackUrl: "/" })
- *   2. NextAuth 内部处理所有时序
- *   3. 登录成功 → 自动跳转到 callbackUrl
- *   4. 登录失败 → 停留在当前页，显示错误信息
- *
- * 这个流程经过了社区百万级项目的验证，是最可靠的方案。
+ * 【为什么不用 redirect: true】
+ *   redirect: true 是整页跳转模式，登录失败时浏览器会直接跳到
+ *   pages.error 页面，前端 catch 块无法执行，也就无法弹出 toast。
  */
 export default function LoginForm() {
   const {status} = useSession();
@@ -43,6 +36,7 @@ export default function LoginForm() {
   const t = useTranslations("auth");
   const loginT = useTranslations("loginForm");
   const searchParams = useSearchParams();
+  const router = useRouter();
   // 标记：用户是否主动发起了登录（防止已登录用户访问登录页时触发伪造事件）
   const loginInProgress = useRef(false);
   const loginTracked = useRef(false);
@@ -86,28 +80,30 @@ export default function LoginForm() {
       // ✅ 标记用户主动发起登录，用于后续触发 analytics 事件
       loginInProgress.current = true;
 
-      // ✅ NextAuth 官方标准做法 - 仅此一行足矣！
-      //
-      // redirect: true 意味着：
-      //   1. NextAuth 处理完整登录流程
-      //   2. Cookie 写入完成后才跳转
-      //   3. 目标页面 Session 100% 可用
-      //   4. 失败时停留在当前页显示错误
-      //
-      // 这是经过百万级项目验证的最可靠方案
-      const callbackUrl = searchParams.get("callbackUrl") || "/";
-      await signIn("credentials", {
-        redirect: true,
+      // ✅ redirect: false 异步模式：
+      //   - 登录失败 → 返回 { ok: false, error }，不跳转，直接弹 toast
+      //   - 登录成功 → 返回 { ok: true, url }，手动跳转到 callbackUrl
+      const rawCallbackUrl = searchParams.get("callbackUrl") || "/";
+      const callbackUrl = /\/customer\/(login|register|forget-password|reset-password)/.test(rawCallbackUrl)
+          ? "/"
+          : rawCallbackUrl;
+      const result = await signIn("credentials", {
+        redirect: false,
         username: data.username,
         password: data.password,
         callbackUrl,
       });
+      if (result?.error) {
+        // 登录失败：停留在当前页，弹出错误提示
+        loginInProgress.current = false;
+        showToast(result.error, "danger");
+        return;
+      }
 
-      // 注意：signIn(redirect: true) 之后的代码不会执行（页面已跳转
-      // 如果登录失败，NextAuth 会在 URL 带上 error 参数，由页面处理
-
+      // 登录成功：手动跳转（此时 session cookie 已由 NextAuth 写入）
+      router.push(result?.url || callbackUrl);
     } catch (error) {
-      // 登录失败，重置标记（组件仍在当前页面，用户可以再次尝试）
+      // 网络异常等意外情况
       loginInProgress.current = false;
       console.error(error);
       showToast(loginT("errorMessage"), "danger");
