@@ -19,11 +19,10 @@ const ProductGridItems = dynamicImport(
     () => import("@/components/catalog/product/ProductGridItems"),
 );
 
+// 搜索页依赖 URL 查询参数（q/page/sort）+ root layout 中的 cookies()
+// 必须强制动态渲染，否则静态优化时调用动态 API 会抛 DYNAMIC_SERVER_USAGE（生产 500）
+export const dynamic = "force-dynamic";
 export const dynamicParams = true;
-
-export async function generateStaticParams() {
-  return [];
-}
 
 export async function generateMetadata({
                                          params,
