@@ -1,4 +1,10 @@
 {
+  "cookie": {
+    "title": "我们使用 Cookie",
+    "description": "为了提升您的浏览体验并进行营销分析，本站使用 Cookie 追踪。您可以选择接受或拒绝非必要 Cookie。",
+    "accept": "接受",
+    "decline": "仅必要"
+  },
   "account": {
     "loadFailed": "加载用户信息失败",
     "loadingOrderDetails": "加载订单详情中..."

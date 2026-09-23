@@ -1,4 +1,10 @@
 {
+  "cookie": {
+    "title": "Nous utilisons des cookies",
+    "description": "Nous utilisons des cookies pour améliorer votre expérience de navigation et à des fins d'analyse marketing. Vous pouvez accepter ou refuser les cookies non essentiels.",
+    "accept": "Accepter",
+    "decline": "Essentiels uniquement"
+  },
   "account": {
     "loadFailed": "Échec du chargement des informations utilisateur",
     "loadingOrderDetails": "Chargement des détails de la commande..."

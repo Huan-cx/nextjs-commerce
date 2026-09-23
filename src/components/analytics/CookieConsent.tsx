@@ -1,8 +1,10 @@
 'use client';
 
 import {useCallback, useEffect, useState} from 'react';
+import {useTranslations} from 'next-intl';
 import {handleConsentChange} from '@/lib/analytics';
 import {CONSENT_COOKIE_MAX_AGE, CONSENT_COOKIE_NAME} from '@/lib/analytics/config';
+import {popStashedAttribution, promoteStashedAttribution} from '@/lib/analytics/attribution';
 
 /**
  * Cookie 名称（re-export 从 config.ts 导入的常量）
@@ -42,6 +44,7 @@ export function useCookieConsent(initial?: ConsentStatus): UseCookieConsent {
   // ✅ 用 Server Component 传入的 initialConsent 作为初始值 → SSR 和客户端完全一致，消除 hydration mismatch
   // 如果没传 initial（极端情况），fallback 到 undefined + useEffect 读取
   const [consent, setConsent] = useState<ConsentStatus>(initial !== undefined ? initial : undefined);
+  -
 
   // 客户端挂载后重新读取 cookie 兜底（覆盖 cookie 在 SSR 后被修改的边缘情况）
   useEffect(() => {
@@ -58,6 +61,8 @@ export function useCookieConsent(initial?: ConsentStatus): UseCookieConsent {
     setConsent('accepted');
     // ✅ 同步各平台 consent 状态（Meta fbq + Google gtag）
     handleConsentChange('grant');
+    // ✅ 用户同意后，把落地时暂存的广告归因提升为持久化 cookie
+    promoteStashedAttribution();
   }, []);
 
   const decline = useCallback(() => {
@@ -65,6 +70,8 @@ export function useCookieConsent(initial?: ConsentStatus): UseCookieConsent {
     setConsent('declined');
     // ✅ 同步各平台 consent 状态
     handleConsentChange('revoke');
+    // ✅ 拒绝 consent → 丢弃暂存的广告归因（严格合规）
+    popStashedAttribution();
   }, []);
 
   const reset = useCallback(() => {
@@ -80,25 +87,18 @@ export interface CookieConsentBannerProps {
   initialConsent?: ConsentStatus;
   /** 是否显示拒绝按钮（默认显示） */
   showDecline?: boolean;
-  /** 自定义文案（可选） */
-  title?: string;
-  description?: string;
-  acceptLabel?: string;
-  declineLabel?: string;
 }
 
 /**
  * Cookie 隐私同意 Banner
  * 简洁版本：只有「接受」和可选的「拒绝」按钮
+ * 使用 next-intl 的 useTranslations('cookie') 读取文案 → 切换语言时自动更新
  */
 export function CookieConsentBanner({
                                       initialConsent,
                                       showDecline = true,
-                                      title = '我们使用 Cookie',
-                                      description = '为了提升您的浏览体验并进行营销分析，本站使用 Cookie 追踪。您可以选择接受或拒绝非必要 Cookie。',
-                                      acceptLabel = '接受',
-                                      declineLabel = '仅必要',
                                     }: CookieConsentBannerProps) {
+  const t = useTranslations('cookie');
   const {consent, accept, decline} = useCookieConsent(initialConsent);
 
   // consent !== undefined 表示用户已做选择 → 隐藏 banner
@@ -115,8 +115,8 @@ export function CookieConsentBanner({
           aria-live="polite"
       >
         <div className="flex-1 max-w-4xl">
-          <p className="font-semibold">{title}</p>
-          <p className="text-white/80 text-xs mt-1">{description}</p>
+          <p className="font-semibold">{t('title')}</p>
+          <p className="text-white/80 text-xs mt-1">{t('description')}</p>
         </div>
         <div className="flex gap-2 shrink-0">
           {showDecline && (
@@ -124,14 +124,14 @@ export function CookieConsentBanner({
                   onClick={decline}
                   className="px-4 py-2 rounded-md bg-white/10 hover:bg-white/20 transition-colors text-sm"
               >
-                {declineLabel}
+                {t('decline')}
               </button>
           )}
           <button
               onClick={accept}
               className="px-4 py-2 rounded-md bg-blue-500 hover:bg-blue-600 transition-colors text-sm font-medium"
           >
-            {acceptLabel}
+            {t('accept')}
           </button>
         </div>
       </div>
