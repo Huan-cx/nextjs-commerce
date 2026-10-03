@@ -15,7 +15,6 @@ export default function EnhancedB2BTemplate({
                                               hoveredCategory,
                                               setHoveredCategory
                                             }: EnhancedB2BTemplateProps) {
-  const menuRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [menuTop, setMenuTop] = useState(70);
@@ -36,31 +35,9 @@ export default function EnhancedB2BTemplate({
     return () => window.removeEventListener('resize', updateMenuPosition);
   }, []);
 
-  // 点击外部区域关闭菜单
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-        // 检查点击的是否是菜单按钮本身
-        const button = menuRef.current.parentElement?.querySelector('button');
-        if (button && !button.contains(event.target as Node)) {
-          setIsMenuOpen(false);
-          setHoveredCategory(null);
-        }
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [setHoveredCategory]);
-
-  const toggleMenu = () => {
-    if (isMenuOpen) {
-      // 如果菜单已打开，则关闭
-      setIsMenuOpen(false);
-    } else {
-      // 如果菜单关闭，则打开（显示第一个分类的内容）
+  // 鼠标移入主菜单项时打开菜单（显示第一个分类的内容）
+  const openMenu = () => {
+    if (!isMenuOpen) {
       setIsMenuOpen(true);
       if (categories.length > 0) {
         setHoveredCategory(categories[0].id);
@@ -68,15 +45,21 @@ export default function EnhancedB2BTemplate({
     }
   };
 
+  // 鼠标移出主菜单项及菜单面板时关闭菜单
+  const closeMenu = () => {
+    setIsMenuOpen(false);
+    setHoveredCategory(null);
+  };
+
   return (
       <div className="relative">
         {/* 主菜单项 */}
         <ul className="flex items-center space-x-1">
-          <li>
+          <li onMouseLeave={closeMenu}>
             <button
                 ref={buttonRef}
                 className="text-nowrap relative text-neutral-500 before:absolute before:bottom-0 before:left-0 before:h-px before:w-0 before:bg-current before:transition-all before:duration-300 before:content-[''] hover:text-black hover:before:w-full dark:text-neutral-400 dark:hover:text-neutral-300 px-4 py-5 inline-flex items-center text-sm font-medium gap-1"
-                onClick={toggleMenu}
+                onMouseEnter={openMenu}
             >
 
               {t('products')}
@@ -84,7 +67,7 @@ export default function EnhancedB2BTemplate({
 
             {/* 巨型菜单面板 */}
             <div
-                ref={menuRef}
+                onClick={closeMenu}
                 className={`fixed inset-x-0 bg-white shadow-2xl border-t border-neutral-200 z-50 transition-all duration-300 ${
                     isMenuOpen ? 'opacity-100 visible translate-y-0 pointer-events-auto' : 'opacity-0 invisible -translate-y-2 pointer-events-none'
                 }`}
@@ -100,6 +83,7 @@ export default function EnhancedB2BTemplate({
                               hoveredCategory === cat.id ? 'bg-white text-black dark:text-white shadow-sm border border-neutral-100' : ''
                           }`}
                           onMouseEnter={() => setHoveredCategory(cat.id)}
+                          onClick={(e) => e.stopPropagation()} // 平板端靠点击切换分类，阻止冒泡避免误关菜单
                       >
                         <span>{cat.name}</span>
                         <svg className="w-4 h-4 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
