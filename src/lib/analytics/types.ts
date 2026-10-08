@@ -79,6 +79,19 @@ export interface SearchParams {
   searchTerm?: string;
 }
 
+/** 线索/询价提交事件（RFQ 提交成功时触发） */
+export interface LeadParams {
+  /** 广告来源平台：google / meta / tiktok / bing / other */
+  ad_platform?: string;
+  /** 广告点击 ID（gclid/fbclid/ttclid/msclkid） */
+  ad_click_id?: string;
+  utm_source?: string;
+  utm_medium?: string;
+  utm_campaign?: string;
+  /** 线索表单类型，如 rfq */
+  form_type?: string;
+}
+
 /** 支持的事件名 */
 export type AnalyticsEventName =
     | 'page_view'
@@ -92,4 +105,5 @@ export type AnalyticsEventName =
     | 'sign_up'
     | 'search'
     | 'view_cart'
+    | 'generate_lead'
     | string;

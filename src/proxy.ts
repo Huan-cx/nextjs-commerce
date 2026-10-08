@@ -4,12 +4,44 @@ import {getToken} from 'next-auth/jwt'
 import createMiddleware from 'next-intl/middleware';
 import {routing} from './i18n/routing';
 import {NEXTAUTH_SECURE_TOKEN, NEXTAUTH_TOKEN} from '@/utils/constants';
+import {CONSENT_COOKIE_NAME} from '@/lib/analytics/config';
+import {
+    ATTRIBUTION_COOKIE_MAX_AGE,
+    ATTRIBUTION_COOKIE_NAME,
+    parseAttributionFromParams,
+} from '@/lib/analytics/attribution';
 
 // 静态资源文件扩展名（通用检测：路径以扩展名结尾的直接放行）
 const STATIC_FILE_REGEX = /\.[a-zA-Z0-9]+$/;
 
 // 创建国际化中间件
 const intlMiddleware = createMiddleware(routing);
+
+/**
+ * 广告归因捕获（服务端，落地瞬间捕获 click ID / UTM 参数）
+ * - first-touch：已有归因 cookie 则不覆盖
+ * - GDPR：仅当用户已接受 analytics consent 时才写入归因 cookie
+ *   （未同意的访客由客户端 RouteChangeListener 暂存 sessionStorage，同意后提升为 cookie）
+ */
+function applyAttributionCapture(request: NextRequest, response: NextResponse): NextResponse {
+    // first-touch：已有归因则跳过
+    if (request.cookies.get(ATTRIBUTION_COOKIE_NAME)) return response;
+    // 未同意 consent → 不写营销类 cookie
+    if (request.cookies.get(CONSENT_COOKIE_NAME)?.value !== 'accepted') return response;
+
+    const attribution = parseAttributionFromParams(
+        request.nextUrl.searchParams,
+        request.nextUrl.pathname,
+    );
+    if (!attribution) return response;
+
+    response.cookies.set(ATTRIBUTION_COOKIE_NAME, JSON.stringify(attribution), {
+        path: '/',
+        maxAge: ATTRIBUTION_COOKIE_MAX_AGE,
+        sameSite: 'lax',
+    });
+    return response;
+}
 
 export async function proxy(request: NextRequest) {
     const { pathname } = request.nextUrl
@@ -23,7 +55,8 @@ export async function proxy(request: NextRequest) {
     // 国际化中间件处理
     const intlResponse = intlMiddleware(request);
     if (intlResponse) {
-        return intlResponse;
+        // 广告落地捕获（含 locale 重定向响应也一并带上 cookie）
+        return applyAttributionCapture(request, intlResponse);
     }
 
     // 认证中间件处理（注意：路径会包含locale前缀）
@@ -43,7 +76,8 @@ export async function proxy(request: NextRequest) {
         }
     }
 
-    return NextResponse.next()
+    // 直接访问带 locale 的 URL（无重定向）→ 同样需要落地捕获
+    return applyAttributionCapture(request, NextResponse.next())
 }
 
 // 保持middleware作为别名，兼容旧代码

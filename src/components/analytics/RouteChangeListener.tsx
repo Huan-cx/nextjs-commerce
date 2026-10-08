@@ -3,6 +3,7 @@
 import {useEffect, useRef} from 'react';
 import {usePathname} from 'next/navigation';
 import {handleConsentChange, trackPageView} from '@/lib/analytics';
+import {captureAttributionOnClient} from '@/lib/analytics/attribution';
 
 /**
  * 监听路由变化 → 触发 trackPageView
@@ -46,6 +47,14 @@ export function RouteChangeListener() {
         typeof window !== 'undefined' && window.location.search
             ? window.location.search
             : '';
+
+    // ===== 广告归因落地捕获（客户端兜底） =====
+    // 服务端 proxy 已处理"已同意"场景；这里覆盖：
+    //   - 未同意访客：暂存 sessionStorage，CookieConsent accept 时提升为 cookie
+    //   - 服务端未捕获到的边缘场景（first-touch 判断保证幂等）
+    const consentMatch = document.cookie.match(/analytics_consent=([^;]+)/);
+    captureAttributionOnClient(consentMatch?.[1] === 'accepted');
+
     const url = pathname + queryString;
     const title = typeof document !== 'undefined' ? document.title : undefined;
     const locale = pathname.split('/').filter(Boolean)[0] || undefined;

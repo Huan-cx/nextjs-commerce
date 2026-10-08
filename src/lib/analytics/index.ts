@@ -10,6 +10,7 @@ import type {
   AnalyticsEventName,
   BeginCheckoutParams,
   EventProps,
+  LeadParams,
   PageViewParams,
   PurchaseParams,
   ViewItemParams,
@@ -76,6 +77,11 @@ export function trackAddToCart(params: AddToCartParams) {
 /** 发起结算 */
 export function trackBeginCheckout(params?: BeginCheckoutParams) {
   trackEvent('begin_checkout', normalizeEcommerceBase(params));
+}
+
+/** 线索/询价提交（RFQ 提交成功时调用，各平台以 generate_lead 事件上报转化） */
+export function trackLead(params?: LeadParams) {
+  trackEvent('generate_lead', params);
 }
 
 /** 购买完成 */

@@ -12,6 +12,8 @@ import {useCustomToast} from "@utils/hooks/useToast";
 import {useRouter} from "next/navigation";
 import {useTranslations} from "next-intl";
 import {PressEvent} from "@heroui/button";
+import {getAttributionForRfq} from "@/lib/analytics/attribution";
+import {trackLead} from "@/lib/analytics";
 
 interface CreateRfqProps {
   step: string;
@@ -76,10 +78,22 @@ const CreateRfqPage = ({step}: CreateRfqProps) => {
         expectedDeliveryDate: data.expectedDeliveryDate,
         targetCurrency: data.targetCurrency,
         requirement: data.requirement,
+        // ✅ 广告来源归因：记录询价来自哪个广告平台（后端落库）
+        ...getAttributionForRfq(),
       });
     },
     onSuccess: async () => {
       showToast(t("success"), "success");
+      // ✅ 上报线索转化事件（generate_lead）给各广告平台，附带归因信息
+      const attribution = getAttributionForRfq();
+      trackLead({
+        ad_platform: attribution.adPlatform,
+        ad_click_id: attribution.adClickId,
+        utm_source: attribution.utmSource,
+        utm_medium: attribution.utmMedium,
+        utm_campaign: attribution.utmCampaign,
+        form_type: "rfq",
+      });
       await queryClient.invalidateQueries({queryKey: ["cart"]});
       router.push("/account/rfqs");
     },

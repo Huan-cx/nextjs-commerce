@@ -61,6 +61,14 @@ export interface CreateRfqRequest {
   expectedDeliveryDate?: string;
   expectedDeliveryType?: string;
   targetCurrency?: string;
+  // ===== 广告来源归因（后端落库，用于分析询价来自哪个广告平台） =====
+  /** 广告平台：google / meta / tiktok / bing / other */
+  adPlatform?: string;
+  /** 广告点击 ID（gclid/fbclid/ttclid/msclkid） */
+  adClickId?: string;
+  utmSource?: string;
+  utmMedium?: string;
+  utmCampaign?: string;
 }
 
 // 获取询价单列表 - 修复：GET /page
