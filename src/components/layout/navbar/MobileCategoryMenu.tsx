@@ -1,6 +1,6 @@
 "use client";
 
-import {useState} from 'react';
+import {type MouseEvent, useState} from 'react';
 import {Input} from '@heroui/react';
 import Link from '@/components/common/Link';
 import {useBodyScrollLock} from '@utils/hooks/useBodyScrollLock';
@@ -9,6 +9,8 @@ import {motion} from 'framer-motion';
 import {Search} from 'lucide-react';
 import Image from 'next/image';
 import type {Category} from '@/types/api/product/type';
+import {useCategoryDirectNavigation} from '@utils/hooks/useCategoryDirectNavigation';
+import {DIRECT_TO_PRODUCT_ENABLED} from '@/utils/constants';
 
 export interface MobileCategoryMenuProps {
   categories: Category[];
@@ -23,6 +25,19 @@ export default function MobileCategoryMenu({categories, onClose}: MobileCategory
   const [searchQuery, setSearchQuery] = useState('');
 
   useBodyScrollLock(true);
+
+  const {navigateToCategory} = useCategoryDirectNavigation();
+
+  // 三级分类点击：启用直达产品时先解析商品列表，仅一个在售商品则直达商品详情页，否则进入分类页
+  const handleThirdCatClick = (e: MouseEvent, thirdCat: Category) => {
+    if (!DIRECT_TO_PRODUCT_ENABLED) {
+      onClose();
+      return;
+    }
+    e.preventDefault();
+    onClose();
+    navigateToCategory(thirdCat, thirdCat.slug ? `/category/${thirdCat.slug}` : '/search');
+  };
 
   const activeCategoryData = categories.find((cat) => cat.id === activeCategory);
 
@@ -109,7 +124,7 @@ export default function MobileCategoryMenu({categories, onClose}: MobileCategory
                               <Link
                                   key={thirdCat.id}
                                   href={thirdCat.slug ? `/category/${thirdCat.slug}` : '/search'}
-                                  onClick={() => onClose()}
+                                  onClick={(e) => handleThirdCatClick(e, thirdCat)}
                                   className="flex items-center gap-2 py-1 px-1.5 rounded-md hover:bg-neutral-50 border border-transparent hover:border-neutral-100 transition-all min-w-0"
                               >
                                 <div

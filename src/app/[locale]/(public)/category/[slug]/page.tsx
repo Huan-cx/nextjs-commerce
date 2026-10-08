@@ -82,7 +82,7 @@ export default async function CategoryPage({
     [key: string]: string;
   };
 
-  const itemsPerPage = 6;
+  const itemsPerPage = 8;
   const currentPage = page ? parseInt(page) - 1 : 0;
 
   // 从 URL 获取排序参数

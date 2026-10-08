@@ -291,6 +291,12 @@ export const GUEST_CART_TOKEN = "guest_cart_token";
 export const GUEST_CART_ID = "guest_cart_id";
 export const IS_GUEST = "is_guest";
 
+/**
+ * 直达产品通用开关（前端集中管理）
+ * 开启后：三级分类点击时，若该分类下在售商品仅有一个，则直接跳转商品详情页，否则仍进入分类页
+ */
+export const DIRECT_TO_PRODUCT_ENABLED: boolean = true;
+
 
 export const NEXTAUTH_TOKEN = "next-auth.session-token";
 export const NEXTAUTH_SECURE_TOKEN = "__Secure-next-auth.session-token";

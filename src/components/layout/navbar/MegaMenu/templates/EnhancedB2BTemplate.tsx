@@ -1,8 +1,10 @@
-import {useEffect, useRef, useState} from 'react';
+import {type MouseEvent, useEffect, useRef, useState} from 'react';
 import Link from '@/components/common/Link';
 import type {Category} from '@/types/api/product/type';
 import {Card, CardBody} from '@heroui/react';
 import {useTranslations} from 'next-intl';
+import {useCategoryDirectNavigation} from '@utils/hooks/useCategoryDirectNavigation';
+import {DIRECT_TO_PRODUCT_ENABLED} from '@/utils/constants';
 
 interface EnhancedB2BTemplateProps {
   categories: Category[];
@@ -19,6 +21,19 @@ export default function EnhancedB2BTemplate({
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [menuTop, setMenuTop] = useState(70);
   const t = useTranslations('navbar');
+
+  const {navigateToCategory} = useCategoryDirectNavigation();
+
+  // 三级分类点击：启用直达产品时先解析商品列表，仅一个在售商品则直达商品详情页，否则进入分类页
+  const handleThirdCatClick = (e: MouseEvent, thirdCat: Category) => {
+    if (!DIRECT_TO_PRODUCT_ENABLED) {
+      setIsMenuOpen(false);
+      return;
+    }
+    e.preventDefault();
+    setIsMenuOpen(false);
+    navigateToCategory(thirdCat, thirdCat.slug ? `/category/${thirdCat.slug}` : '#');
+  };
 
   // 动态计算菜单顶部位置
   useEffect(() => {
@@ -111,7 +126,7 @@ export default function EnhancedB2BTemplate({
                                         <li key={thirdCat.id}>
                                           <Link
                                               href={thirdCat.slug ? `/category/${thirdCat.slug}` : '#'}
-                                              onClick={() => setIsMenuOpen(false)}
+                                              onClick={(e) => handleThirdCatClick(e, thirdCat)}
                                               className="text-xs text-neutral-500 hover:text-black dark:text-neutral-400 dark:hover:text-neutral-300 block py-1"
                                           >
                                             {thirdCat.name}
