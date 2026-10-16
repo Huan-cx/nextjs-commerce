@@ -192,6 +192,10 @@ export function getAttributionForRfq(): {
   utmSource?: string;
   utmMedium?: string;
   utmCampaign?: string;
+  utmTerm?: string;
+  utmContent?: string;
+  landingPage?: string;
+  capturedAt?: string;
 } {
   const data = readAttributionCookie();
   if (!data) return {};
@@ -201,5 +205,9 @@ export function getAttributionForRfq(): {
     utmSource: data.utmSource,
     utmMedium: data.utmMedium,
     utmCampaign: data.utmCampaign,
+    utmTerm: data.utmTerm,
+    utmContent: data.utmContent,
+    landingPage: data.landingPage,
+    capturedAt: data.capturedAt,
   };
 }

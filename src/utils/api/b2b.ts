@@ -69,6 +69,12 @@ export interface CreateRfqRequest {
   utmSource?: string;
   utmMedium?: string;
   utmCampaign?: string;
+  utmTerm?: string;
+  utmContent?: string;
+  /** 落地页路径 */
+  landingPage?: string;
+  /** 归因捕获时间（ISO） */
+  capturedAt?: string;
 }
 
 // 获取询价单列表 - 修复：GET /page
