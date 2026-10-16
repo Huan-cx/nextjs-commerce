@@ -171,7 +171,7 @@ export default function LoginForm() {
 
           <div className="flex items-center justify-between">
             <Link
-                href="/customer/reset-password"
+                href="/customer/forget-password"
                 className="text-sm text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300"
             >
               {loginT("forgotPassword")}
