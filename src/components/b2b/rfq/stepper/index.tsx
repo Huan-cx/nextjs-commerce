@@ -68,12 +68,73 @@ interface RfqStepperProps {
   currentStep: string;
 }
 
+interface StepItemProps {
+  step: Step;
+  isActive: boolean;
+  isCompleted: boolean;
+}
+
+/**
+ * 步骤项组件（必须定义在模块级/组件外部！）
+ * 若定义在 RfqStepper 函数体内，每次渲染都会产生新的组件类型引用，
+ * React 协调时会判定类型变化并卸载/重挂载整个步骤子树，
+ * 导致输入框 DOM 重建、输入焦点丢失。
+ *
+ * 注意：不能用 React.memo 包裹。react-hook-form 的 formState/watch 响应式
+ * 更新只订阅在 useForm() 所在根组件（CreateRfqPage），需要父级重渲染逐层
+ * 传播到步骤组件；memo 会阻断该传播，导致 errors/watch 闭包陈旧，
+ * "下一步"按钮在填完字段后无法激活。
+ */
+function StepItem({
+                    step,
+                    isActive,
+                    isCompleted,
+                  }: StepItemProps) {
+  return (
+      <div className="flex w-full flex-col">
+        <div className="flex items-center justify-between font-outfit">
+          <div className="flex items-center gap-3">
+            <div
+                className={`flex h-6 w-6 items-center justify-center rounded-full text-sm font-medium transition-colors ${
+                    isCompleted
+                        ? "bg-blue-600 text-white"
+                        : "bg-gray-200 text-neutral-900 dark:bg-gray-700 dark:text-neutral-300"
+                }`}
+            >
+              {step.id}
+            </div>
+            <span
+                className={`text-lg font-medium max-md:text-base ${
+                    isActive
+                        ? "font-medium text-neutral-900 dark:text-neutral-300"
+                        : "text-neutral-500 dark:text-neutral-400"
+                }`}
+            >
+              {step.title}
+            </span>
+          </div>
+        </div>
+
+        {isActive && (
+            <section className="relative mt-6">
+              {step.component}
+            </section>
+        )}
+      </div>
+  );
+}
+
 export default function RfqStepper({currentStep}: RfqStepperProps) {
   const t = useTranslations("b2b.createRfq");
 
   // 注意：这里不再自己创建 useForm，而是从 Context 获取
   // Context 由父级 CreateRfqPage 提供
 
+  // 每次渲染重建 steps 与 JSX 元素引用（有意为之）：
+  // react-hook-form 的 formState/watch 变更只触发根组件（CreateRfqPage）重渲染，
+  // 必须通过本组件重渲染传播到各步骤组件，使"下一步"按钮的禁用状态
+  // （基于 errors/watch 值）保持最新。重建元素引用只是 re-render，不会 remount，
+  // 因此不影响输入焦点。
   const steps: Step[] = [
     {
       id: 1,
@@ -107,44 +168,6 @@ export default function RfqStepper({currentStep}: RfqStepperProps) {
 
   const currentStepIndex = steps.findIndex((s) => s.key === currentStep);
 
-  const StepItem = ({step}: { step: Step }) => {
-    const isActive = step.key === currentStep;
-    const isCompleted = step.id <= (steps[currentStepIndex]?.id || 1);
-
-    return (
-        <div key={step.id} className="flex w-full flex-col">
-          <div className="flex items-center justify-between font-outfit">
-            <div className="flex items-center gap-3">
-              <div
-                  className={`flex h-6 w-6 items-center justify-center rounded-full text-sm font-medium transition-colors ${
-                      isCompleted
-                          ? "bg-blue-600 text-white"
-                          : "bg-gray-200 text-neutral-900 dark:bg-gray-700 dark:text-neutral-300"
-                  }`}
-              >
-                {step.id}
-              </div>
-              <span
-                  className={`text-lg font-medium max-md:text-base ${
-                      isActive
-                          ? "font-medium text-neutral-900 dark:text-neutral-300"
-                          : "text-neutral-500 dark:text-neutral-400"
-                  }`}
-              >
-              {step.title}
-            </span>
-            </div>
-          </div>
-
-          {isActive && (
-              <section className="relative mt-6">
-                {step.component}
-              </section>
-          )}
-        </div>
-    );
-  };
-
   return (
       <div className="mx-auto w-full">
         <header className="pb-6 sm:py-6">
@@ -157,7 +180,12 @@ export default function RfqStepper({currentStep}: RfqStepperProps) {
             className="scrollbar-thin scrollbar-track-transparent scrollbar-thumb-gray-500 dark:scrollbar-thumb-neutral-300 h-[calc(100dvh-300px)] overflow-y-auto lg:h-[calc(100dvh-124px)]">
           <div className="flex h-full flex-col gap-y-8 pl-2 pr-6 sm:px-3 sm:pr-10">
             {steps.map((step) => (
-                <StepItem key={step.id} step={step}/>
+                <StepItem
+                    key={step.id}
+                    step={step}
+                    isActive={step.key === currentStep}
+                    isCompleted={step.id <= (steps[currentStepIndex]?.id || 1)}
+                />
             ))}
           </div>
         </div>
