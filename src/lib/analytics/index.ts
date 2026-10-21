@@ -4,7 +4,7 @@
  * 内部自动分发到所有已启用的平台
  */
 
-import {analyticsConfig, canSendEvents} from './config';
+import {canSendEvents, getRuntimeConfig} from './config';
 import type {
   AddToCartParams,
   AnalyticsEventName,
@@ -37,7 +37,7 @@ export function trackPageView(params: PageViewParams) {
   if (!canSendEvents(consent)) return;
 
   // 调试日志（开发模式 + devMode 开启时可见）
-  if (analyticsConfig.devModeEnabled) {
+  if (getRuntimeConfig().devModeEnabled) {
     console.debug('[Analytics] trackPageView', params);
   }
 
@@ -54,7 +54,7 @@ export function trackEvent(name: AnalyticsEventName, props?: EventProps) {
   const consent = getConsentFromCookie();
   if (!canSendEvents(consent)) return;
 
-  if (analyticsConfig.devModeEnabled) {
+  if (getRuntimeConfig().devModeEnabled) {
     console.debug('[Analytics] trackEvent', name, props);
   }
 
@@ -158,7 +158,7 @@ export function handleConsentChange(action: ConsentAction) {
       }),
   );
 
-  if (analyticsConfig.devModeEnabled) {
+  if (getRuntimeConfig().devModeEnabled) {
     console.debug('[Analytics] consent changed →', action);
   }
 }

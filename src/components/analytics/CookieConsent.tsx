@@ -44,7 +44,6 @@ export function useCookieConsent(initial?: ConsentStatus): UseCookieConsent {
   // ✅ 用 Server Component 传入的 initialConsent 作为初始值 → SSR 和客户端完全一致，消除 hydration mismatch
   // 如果没传 initial（极端情况），fallback 到 undefined + useEffect 读取
   const [consent, setConsent] = useState<ConsentStatus>(initial !== undefined ? initial : undefined);
-  -
 
   // 客户端挂载后重新读取 cookie 兜底（覆盖 cookie 在 SSR 后被修改的边缘情况）
   useEffect(() => {

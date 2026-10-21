@@ -2,9 +2,9 @@
 
 import Script from 'next/script';
 import {useEffect, useRef, useState} from 'react';
-import {analyticsConfig} from '@/lib/analytics/config';
-import {tiktokEnabled, tiktokInitSnippet} from '@/lib/analytics/providers/tiktok';
-import {bingEnabled, bingInitSnippet} from '@/lib/analytics/providers/bing';
+import {type AnalyticsConfig, setRuntimeConfig} from '@/lib/analytics/config';
+import {tiktokInitSnippet} from '@/lib/analytics/providers/tiktok';
+import {bingInitSnippet} from '@/lib/analytics/providers/bing';
 
 const CONSENT_COOKIE = 'analytics_consent';
 
@@ -20,13 +20,22 @@ function readConsentCookie(): boolean {
  * 这两家平台 **没有 runtime consent API**（不像 Meta 的 fbq('consent', ...)）
  * 所以必须在用户同意后才加载 SDK 脚本
  *
+ * config 由 RootLayout（Server Component）SSR 拉取后作为 props 传入，
+ * 此处同步到客户端运行时配置（getRuntimeConfig），供 trackEvent 等客户端 API 使用
+ *
  * 触发加载的时机：
  * 1. lazy initializer 读 cookie → 如果已 accepted，直接渲染脚本
  * 2. 监听 window 'analytics-consent' CustomEvent → 用户点击 Banner 接受时动态加载
  */
-export function ConsentGatedScripts() {
-  const shouldLoad = tiktokEnabled || bingEnabled;
-  const canInject = (analyticsConfig.isProduction || analyticsConfig.devModeEnabled) && shouldLoad;
+export function ConsentGatedScripts({config}: {config: AnalyticsConfig}) {
+  // 同步服务端配置到客户端运行时（供 index.ts / providers 的事件函数读取）
+  useEffect(() => {
+    setRuntimeConfig(config);
+  }, [config]);
+
+  const p = config.providers;
+  const shouldLoad = p.tiktok.enabled || p.bing.enabled;
+  const canInject = (config.isProduction || config.devModeEnabled) && shouldLoad;
   // 用 lazy initializer 避免 effect 中 setState（react-hooks 规则）
   const [consentGranted, setConsentGranted] = useState(() => readConsentCookie());
   const loadedRef = useRef(consentGranted);
@@ -55,23 +64,23 @@ export function ConsentGatedScripts() {
   return (
       <>
         {/* ===== TikTok Pixel（延迟加载） ===== */}
-        {tiktokEnabled && (
+        {p.tiktok.enabled && (
             <Script
                 id="tiktok-pixel"
                 strategy="afterInteractive"
                 dangerouslySetInnerHTML={{
-                  __html: tiktokInitSnippet(),
+                  __html: tiktokInitSnippet(config),
                 }}
             />
         )}
 
         {/* ===== Microsoft Advertising UET（延迟加载） ===== */}
-        {bingEnabled && (
+        {p.bing.enabled && (
             <Script
                 id="bing-uet"
                 strategy="afterInteractive"
                 dangerouslySetInnerHTML={{
-                  __html: bingInitSnippet(),
+                  __html: bingInitSnippet(config),
                 }}
             />
         )}

@@ -4,19 +4,17 @@
  * 初始化由官方 snippet 自动完成（在 AnalyticsProviders 内联 script 中）
  */
 
-import {analyticsConfig} from '../config';
+import type {AnalyticsConfig} from '../config';
+import {getRuntimeConfig} from '../config';
 import type {AnalyticsEventName, EventProps, PageViewParams} from '../types';
-
-const GA_ID = analyticsConfig.providers.google.gaId;
-const ADS_ID = analyticsConfig.providers.google.adsId;
-export const googleEnabled = analyticsConfig.providers.google.enabled;
 
 /** 页面浏览 */
 export function googlePageView(params: PageViewParams) {
-  if (!googleEnabled || typeof window === 'undefined' || !window.gtag) return;
+  const {gaId, enabled} = getRuntimeConfig().providers.google;
+  if (!enabled || typeof window === 'undefined' || !window.gtag) return;
 
   const configs: string[] = [];
-  if (GA_ID) configs.push(GA_ID);
+  if (gaId) configs.push(gaId);
 
   window.gtag('event', 'page_view', {
     page_path: params.path,
@@ -28,11 +26,12 @@ export function googlePageView(params: PageViewParams) {
 
 /** 通用事件 */
 export function googleEvent(name: AnalyticsEventName, props?: EventProps) {
-  if (!googleEnabled || typeof window === 'undefined' || !window.gtag) return;
+  const {gaId, adsId, enabled} = getRuntimeConfig().providers.google;
+  if (!enabled || typeof window === 'undefined' || !window.gtag) return;
 
   const configs: string[] = [];
-  if (GA_ID) configs.push(GA_ID);
-  if (ADS_ID) configs.push(ADS_ID);
+  if (gaId) configs.push(gaId);
+  if (adsId) configs.push(adsId);
 
   window.gtag('event', name, {
     ...props,
@@ -40,19 +39,21 @@ export function googleEvent(name: AnalyticsEventName, props?: EventProps) {
   });
 }
 
-/** Google gtag.js 脚本 URL */
-export const GOOGLE_SCRIPT_URL = GA_ID
-    ? `https://www.googletagmanager.com/gtag/js?id=${GA_ID}`
-    : '';
+/** Google gtag.js 脚本 URL（运行时读取，避免模块加载时固化配置） */
+export function getGoogleScriptUrl(config?: AnalyticsConfig): string {
+  const gaId = (config ?? getRuntimeConfig()).providers.google.gaId;
+  return gaId ? `https://www.googletagmanager.com/gtag/js?id=${gaId}` : '';
+}
 
 /** Google 内联初始化 snippet（官方标准） */
-export function googleInitSnippet(): string {
-  if (!googleEnabled || !GA_ID) return '';
+export function googleInitSnippet(config?: AnalyticsConfig): string {
+  const {gaId, adsId, enabled} = (config ?? getRuntimeConfig()).providers.google;
+  if (!enabled || !gaId) return '';
   return `
     window.dataLayer = window.dataLayer || [];
     window.gtag = function(){ window.dataLayer.push(arguments); };
     window.gtag('js', new Date());
-    window.gtag('config', '${GA_ID}', { send_page_view: false });
-    ${ADS_ID ? `window.gtag('config', '${ADS_ID}');` : ''}
+    window.gtag('config', '${gaId}', { send_page_view: false });
+    ${adsId ? `window.gtag('config', '${adsId}');` : ''}
   `;
 }

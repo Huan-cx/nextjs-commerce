@@ -3,11 +3,9 @@
  * 初始化由官方 snippet 自动完成（在 AnalyticsProviders 内联 script 中）
  */
 
-import {analyticsConfig} from '../config';
+import type {AnalyticsConfig} from '../config';
+import {getRuntimeConfig} from '../config';
 import type {AnalyticsEventName, EventProps, PageViewParams} from '../types';
-
-const PIXEL_ID = analyticsConfig.providers.meta.pixelId;
-export const metaEnabled = analyticsConfig.providers.meta.enabled;
 
 /** 事件名映射：统一名 → Meta 名 */
 const EVENT_MAP: Record<string, string> = {
@@ -24,13 +22,15 @@ const EVENT_MAP: Record<string, string> = {
 
 /** 页面浏览 */
 export function metaPageView(_params: PageViewParams) {
-  if (!metaEnabled || typeof window === 'undefined' || !window.fbq) return;
+  const {enabled} = getRuntimeConfig().providers.meta;
+  if (!enabled || typeof window === 'undefined' || !window.fbq) return;
   window.fbq('track', 'PageView');
 }
 
 /** 通用事件 */
 export function metaEvent(name: AnalyticsEventName, props?: EventProps) {
-  if (!metaEnabled || typeof window === 'undefined' || !window.fbq) return;
+  const {enabled} = getRuntimeConfig().providers.meta;
+  if (!enabled || typeof window === 'undefined' || !window.fbq) return;
   const metaName = EVENT_MAP[name] || name;
   window.fbq('track', metaName, props);
 }
@@ -39,8 +39,9 @@ export function metaEvent(name: AnalyticsEventName, props?: EventProps) {
 export const META_SCRIPT_URL = 'https://connect.facebook.net/en_US/fbevents.js';
 
 /** Meta 内联初始化 snippet（官方标准，不包含 SDK 加载） */
-export function metaInitSnippet(): string {
-  if (!metaEnabled || !PIXEL_ID) return '';
+export function metaInitSnippet(config?: AnalyticsConfig): string {
+  const {pixelId, enabled} = (config ?? getRuntimeConfig()).providers.meta;
+  if (!enabled || !pixelId) return '';
   return `
     !function(f,b,e,v,n,t,s){
       if(f.fbq)return;
@@ -51,13 +52,14 @@ export function metaInitSnippet(): string {
       s=b.getElementsByTagName(e)[0];
       s.parentNode.insertBefore(t,s)
     }(window,document,'script','${META_SCRIPT_URL}');
-    fbq('init','${PIXEL_ID}',{autoConfig:false});
+    fbq('init','${pixelId}',{autoConfig:false});
     fbq('consent','revoke'); // 默认未同意，用户接受后改为 grant
   `;
 }
 
 /** Meta Pixel noscript fallback */
-export function metaNoscript(): string {
-  if (!metaEnabled || !PIXEL_ID) return '';
-  return `<img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=${PIXEL_ID}&ev=PageView&noscript=1" />`;
+export function metaNoscript(config?: AnalyticsConfig): string {
+  const {pixelId, enabled} = (config ?? getRuntimeConfig()).providers.meta;
+  if (!enabled || !pixelId) return '';
+  return `<img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=${pixelId}&ev=PageView&noscript=1" />`;
 }

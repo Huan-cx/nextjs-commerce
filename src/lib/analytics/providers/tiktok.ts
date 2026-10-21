@@ -3,11 +3,9 @@
  * 初始化由官方 snippet 自动完成（在 AnalyticsProviders 内联 script 中）
  */
 
-import {analyticsConfig} from '../config';
+import type {AnalyticsConfig} from '../config';
+import {getRuntimeConfig} from '../config';
 import type {AnalyticsEventName, EventProps, PageViewParams} from '../types';
-
-const PIXEL_ID = analyticsConfig.providers.tiktok.pixelId;
-export const tiktokEnabled = analyticsConfig.providers.tiktok.enabled;
 
 /** 事件名映射：统一名 → TikTok 名 */
 const EVENT_MAP: Record<string, string> = {
@@ -24,13 +22,15 @@ const EVENT_MAP: Record<string, string> = {
 
 /** 页面浏览 */
 export function tiktokPageView(_params: PageViewParams) {
-  if (!tiktokEnabled || typeof window === 'undefined' || !window.ttq) return;
+  const {enabled} = getRuntimeConfig().providers.tiktok;
+  if (!enabled || typeof window === 'undefined' || !window.ttq) return;
   window.ttq('track', 'PageView');
 }
 
 /** 通用事件 */
 export function tiktokEvent(name: AnalyticsEventName, props?: EventProps) {
-  if (!tiktokEnabled || typeof window === 'undefined' || !window.ttq) return;
+  const {enabled} = getRuntimeConfig().providers.tiktok;
+  if (!enabled || typeof window === 'undefined' || !window.ttq) return;
   const ttName = EVENT_MAP[name] || name;
   window.ttq('track', ttName, props);
 }
@@ -39,8 +39,9 @@ export function tiktokEvent(name: AnalyticsEventName, props?: EventProps) {
 export const TIKTOK_SCRIPT_URL = 'https://analytics.tiktok.com/tt.sdk.js';
 
 /** TikTok 内联初始化 snippet（官方标准，包含 SDK 加载） */
-export function tiktokInitSnippet(): string {
-  if (!tiktokEnabled || !PIXEL_ID) return '';
+export function tiktokInitSnippet(config?: AnalyticsConfig): string {
+  const {pixelId, enabled} = (config ?? getRuntimeConfig()).providers.tiktok;
+  if (!enabled || !pixelId) return '';
   return `
     !function (w, d, t) {
       w.TiktokAnalyticsObject = t;
@@ -53,7 +54,7 @@ export function tiktokInitSnippet(): string {
       f.parentNode.insertBefore(j, f);
     }(window, document, 'ttq');
     ttq.config({
-      '${PIXEL_ID}': { trackPage: false },
+      '${pixelId}': { trackPage: false },
     });
   `;
 }
