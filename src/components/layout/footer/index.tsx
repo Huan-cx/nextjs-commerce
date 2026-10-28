@@ -5,7 +5,6 @@ import LogoIcon from "@components/common/icons/LogoIcon";
 import FaceBookIcon from "@components/common/icons/social-icon/FaceBookIcon";
 import InstaGramIcon from "@components/common/icons/social-icon/InstaGramIcon";
 import TwitterIcon from "@components/common/icons/social-icon/TwitterIcon";
-import Subscribe from "./Subscribe";
 import FooterMenu from "./FooterMenu";
 import {useQuery} from "@tanstack/react-query";
 import {getFooterArticleList} from "@utils/api/footer";
@@ -84,7 +83,7 @@ export default function Footer() {
             >
               <FooterMenu menu={menu}/>
             </Suspense>
-            <Subscribe />
+            {/* <Subscribe />*/}
           </div>
         </div>
         <div className="border-t border-neutral-200 py-6 text-sm dark:border-neutral-700">

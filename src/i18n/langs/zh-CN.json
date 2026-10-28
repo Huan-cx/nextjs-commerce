@@ -408,6 +408,40 @@
       "totalExpectedPrice": "期望总价",
       "validUntil": "有效期至",
       "viewQuotation": "查看报价"
+    },
+    "inquiry": {
+      "title": "大宗采购询价",
+      "subtitle": "填写您的联系方式与采购需求，专属顾问将在2小时内联系您并出具源头厂货报价单。",
+      "email": "邮箱",
+      "emailPlaceholder": "请输入您的邮箱地址",
+      "emailRequired": "请输入邮箱地址",
+      "emailInvalid": "请输入有效的邮箱地址",
+      "company": "公司名称",
+      "companyPlaceholder": "请输入您的公司名称",
+      "companyRequired": "请输入公司名称",
+      "country": "国家或地区",
+      "countryPlaceholder": "请选择国家或地区",
+      "countryRequired": "请选择国家或地区",
+      "budgetAmount": "预计采购预算",
+      "budgetAmountPlaceholder": "请输入预算金额",
+      "budgetAmountRequired": "请输入预算金额",
+      "budgetAmountInvalid": "预算金额必须大于 0",
+      "budgetCurrency": "币种",
+      "budgetCurrencyPlaceholder": "请选择币种",
+      "budgetCurrencyRequired": "请选择币种",
+      "description": "采购需求描述",
+      "descriptionPlaceholder": "请描述您需要采购的商品、数量、规格等需求信息",
+      "descriptionRequired": "请输入采购需求描述",
+      "currencyOptions": {
+        "USD": "USD 美元",
+        "EUR": "EUR 欧元",
+        "CNY": "CNY 人民币",
+        "GBP": "GBP 英镑",
+        "JPY": "JPY 日元"
+      },
+      "submit": "提交询价",
+      "success": "询价提交成功，我们将尽快与您联系",
+      "failed": "询价提交失败，请稍后重试"
     }
   },
   "cart": {
@@ -548,6 +582,7 @@
   "navbar": {
     "account": "账户",
     "all": "全部",
+    "allCategories": "全部产品分类",
     "browseProducts": "浏览 {name} 产品",
     "cart": "列表",
     "categories": "分类",

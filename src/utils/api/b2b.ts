@@ -103,6 +103,39 @@ export async function createRfq(data: CreateRfqRequest): Promise<{ id: number }>
   });
 }
 
+// ==================== 大宗采购询价 (Inquiry) ====================
+
+// 大宗采购联系询价提交请求（允许匿名提交）
+export interface B2BInquiryCreateRequest {
+  email: string;
+  company: string;
+  country: string;
+  budgetAmount: number;
+  budgetCurrency: string;
+  description: string;
+  // ===== 广告来源归因（后端落库 marketing_attribution，用于分析询价来源） =====
+  /** 广告平台：google / meta / tiktok / bing / other */
+  adPlatform?: string;
+  /** 广告点击 ID（gclid/fbclid/ttclid/msclkid） */
+  adClickId?: string;
+  utmSource?: string;
+  utmMedium?: string;
+  utmCampaign?: string;
+  utmTerm?: string;
+  utmContent?: string;
+  /** 落地页路径 */
+  landingPage?: string;
+  /** 归因捕获时间（ISO） */
+  capturedAt?: string;
+}
+
+// 发起大宗采购询价（匿名可提交，requiresAuth: false）
+export async function createB2BInquiry(data: B2BInquiryCreateRequest): Promise<{ id: number }> {
+  return await post<{ id: number }>('trade/b2b/inquiry/create', data, {
+    requiresAuth: false,
+  });
+}
+
 // 取消询价单 - 修复：DELETE
 export async function cancelRfq(id: number): Promise<boolean> {
   return await del<boolean>('trade/b2b/rfq/cancel', {id}, {

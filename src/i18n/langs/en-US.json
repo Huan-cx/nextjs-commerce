@@ -408,6 +408,40 @@
       "totalExpectedPrice": "Total Expected Price",
       "validUntil": "Valid Until",
       "viewQuotation": "View Quotation"
+    },
+    "inquiry": {
+      "title": "Bulk Purchase Inquiry",
+      "subtitle": "Fill in your contact and purchasing requirements, and a dedicated consultant will reach out within 2 hours with a factory-direct quotation.",
+      "email": "Email",
+      "emailPlaceholder": "Enter your email address",
+      "emailRequired": "Please enter your email address",
+      "emailInvalid": "Please enter a valid email address",
+      "company": "Company Name",
+      "companyPlaceholder": "Enter your company name",
+      "companyRequired": "Please enter your company name",
+      "country": "Country or Region",
+      "countryPlaceholder": "Select a country or region",
+      "countryRequired": "Please select a country or region",
+      "budgetAmount": "Estimated Budget",
+      "budgetAmountPlaceholder": "Enter the budget amount",
+      "budgetAmountRequired": "Please enter the budget amount",
+      "budgetAmountInvalid": "Budget amount must be greater than 0",
+      "budgetCurrency": "Currency",
+      "budgetCurrencyPlaceholder": "Select a currency",
+      "budgetCurrencyRequired": "Please select a currency",
+      "description": "Requirements Description",
+      "descriptionPlaceholder": "Describe the products, quantities, specifications you need",
+      "descriptionRequired": "Please enter your requirements",
+      "currencyOptions": {
+        "USD": "USD",
+        "EUR": "EUR",
+        "CNY": "CNY",
+        "GBP": "GBP",
+        "JPY": "JPY"
+      },
+      "submit": "Submit Inquiry",
+      "success": "Inquiry submitted, we will contact you soon",
+      "failed": "Failed to submit inquiry, please try again later"
     }
   },
   "cart": {
@@ -548,6 +582,7 @@
   "navbar": {
     "account": "Account",
     "all": "All",
+    "allCategories": "All Product Categories",
     "browseProducts": "Browse {name} products",
     "cart": "List",
     "categories": "Categories",

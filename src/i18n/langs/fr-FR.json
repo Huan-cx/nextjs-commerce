@@ -404,6 +404,40 @@
       "totalExpectedPrice": "Prix total attendu",
       "validUntil": "Valide jusqu'au",
       "viewQuotation": "Voir le devis"
+    },
+    "inquiry": {
+      "title": "Demande d'achat en gros",
+      "subtitle": "Renseignez vos coordonnées et vos besoins d'achat, un conseiller dédié vous contactera sous 2 heures avec un devis direct usine.",
+      "email": "E-mail",
+      "emailPlaceholder": "Saisissez votre adresse e-mail",
+      "emailRequired": "Veuillez saisir votre adresse e-mail",
+      "emailInvalid": "Veuillez saisir une adresse e-mail valide",
+      "company": "Nom de l'entreprise",
+      "companyPlaceholder": "Saisissez le nom de votre entreprise",
+      "companyRequired": "Veuillez saisir le nom de l'entreprise",
+      "country": "Pays ou région",
+      "countryPlaceholder": "Sélectionnez un pays ou une région",
+      "countryRequired": "Veuillez sélectionner un pays ou une région",
+      "budgetAmount": "Budget estimé",
+      "budgetAmountPlaceholder": "Saisissez le montant du budget",
+      "budgetAmountRequired": "Veuillez saisir le montant du budget",
+      "budgetAmountInvalid": "Le budget doit être supérieur à 0",
+      "budgetCurrency": "Devise",
+      "budgetCurrencyPlaceholder": "Sélectionnez une devise",
+      "budgetCurrencyRequired": "Veuillez sélectionner une devise",
+      "description": "Description des besoins",
+      "descriptionPlaceholder": "Décrivez les produits, quantités et spécifications dont vous avez besoin",
+      "descriptionRequired": "Veuillez saisir la description de vos besoins",
+      "currencyOptions": {
+        "USD": "USD",
+        "EUR": "EUR",
+        "CNY": "CNY",
+        "GBP": "GBP",
+        "JPY": "JPY"
+      },
+      "submit": "Envoyer la demande",
+      "success": "Demande envoyée, nous vous contacterons bientôt",
+      "failed": "Échec de l'envoi, veuillez réessayer plus tard"
     }
   },
   "cart": {
@@ -539,6 +573,7 @@
   "navbar": {
     "account": "Compte",
     "all": "Tous",
+    "allCategories": "Toutes les catégories de produits",
     "browseProducts": "Parcourir les produits {name}",
     "cart": "Liste",
     "categories": "Catégories",
