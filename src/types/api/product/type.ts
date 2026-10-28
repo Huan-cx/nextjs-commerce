@@ -47,6 +47,9 @@ export interface Category {
 
   /*URL友好名称 */
   slug?: string;
+
+  /*菜单跳转地址（如"所有产品"这类非真实分类的入口） */
+  href?: string;
 }
 
 /** 商品 SPU */

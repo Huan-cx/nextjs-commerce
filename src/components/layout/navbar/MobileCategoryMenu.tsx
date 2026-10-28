@@ -20,7 +20,8 @@ export interface MobileCategoryMenuProps {
 export default function MobileCategoryMenu({categories, onClose}: MobileCategoryMenuProps) {
   const t = useTranslations('mobileMenu');
   const [activeCategory, setActiveCategory] = useState<number | null>(
-      categories.length > 0 ? categories[0].id : null
+      // 跳过"所有产品"这类仅跳转的入口项，默认选中第一个真实分类
+      categories.find((cat) => !cat.href)?.id ?? null
   );
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -79,27 +80,41 @@ export default function MobileCategoryMenu({categories, onClose}: MobileCategory
             {/* 左栏：一级索引 */}
             <div
                 className="w-[30%] max-w-[120px] min-w-[90px] bg-neutral-100 overflow-y-auto flex flex-col shrink-0 border-r border-neutral-200/60 select-none">
-              {filteredCategories.map((cat) => (
-                  <button
-                      key={cat.id}
-                      onClick={() => setActiveCategory(cat.id)}
-                      className={`p-2.5 min-h-[56px] flex items-center text-left border-l-4 transition-all ${
-                          activeCategory === cat.id
-                              ? 'bg-white border-l-blue-600'
-                              : 'border-l-transparent border-b border-neutral-200/40 hover:bg-neutral-50'
-                      }`}
-                  >
-                <span
-                    className={`text-xs leading-tight break-words hyphens-auto ${
-                        activeCategory === cat.id
-                            ? 'font-bold text-neutral-900'
-                            : 'font-medium text-neutral-600'
-                    }`}
-                >
-                  {cat.name}
-                </span>
-                  </button>
-              ))}
+              {filteredCategories.map((cat) =>
+                  cat.href ? (
+                      // 入口项（如"所有产品"）直接跳转页面
+                      <Link
+                          key={cat.id}
+                          href={cat.href}
+                          onClick={onClose}
+                          className="p-2.5 min-h-[56px] flex items-center text-left border-l-4 border-l-transparent border-b border-neutral-200/40 hover:bg-neutral-50"
+                      >
+                        <span className="text-xs leading-tight break-words hyphens-auto font-medium text-neutral-600">
+                          {cat.name}
+                        </span>
+                      </Link>
+                  ) : (
+                      <button
+                          key={cat.id}
+                          onClick={() => setActiveCategory(cat.id)}
+                          className={`p-2.5 min-h-[56px] flex items-center text-left border-l-4 transition-all ${
+                              activeCategory === cat.id
+                                  ? 'bg-white border-l-blue-600'
+                                  : 'border-l-transparent border-b border-neutral-200/40 hover:bg-neutral-50'
+                          }`}
+                      >
+                        <span
+                            className={`text-xs leading-tight break-words hyphens-auto ${
+                                activeCategory === cat.id
+                                    ? 'font-bold text-neutral-900'
+                                    : 'font-medium text-neutral-600'
+                            }`}
+                        >
+                          {cat.name}
+                        </span>
+                      </button>
+                  )
+              )}
             </div>
 
             {/* 右栏：二三级分类 */}

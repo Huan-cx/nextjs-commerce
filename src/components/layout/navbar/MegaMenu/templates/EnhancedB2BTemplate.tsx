@@ -54,8 +54,9 @@ export default function EnhancedB2BTemplate({
   const openMenu = () => {
     if (!isMenuOpen) {
       setIsMenuOpen(true);
-      if (categories.length > 0) {
-        setHoveredCategory(categories[0].id);
+      const firstCategory = categories.find((cat) => !cat.href);
+      if (firstCategory) {
+        setHoveredCategory(firstCategory.id);
       }
     }
   };
@@ -91,21 +92,40 @@ export default function EnhancedB2BTemplate({
               <div className="max-w-screen-2xl mx-auto flex min-h-[480px]">
                 {/* 左侧一级分类 */}
                 <div className="w-64 bg-neutral-50 border-r border-neutral-100 p-2 flex flex-col">
-                  {categories.slice(0, 6).map((cat) => (
-                      <button
-                          key={cat.id}
-                          className={`flex items-center justify-between p-3 text-sm rounded-lg text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900 mt-1 ${
-                              hoveredCategory === cat.id ? 'bg-white text-black dark:text-white shadow-sm border border-neutral-100' : ''
-                          }`}
-                          onMouseEnter={() => setHoveredCategory(cat.id)}
-                          onClick={(e) => e.stopPropagation()} // 平板端靠点击切换分类，阻止冒泡避免误关菜单
-                      >
-                        <span>{cat.name}</span>
-                        <svg className="w-4 h-4 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path>
-                        </svg>
-                      </button>
-                  ))}
+                  {categories.slice(0, 6).map((cat) =>
+                      cat.href ? (
+                          // 入口项（如"所有产品"）直接跳转页面
+                          <Link
+                              key={cat.id}
+                              href={cat.href}
+                              onClick={closeMenu}
+                              className="flex items-center justify-between p-3 text-sm rounded-lg text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900 mt-1"
+                          >
+                            <span>{cat.name}</span>
+                            <svg className="w-4 h-4 text-neutral-400" fill="none" stroke="currentColor"
+                                 viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
+                                    d="M9 5l7 7-7 7"></path>
+                            </svg>
+                          </Link>
+                      ) : (
+                          <button
+                              key={cat.id}
+                              className={`flex items-center justify-between p-3 text-sm rounded-lg text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900 mt-1 ${
+                                  hoveredCategory === cat.id ? 'bg-white text-black dark:text-white shadow-sm border border-neutral-100' : ''
+                              }`}
+                              onMouseEnter={() => setHoveredCategory(cat.id)}
+                              onClick={(e) => e.stopPropagation()} // 平板端靠点击切换分类，阻止冒泡避免误关菜单
+                          >
+                            <span>{cat.name}</span>
+                            <svg className="w-4 h-4 text-neutral-400" fill="none" stroke="currentColor"
+                                 viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
+                                    d="M9 5l7 7-7 7"></path>
+                            </svg>
+                          </button>
+                      )
+                  )}
                 </div>
 
                 {/* 右侧二三级分类 */}
@@ -157,7 +177,7 @@ export default function EnhancedB2BTemplate({
                           {t('bulkQuoteDesc')}
                         </p>
                         <Link
-                            href="/rfq/create"
+                            href="/rfq/contact"
                             onClick={() => setIsMenuOpen(false)}
                             className="inline-block bg-white text-blue-600 text-[11px] font-bold px-3 py-1.5 rounded-lg shadow-sm hover:bg-blue-50 transition-colors"
                         >

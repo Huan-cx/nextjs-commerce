@@ -58,7 +58,7 @@ export default async function SearchPage({
     [key: string]: string;
   };
 
-  const itemsPerPage = 6;
+  const itemsPerPage = 16;
   const currentPage = page ? parseInt(page) - 1 : 0;
 
   // 从 URL 获取排序参数（使用 sort 参数，如 "newest", "price-asc"）

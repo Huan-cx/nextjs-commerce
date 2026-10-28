@@ -37,16 +37,20 @@ export function CategoriesMenu() {
       }))
       .filter((item: any) => item.name && item.slug);
   t("all");
+    const menuData = [
+        {name: t("all"), slug: "", id: "", href: "/search"},
+        ...translatedCategories,
+    ];
   return (
       <>
         {/* 对于移动设备和平板设备，使用移动端菜单 */}
         <div className="lg:hidden">
-          <MobileMenu menu={translatedCategories}/>
+            <MobileMenu menu={menuData}/>
         </div>
 
         {/* 对于桌面设备，使用新的巨型菜单 */}
         <div className="hidden lg:block">
-          <MegaMenu template="enhanced-b2b" categories={translatedCategories}/>
+            <MegaMenu template="enhanced-b2b" categories={menuData}/>
         </div>
       </>
   );

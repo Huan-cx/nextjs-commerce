@@ -1,6 +1,7 @@
 import {useEffect, useRef, useState} from 'react';
 import Link from '@/components/common/Link';
 import type {Category} from '@/types/api/product/type';
+import {useTranslations} from 'next-intl';
 
 interface B2BTemplateProps {
   categories: Category[];
@@ -15,6 +16,7 @@ export default function B2BTemplate({
                                     }: B2BTemplateProps) {
   const menuRef = useRef<HTMLDivElement>(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const t = useTranslations('navbar');
 
   // 点击外部区域关闭菜单
   useEffect(() => {
@@ -62,7 +64,7 @@ export default function B2BTemplate({
                   fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16"></path>
               </svg>
-              全部产品分类
+              {t('allCategories')}
             </button>
 
             {/* 巨型菜单面板 */}
@@ -122,7 +124,7 @@ export default function B2BTemplate({
                       </>
                   ) : (
                       <div className="col-span-3 text-center py-10 text-neutral-500">
-                        选择左侧分类查看详细产品
+                        {t('selectCategory')}
                       </div>
                   )}
                 </div>
@@ -130,18 +132,18 @@ export default function B2BTemplate({
                 {/* 右侧边栏：B2B 服务 */}
                 <div className="w-64 bg-slate-50 border-l border-neutral-200 p-6 flex flex-col justify-between">
                   <div className="space-y-4">
-                    <h5 className="text-xs font-bold text-neutral-400 dark:text-neutral-500 tracking-wider uppercase">工程大宗采购</h5>
+                    <h5 className="text-xs font-bold text-neutral-400 dark:text-neutral-500 tracking-wider uppercase">{t('bulkPurchase')}</h5>
 
                     <div className="bg-blue-600 rounded-xl p-4 text-white shadow-md">
-                      <h6 className="text-xs font-bold mb-1">大宗工程批量询价</h6>
+                      <h6 className="text-xs font-bold mb-1">{t('bulkQuote')}</h6>
                       <p className="text-[11px] text-blue-100 mb-3 leading-relaxed">
-                        支持上传BOM表，最快2小时专人出具源头厂货报价单。
+                        {t('bulkQuoteDesc')}
                       </p>
                       <Link
-                          href="/rfq/create"
+                          href="/rfq/contact"
                           className="inline-block bg-white text-blue-600 text-[11px] font-bold px-3 py-1.5 rounded-lg shadow-sm hover:bg-blue-50 transition-colors"
                       >
-                        立即发起询价
+                        {t('requestQuote')}
                       </Link>
                     </div>
 
@@ -153,17 +155,17 @@ export default function B2BTemplate({
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
                               d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                       </svg>
-                      <div className="text-[11px]">
+                      {/*   <div className="text-[11px]">
                         <span
                             className="font-semibold text-neutral-700 dark:text-neutral-300 block">2026产品类目选型手册</span>
                         <span className="text-neutral-400 dark:text-neutral-500 block">PDF / 45.2 MB</span>
-                      </div>
+                      </div> */}
                     </Link>
                   </div>
 
                   <div
                       className="text-[11px] text-neutral-400 dark:text-neutral-500 text-center border-t border-neutral-200 dark:border-neutral-700 pt-3">
-                    专属客服热线：400-123-4567
+                    {t('hotline')}
                   </div>
                 </div>
               </div>
@@ -176,7 +178,7 @@ export default function B2BTemplate({
                 href="/b2b/wholesale"
                 className="text-nowrap relative text-neutral-500 before:absolute before:bottom-0 before:left-0 before:h-px before:w-0 before:bg-current before:transition-all before:duration-300 before:content-[''] hover:text-black hover:before:w-full dark:text-neutral-400 dark:hover:text-neutral-300 px-4 py-5 inline-block text-sm font-medium"
             >
-              大宗专区
+              {t('wholesale')}
             </Link>
           </li>
           <li>
@@ -184,7 +186,7 @@ export default function B2BTemplate({
                 href="/projects"
                 className="text-nowrap relative text-neutral-500 before:absolute before:bottom-0 before:left-0 before:h-px before:w-0 before:bg-current before:transition-all before:duration-300 before:content-[''] hover:text-black hover:before:w-full dark:text-neutral-400 dark:hover:text-neutral-300 px-4 py-5 inline-block text-sm font-medium"
             >
-              工程案例
+              {t('projects')}
             </Link>
           </li>
         </ul>
