@@ -1,35 +1,58 @@
 "use client";
 
-import clsx from "clsx";
-import { getSession, signIn } from "next-auth/react";
+import {signIn, useSession} from "next-auth/react";
 import Image from "next/image";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { SubmitHandler, useForm } from "react-hook-form";
-import { Button } from "@components/common/button/Button";
-import { EMAIL_REGEX, SIGNIN_IMG } from "@/utils/constants";
+import Link from "@/components/common/Link";
+import {SubmitHandler, useForm} from "react-hook-form";
+import {Button} from "@components/common/button/Button";
+import {SIGNIN_IMG} from "@/utils/constants";
 import InputText from "@components/common/form/Input";
-import { useCustomToast } from "@/utils/hooks/useToast";
-import { useMergeCart } from "@utils/hooks/useMergeCart";
-import { getCookie } from "@utils/getCartToken";
-import { setCookie } from "@utils/helper";
-import { setLocalStorage } from "@/store/local-storage";
-import { useAppDispatch } from "@/store/hooks";
-import { setUser } from "@/store/slices/user-slice";
-import { useCartDetail } from "@utils/hooks/useCartDetail";
-import { GUEST_CART_ID, GUEST_CART_TOKEN, IS_GUEST } from "@/utils/constants";
+import {useCustomToast} from "@/utils/hooks/useToast";
+import {useTranslations} from "next-intl";
+import {useRouter, useSearchParams} from "next/navigation";
+import {useEffect, useRef} from "react";
+import {trackEvent} from "@/lib/analytics";
 
 type LoginFormInputs = {
   username: string;
   password: string;
 };
 
+/**
+ * 登录表单 - NextAuth 异步登录实现
+ *
+ * ✅ 使用 signIn({ redirect: false }) 异步模式：
+ *   1. signIn 返回 { ok, error, url }，前端完全可控
+ *   2. 登录成功 → router.push 跳转到 callbackUrl
+ *   3. 登录失败 → 不跳转，停留在当前页，弹出 toast 错误提示
+ *
+ * 【为什么不用 redirect: true】
+ *   redirect: true 是整页跳转模式，登录失败时浏览器会直接跳到
+ *   pages.error 页面，前端 catch 块无法执行，也就无法弹出 toast。
+ */
 export default function LoginForm() {
-  const router = useRouter();
-  const dispatch = useAppDispatch();
+  const {status} = useSession();
   const { showToast } = useCustomToast();
-  const { getCartDetail } = useCartDetail()
-  const { mergeCart } = useMergeCart();
+  const t = useTranslations("auth");
+  const loginT = useTranslations("loginForm");
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  // 标记：用户是否主动发起了登录（防止已登录用户访问登录页时触发伪造事件）
+  const loginInProgress = useRef(false);
+  const loginTracked = useRef(false);
+
+  // ✅ 监听登录成功状态变化，触发 login 事件
+  // 仅在 loginInProgress=true（用户主动操作）且未重复触发时才发送
+  useEffect(() => {
+    if (
+        status === "authenticated" &&
+        loginInProgress.current &&
+        !loginTracked.current
+    ) {
+      loginTracked.current = true;
+      trackEvent("login", {method: "email"});
+    }
+  }, [status]);
 
   const {
     register,
@@ -40,170 +63,151 @@ export default function LoginForm() {
     reValidateMode: "onChange",
   });
 
+  // ✅ 加载中不渲染
+  if (status === "loading") {
+    return null;
+  }
+
+  // ✅ 已登录就不渲染表单
+  if (status === "authenticated") {
+    return null;
+  }
+
   const onSubmit: SubmitHandler<LoginFormInputs> = async (data) => {
     try {
-      // First, handle cart merging before sign in
-      const guestCartId = getCookie(GUEST_CART_ID);
-      const guestCartToken = getCookie(GUEST_CART_TOKEN);
+      showToast(loginT("loggingIn"));
 
+      // ✅ 标记用户主动发起登录，用于后续触发 analytics 事件
+      loginInProgress.current = true;
+
+      // ✅ redirect: false 异步模式：
+      //   - 登录失败 → 返回 { ok: false, error }，不跳转，直接弹 toast
+      //   - 登录成功 → 返回 { ok: true, url }，手动跳转到 callbackUrl
+      const rawCallbackUrl = searchParams.get("callbackUrl") || "/";
+      const callbackUrl = /\/customer\/(login|register|forget-password|reset-password)/.test(rawCallbackUrl)
+          ? "/"
+          : rawCallbackUrl;
       const result = await signIn("credentials", {
         redirect: false,
-        ...data,
-        callbackUrl: "/",
+        username: data.username,
+        password: data.password,
+        callbackUrl,
       });
-
-      if (!result?.ok) {
-        showToast(result?.error || "Invalid login credentials.", "warning");
+      if (result?.error) {
+        // 登录失败：停留在当前页，弹出错误提示
+        loginInProgress.current = false;
+        showToast(result.error, "danger");
         return;
       }
-      showToast("Welcome! Successfully logged in.", "success");
-      setLocalStorage("email", data?.username)
 
-      const session = await getSession();
-      const userToken: string | undefined = session?.user?.accessToken;
-
-      if (!userToken) {
-        console.warn("No API token available in session after login");
-      }
-
-      if (session?.user) {
-        dispatch(setUser(session.user as any));
-      }
-
-      // Only merge cart if user had a guest cart before login
-      if (userToken && guestCartId && guestCartToken) {
-        try {
-          await mergeCart({ variables: { token: userToken, cartId: parseInt(guestCartId, 10) } });
-          setCookie(GUEST_CART_TOKEN, userToken);
-          setCookie(IS_GUEST, "false");
-          await getCartDetail();
-        } catch (err) {
-          console.error("mergeCart failed:", err);
-        }
-      } else if (userToken) {
-        // User logged in without a guest cart, just set the token
-        setCookie(GUEST_CART_TOKEN, userToken);
-        setCookie(IS_GUEST, "false");
-      }
-      setTimeout(() => {
-        router.push("/");
-        router.refresh();
-      }, 100);
-
-
+      // 登录成功：手动跳转（此时 session cookie 已由 NextAuth 写入）
+      router.push(result?.url || callbackUrl);
     } catch (error) {
+      // 网络异常等意外情况
+      loginInProgress.current = false;
       console.error(error);
-      showToast("Something went wrong. Please try again.", "danger");
+      showToast(loginT("errorMessage"), "danger");
     }
   };
 
   return (
-    <div className="flex w-full items-center max-w-screen-2xl mx-auto px-4  xss:px-7.5 justify-between gap-4 lg:my-16 xl:my-28">
+      <div
+          className="flex w-full items-center max-w-screen-2xl mx-auto px-4 xss:px-7.5 justify-between gap-4 lg:my-16 xl:my-28">
       <div className="flex w-full max-w-[583px] flex-col gap-y-4 lg:gap-y-12">
         <div className="font-outfit">
           <h2 className="py-1 text-2xl font-semibold sm:text-4xl">
-            Sign in to your account
+            {loginT("title")}
           </h2>
-          <p className="mt-2  text-base md:text-lg font-normal text-black/60 dark:text-neutral-400">
-            If you have an account, sign in with your email address.
+          <p className="mt-2 text-base md:text-lg font-normal text-black/60 dark:text-neutral-400">
+            {loginT("description")}
           </p>
         </div>
 
-        <form
-          noValidate
-          className="flex flex-col gap-y-4 lg:gap-y-12"
-          onSubmit={handleSubmit(onSubmit)}
-        >
-          <div className="flex flex-col gap-y-2.5 lg:gap-4">
+        {/* eslint-disable-next-line react-hooks/refs -- onSubmit 是事件处理函数，不会在 render 中执行 */}
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+          <div>
             <InputText
               {...register("username", {
-                required: "Email is required",
+                required: loginT("emailRequired"),
                 pattern: {
-                  value: EMAIL_REGEX,
-                  message: "Please enter a valid email.",
+                  value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                  message: loginT("emailInvalid"),
                 },
               })}
               errorMsg={
                 errors.username?.message ? [errors.username.message] : undefined
               }
-              label="Enter Your Email Address"
+              label={loginT("emailLabel")}
               labelPlacement="outside"
               name="username"
-              placeholder="Enter your email address"
+              placeholder={loginT("emailPlaceholder")}
               rounded="md"
               size="lg"
               typeName="email"
             />
+          </div>
 
+          <div>
             <InputText
               {...register("password", {
-                required: "Password is required",
+                required: loginT("passwordRequired"),
                 minLength: {
-                  value: 2,
-                  message: "Be at least 2 characters long",
-                },
-                validate: (value) => {
-                  if (!/[0-2]/.test(value))
-                    return "Contain at least one number.";
-
-                  return true;
+                  value: 6,
+                  message: loginT("passwordMinLength"),
                 },
               })}
               errorMsg={
                 errors.password?.message ? [errors.password.message] : undefined
               }
-              label="Enter Password"
+              label={loginT("passwordLabel")}
               labelPlacement="outside"
               name="password"
-              placeholder="Enter your password"
+              placeholder={loginT("passwordPlaceholder")}
               rounded="md"
               size="lg"
               typeName="password"
             />
+          </div>
 
+          <div className="flex items-center justify-between">
             <Link
-              className="text-end text-sm font-medium text-blue-600 underline hover:text-blue-500 underline"
-              href="/customer/forget-password"
-              aria-label="Go to forgot password page"
+                href="/customer/forget-password"
+                className="text-sm text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300"
             >
-              Forgot your password ?
+              {loginT("forgotPassword")}
             </Link>
           </div>
 
-          <div className="flex flex-col gap-2 lg:gap-y-3">
-            <Button
-              className="cursor-pointer"
-              disabled={isSubmitting}
-              loading={isSubmitting}
-              title="Sign In"
+          <Button
               type="submit"
-            />
-            <span className="mx-auto font-outfit sm:mx-0">
-              New customer?{" "}
-              <Link
-                className="font-medium text-blue-600 hover:text-blue-500 underline"
-                href="/customer/register"
-                aria-label="Go to create account page"
-              >
-                Create your account
-              </Link>
-            </span>
-          </div>
+              disabled={isSubmitting}
+              title={isSubmitting ? loginT("loggingIn") : loginT("submit")}
+              className="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-medium rounded-lg transition-colors"
+          >
+          </Button>
         </form>
+
+        <p className="text-center text-sm text-gray-600 dark:text-gray-400">
+          {t("noAccount")}{" "}
+          <Link
+              href="/customer/register"
+              className="text-blue-600 hover:text-blue-500 font-medium dark:text-blue-400 dark:hover:text-blue-300"
+          >
+            {t("register")}
+          </Link>
+        </p>
       </div>
 
-      <div className="relative hidden aspect-[0.9] max-h-[692px] w-full max-w-[790px] sm:block md:aspect-[1.14]">
-        <Image
-          fill
-          priority
-          alt="Sign In Image"
-          className={clsx(
-            "relative h-full w-full object-fill",
-            "transition duration-300 ease-in-out group-hover:scale-105"
-          )}
-          sizes={"(min-width: 768px) 66vw, 100vw"}
-          src={SIGNIN_IMG}
-        />
+        <div className="hidden lg:block w-1/2">
+          <div className="relative w-full h-[600px]">
+            <Image
+                src={SIGNIN_IMG}
+                alt="Login"
+                fill
+                className="object-cover rounded-2xl"
+                priority
+            />
+          </div>
       </div>
     </div>
   );

@@ -1,19 +1,22 @@
 "use client";
-import { useForm } from "react-hook-form";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
-import { EMAIL, getLocalStorage, setLocalStorage } from "@/store/local-storage";
-import Link from "next/link";
+import {useForm} from "react-hook-form";
+import {useRouter} from "next/navigation";
+import {useState} from "react";
+import {useAppDispatch, useAppSelector} from "@/store/hooks";
+import {setEmail} from "@/store/slices/checkout-slice";
+import {delay} from "@utils/helper";
+import {EmailFormProps, EmailFormValues} from "../type";
+import {EMAIL_REGEX} from "@utils/constants";
 import InputText from "@components/common/form/Input";
-import { ProceedToCheckout } from "./ProceedToCheckout";
-import { delay } from "@utils/helper";
-import { EmailFormProps, EmailFormValues } from "../type";
-import { EMAIL_REGEX } from "@utils/constants";
+import Link from "@/components/common/Link";
+import {ProceedToCheckout} from "@components/checkout/stepper/ProceedToCheckout";
+import {useTranslations} from "next-intl";
 
-
-
-const Email = () => {
-  const email = getLocalStorage(EMAIL);
+const
+    Email = () => {
+  const dispatch = useAppDispatch();
+      const {user} = useAppSelector((state) => state.user);
+  const email = useAppSelector((state) => state.checkout.email);
   const [isOpen, setIsOpen] = useState(false);
   const router = useRouter();
   const isGuest = true;
@@ -23,11 +26,11 @@ const Email = () => {
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm<EmailFormValues>({
-    defaultValues: { email },
+    defaultValues: {email: email || user?.email || ""},
   });
 
   const onSubmit = async (data: EmailFormValues) => {
-    setLocalStorage(EMAIL, data?.email);
+    dispatch(setEmail(data.email));
     await delay(200);
     router.push("/checkout?step=address");
   };
@@ -99,6 +102,7 @@ function EmailForm({
   isSubmitting,
   isGuest,
 }: EmailFormProps) {
+  const t = useTranslations("checkout");
   return (
     <div>
       <InputText
@@ -113,8 +117,8 @@ function EmailForm({
           }
         })}
         errorMsg={errors?.email?.message as string}
-        label="Enter Email *"
-        placeholder="example@gmail.com"
+        label={t("email")}
+        placeholder={t("emailPlaceholder")}
         readOnly={!isGuest}
       />
 

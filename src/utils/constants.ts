@@ -28,7 +28,7 @@ export const CHECKOUT = {
 };
 export const HIDDEN_PRODUCT_TAG = "nextjs-frontend-hidden";
 export const DEFAULT_OPTION = "Default Title";
-export const BAGISTO_GRAPHQL_API_ENDPOINT = "/api/graphql";
+export const SERVER_API_ENDPOINT = "/app-api";
 
 /**
  * productJsonLd constant
@@ -40,17 +40,61 @@ export const PRODUCT_OFFER_TYPE = "AggregateOffer";
 /**
  * cookies constant
  */
-export const BAGISTO_SESSION = process.env.BAGISTO_SESSION ?? "bagisto_session";
+export const BAGISTO_SESSION = process.env.BAGISTO_SESSION ?? "app_session";
 export const TOKEN = "token";
-export const BASE_URL = process.env.NEXT_PUBLIC_NEXT_AUTH_URL;
-export const baseUrl = process.env.NEXT_PUBLIC_BAGISTO_ENDPOINT;
-export const GRAPHQL_URL = `${(process.env.NEXT_PUBLIC_BAGISTO_ENDPOINT || '').replace(/\/$/, '')}${BAGISTO_GRAPHQL_API_ENDPOINT}`;
-export const NEXT_AUTH_SECRET = process.env.NEXT_PUBLIC_NEXT_AUTH_SECRET;
 
-// Server-only: Use non-public env var, fallback to public for backwards compatibility
-export const STOREFRONT_KEY = process.env.BAGISTO_STOREFRONT_KEY || process.env.NEXT_PUBLIC_BAGISTO_STOREFRONT_KEY || "";
+// 前端网站地址（用于构建 URL、SEO 等，客户端可用）
+export const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || process.env.NEXTAUTH_URL;
+
+// 后端 API 地址（客户端可用）
+export const API_URL = process.env.NEXT_PUBLIC_API_URL;
+export const baseUrl = API_URL; // 保持向后兼容
+
+// WebSocket 地址（用于缓存失效通知）
+export const WEB_SOCKET_URL = process.env.NEXT_PUBLIC_WEBSOCKET_URL ||
+    ((process.env.NEXT_PUBLIC_API_URL || '').replace(/^http/, 'ws').replace(/\/$/, '') + '/infra/ws');
+
+// API 请求基础 URL
+export const REST_URL = `${(process.env.NEXT_PUBLIC_API_URL || '').replace(/\/$/, '')}${SERVER_API_ENDPOINT}`;
+
+// ⚠️ 注意：NEXTAUTH_SECRET 是服务端环境变量，不应暴露给客户端
+// 此常量仅在服务端代码中使用，客户端代码禁止导入
+export const NEXTAUTH_SECRET = process.env.NEXTAUTH_SECRET;
+
+// Storefront API Key（服务端优先，fallback 到客户端版本）
+export const STOREFRONT_KEY = process.env.STOREFRONT_KEY || process.env.NEXT_PUBLIC_STOREFRONT_KEY || "";
+
+/**
+ * 租户 ID 配置
+ * 用于多租户系统识别当前请求所属租户
+ */
+export const TENANT_ID = "1";
 
 export const OPERATION_TO_ROUTE_MAP: Record<string, string> = {
+};
+
+/**
+ * SEO / 站点配置 — 集中管理品牌名、货币等
+ */
+export const SITE_CONFIG = {
+  name: process.env.NEXT_PUBLIC_SITE_NAME || "E-Commerce Store",
+  defaultTitle: process.env.NEXT_PUBLIC_SITE_TITLE || "E-Commerce Store",
+  defaultDescription: process.env.NEXT_PUBLIC_SITE_DESCRIPTION || "Modern e-commerce platform with quality products and fast delivery",
+  currency: process.env.NEXT_PUBLIC_CURRENCY || "EUR",
+};
+
+/**
+ * 价格显示配置
+ * 用于 B2B 场景控制商品价格的全局显示行为
+ * - showPrice: 是否显示商品价格（关闭后所有商品价格区域都会隐藏，包括"As low as"等文案）
+ *   注：报价单、订单、结账流程等通过 Price 组件的 forceShow 属性强制显示
+ */
+export interface PriceConfig {
+  showPrice: boolean;
+}
+
+export const DEFAULT_PRICE_CONFIG: PriceConfig = {
+  showPrice: false,
 };
 
 // -----Pagination--------//
@@ -58,7 +102,9 @@ export const PAGE = "page";
 export const LIMIT = "limit";
 export const LOADING = "loading";
 export const QUERY = "q";
-export const SORT = "sort";
+export const SORT = "sortField";
+export const SORT_FIELD = "sortField";
+export const SORT_ASC = "sortAsc";
 
 /**
  * Placeholder Images
@@ -176,15 +222,15 @@ export const imageProtocol = (process.env.NEXT_SERVER_MAGENTO_PROTOCOL ||
   "https") as "http" | "https";
 
 
-
 export function getImageUrl(url?: string, baseUrl?: string, fallback?: string) {
-  if (!url) return fallback;
+  if (!url) return fallback || NOT_IMAGE;
 
   if (url.startsWith("http://") || url.startsWith("https://")) {
     return url;
   }
 
-  return `${baseUrl}${url.startsWith("/") ? url : `/${url}`}`;
+  const base = baseUrl || '';
+  return `${base}${url.startsWith("/") ? url : `/${url}`}`;
 }
 
 
@@ -197,46 +243,46 @@ export type SortOrderTypes = {
 };
 
 export const SortByFields: SortOrderTypes[] = [
-  {
-    key: "name-asc",
-    title: "From A-Z",
-    value: "name-asc",
-    sortKey: "TITLE",
-    reverse: false,
-  },
-  {
-    key: "name-desc",
-    title: "From Z-A",
-    value: "name-desc",
-    sortKey: "TITLE",
-    reverse: true,
-  },
+  // {
+  //   key: "name-asc",
+  //   title: "From A-Z",
+  //   value: "name-asc",
+  //   sortKey: "TITLE",
+  //   reverse: false,
+  // },
+  // {
+  //   key: "name-desc",
+  //   title: "From Z-A",
+  //   value: "name-desc",
+  //   sortKey: "TITLE",
+  //   reverse: true,
+  // },
   {
     key: "newest",
     title: "Newest First",
     value: "newest",
-    sortKey: "CREATED_AT",
+    sortKey: "createTime",
     reverse: true,
   },
   {
     key: "oldest",
     title: "Oldest First",
     value: "oldest",
-    sortKey: "CREATED_AT",
+    sortKey: "createTime",
     reverse: false,
   },
   {
     key: "price-asc",
     title: "Cheapest First",
     value: "price-asc",
-    sortKey: "PRICE",
+    sortKey: "price",
     reverse: false,
   },
   {
     key: "price-desc",
     title: "Expensive First",
     value: "price-desc",
-    sortKey: "PRICE",
+    sortKey: "price",
     reverse: true,
   },
 ];
@@ -244,6 +290,12 @@ export const SortByFields: SortOrderTypes[] = [
 export const GUEST_CART_TOKEN = "guest_cart_token";
 export const GUEST_CART_ID = "guest_cart_id";
 export const IS_GUEST = "is_guest";
+
+/**
+ * 直达产品通用开关（前端集中管理）
+ * 开启后：三级分类点击时，若该分类下在售商品仅有一个，则直接跳转商品详情页，否则仍进入分类页
+ */
+export const DIRECT_TO_PRODUCT_ENABLED: boolean = true;
 
 
 export const NEXTAUTH_TOKEN = "next-auth.session-token";
@@ -253,6 +305,7 @@ export const ORDER_ID = "order_id";
 
 export const EMAIL_REGEX = /^(?![.-])(?!.*[.-]@)(?!.*\.\.)[a-zA-Z0-9._-]+@[a-zA-Z0-9-]+(\.[a-zA-Z]{2,})+$/;
 
-export const IS_VALID_INPUT = /^[a-zA-Z0-9\s]*$/;
+// ✅ 支持中文、英文、数字和空格
+export const IS_VALID_INPUT = /^[\u4e00-\u9fa5a-zA-Z0-9\s]*$/;
 export const IS_VALID_ADDRESS = /^[a-zA-Z0-9\s,\/-]*$/;
 export const IS_VALID_PHONE = /^[0-9]{10}$/;

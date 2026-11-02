@@ -1,8 +1,13 @@
-import { FC } from "react";
-import { cachedGraphQLRequest } from "@/utils/hooks/useCache";
-import { ThreeItemGrid } from "./ThreeItemGrid";
+"use client"
+
+import {FC, useMemo} from "react";
+import {ThreeItemGrid} from "./ThreeItemGrid";
 import Theme from "./ProductCarouselTheme";
-import { GET_PRODUCTS } from "@/graphql";
+import {useQuery} from "@tanstack/react-query";
+import {getSpuPage} from "@utils/api/product";
+import {Spu} from "@/types/api/product/type";
+import {useTranslations} from "next-intl";
+
 
 interface ProductCarouselProps {
   options: {
@@ -13,79 +18,91 @@ interface ProductCarouselProps {
   sortOrder?: number;
 }
 
-const ProductCarousel: FC<ProductCarouselProps> = async ({
-  options,
-  itemCount = 4,
-  sortOrder,
-}) => {
+const ProductCarousel: FC<ProductCarouselProps> = ({
+                                                     options,
+                                                     itemCount = 4,
+                                                     sortOrder,
+                                                   }) => {
   const { filters, title } = options;
-  try {
-    const { sort, limit, ...rest } = filters || {};
+  const t = useTranslations("home");
+
+  // 构建查询参数
+  const queryKey = useMemo(() => {
+    return ['product-carousel', filters, itemCount, sortOrder];
+  }, [filters, itemCount, sortOrder]);
+
+  const filterInput = useMemo(() => {
+    const {sort: _sort, ...rest} = filters || {};
     const filterObject: Record<string, string> = {};
+
+    // Include all filter values except sort (which we handle separately)
     Object.entries(rest).forEach(([key, value]) => {
       if (value !== undefined && value !== null) {
         filterObject[key] = String(value);
       }
     });
-    const filterInput =
-      Object.keys(filterObject).length > 0
-        ? JSON.stringify(filterObject)
-        : undefined;
 
-    let sortKey = "CREATED_AT";
-    let reverse = true;
+    return Object.keys(filterObject).length > 0 ? filterObject : undefined;
+  }, [filters]);
 
-    if (sort === "created_at-desc") {
-      sortKey = "CREATED_AT";
-      reverse = true;
-    } else if (sort === "price-desc") {
-      sortKey = "PRICE";
-      reverse = true;
+  const sortAsc = useMemo(() => {
+    const {sort} = filters || {};
+    if (sort === "created_at-asc" || sort === "price-asc") {
+      return true;
     }
+    return false; // 默认降序
+  }, [filters]);
 
-    const data = await cachedGraphQLRequest<any>(
-      "home",
-      GET_PRODUCTS,
-      {
-        sortKey,
-        filter: filterInput,
-        first: limit ? parseInt(limit, 10) : itemCount,
-        reverse,
-      }
-    );
+  const pageSize = useMemo(() => {
+    const {limit} = filters || {};
+    return limit ? parseInt(limit, 10) : itemCount;
+  }, [filters, itemCount]);
 
-    const products =
-      data?.products?.edges?.slice(0, 8).map((edge: any) => edge.node) || [];
+  // 使用React Query获取数据
+  const {data: spuPage, isLoading} = useQuery<{ list: Spu[] }>({
+    queryKey,
+    queryFn: async () => {
+      const data = await getSpuPage({
+        ...filterInput,
+        sortAsc,
+        pageSize,
+        pageNo: 1,
+      });
+      return data || {list: []};
+    },
+    placeholderData: {list: []},
+  });
 
-    if (!products.length) {
-      return null;
-    }
+  const products = useMemo(() => {
+    return spuPage?.list?.slice(0, 8) || [];
+  }, [spuPage]);
 
-    if (sortOrder === 2) {
-      return (
-        <ThreeItemGrid
-          title={title || "Products"}
-          description="Discover the latest trends! Fresh products just added—shop new styles, tech, and essentials before they're gone."
-          products={products.slice(0, 3)}
-        />
-      );
-    }
-
-    return (
-      <Theme
-        title={title || "Products"}
-        description="Discover the latest trends! Fresh products just added—shop new styles, tech, and essentials before they're gone."
-        products={products}
-      />
-    );
-  } catch (error) {
-    console.error("Error fetching products for carousel:", {
-      title,
-      filters,
-      error: error instanceof Error ? error.message : error,
-    });
+  // 加载状态不显示任何内容
+  if (isLoading) {
     return null;
   }
+
+  if (!products.length) {
+    return null;
+  }
+
+  if (sortOrder === 2) {
+    return (
+        <ThreeItemGrid
+            title={title || "Products"}
+            description={t("productCarouselDescription")}
+            products={products.slice(0, 3)}
+        />
+    );
+  }
+
+  return (
+      <Theme
+          title={title || "Products"}
+          description={t("productCarouselDescription")}
+          products={products}
+      />
+  );
 };
 
 export default ProductCarousel;

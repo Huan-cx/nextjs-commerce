@@ -2,75 +2,89 @@
 
 import ShoppingCartIcon from "@components/common/icons/ShoppingCartIcon";
 import clsx from "clsx";
-import Link from "next/link";
-import { useAddProduct } from "@utils/hooks/useAddToCart";
-import { useAppSelector } from "@/store/hooks";
+import Link from "@/components/common/Link";
+import {useCart} from "@utils/hooks/useAddToCart";
 import LoadingDots from "@components/common/icons/LoadingDots";
-import { useCustomToast } from "@utils/hooks/useToast";
+import {useCustomToast} from "@utils/hooks/useToast";
+import {useAuthStatus} from "@utils/hooks/useAuthStatus";
+import {ProductInfo} from "@/types/cart/type";
+
 
 export default function AddToCartButton({
-  productType,
-  productUrlKey,
-  productId,
-  isSaleable
-}: {
-  productType?: string;
-  productId: string;
-  productUrlKey: string;
-  isSaleable?: string;
+                                          product,
+                                          isSaleable
+                                        }: {
+  product: ProductInfo;
+  isSaleable?: boolean;
 }) {
-  const { isCartLoading, onAddToCart } = useAddProduct();
+  const {isGuest} = useAuthStatus();
+  const {isCartLoading, onAddToCart} = useCart();
   const { showToast } = useCustomToast();
-  const { user } = useAppSelector((state) => state.user);
-  const session = { user };
 
   const handleAddToCart = () => {
-    if (!isSaleable || isSaleable === "") {
+    if (!isSaleable) {
       showToast("This product is out of stock", "warning");
       return;
     }
 
     onAddToCart({
-      productId: productId.split("/").pop() || "",
-      quantity: 1,
-      token: session?.user?.token ?? undefined,
-    });
+      skuId: Number(product.sku.id),
+      name: product.spu.name || "",
+      sku: {
+        id: Number(product.sku.id),
+        price: Number(product.sku.price) || 0,
+        stock: product.sku?.stock || 0,
+        picUrl: product.sku?.picUrl || "",
+        properties: product.sku?.properties || [],
+      },
+      spu: {
+        id: Number(product.spu.id) || 0,
+        name: product.spu.name || "",
+        picUrl: product.spu?.picUrl || "",
+        stock: product.sku?.stock || 0,
+        categoryId: product.spu?.categoryId || 0,
+        status: product.spu?.status || 0,
+      },
+      id: 0,
+      count: 1,
+      selected: true,
+    }, isGuest);
   };
 
   const buttonClasses =
-    " flex w-full cursor-pointer items-center  justify-center px-4 rounded-full min-h-8  tracking-wide ";
+      " flex w-full cursor-pointer items-center  justify-center px-4 rounded-full min-h-8  tracking-wide ";
   const disabledClasses = "cursor-wait opacity-60 hover:opacity-60";
 
-  return productType !== "simple" ? (
-    <Link
-      aria-disabled="true"
-      aria-label={productUrlKey}
-      rel="prefetch"
-      prefetch={true}
-      className={clsx(buttonClasses, {
-        "hover:opacity-90": true,
-      })}
-      href={`/product/${productUrlKey}`}
-      type="submit"
-    >
-      <ShoppingCartIcon className="size-6 -rotate-6 stroke-black stroke-[1.5]" />
-    </Link>
+  return product.spu.specType ? ( // Assuming specType indicates a configurable product
+      <Link
+          aria-disabled="true"
+          aria-label={product.spu.name}
+          rel="prefetch"
+          prefetch={true}
+          className={clsx(buttonClasses, {
+            "hover:opacity-90": true,
+          })}
+          href={`/product/${product.spu.id}`} // Assuming spu.id is the url key
+          type="submit"
+      >
+        <ShoppingCartIcon className="size-6 -rotate-6 stroke-black stroke-[1.5]"/>
+      </Link>
   ) : (
-    <button
-      aria-disabled={isCartLoading || !isSaleable || isSaleable === ""}
-      aria-label={productUrlKey}
-      className={clsx(buttonClasses, {
-        "hover:opacity-90": isSaleable && isSaleable !== "",
-        [disabledClasses]: isCartLoading || !isSaleable || isSaleable === "",
-      })}
-      type="button"
-      onClick={handleAddToCart}
-    >
-      {isCartLoading ? (
-        <LoadingDots className="bg-black" />
-      ) : (
-        <ShoppingCartIcon className="size-6 -rotate-6 stroke-black stroke-[1.5]" />
-      )}
-    </button>
+      <button
+          aria-disabled={isCartLoading || !isSaleable}
+          aria-label={product.spu.name}
+          className={clsx(buttonClasses, {
+            "hover:opacity-90": isSaleable,
+            [disabledClasses]: isCartLoading || !isSaleable,
+          })}
+          type="button"
+          onClick={handleAddToCart}
+      >
+        {isCartLoading ? (
+            <LoadingDots className="bg-black"/>
+        ) : (
+            <ShoppingCartIcon className="size-6 -rotate-6 stroke-black stroke-[1.SA]"/>
+        )}
+      </button>
   );
 }

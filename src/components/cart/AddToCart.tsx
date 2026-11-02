@@ -1,15 +1,17 @@
 "use client";
 
-import { MinusIcon, PlusIcon } from "@heroicons/react/24/outline";
+import {MinusIcon, PlusIcon} from "@heroicons/react/24/outline";
 import clsx from "clsx";
-import { useSearchParams } from "next/navigation";
-import { useForm, useWatch } from "react-hook-form";
-import { ConfigurableProductIndexData } from "@/types/types";
-import { useAddProduct } from "@utils/hooks/useAddToCart";
+import {useSearchParams} from "next/navigation";
+import {useForm} from "react-hook-form";
 import LoadingDots from "@components/common/icons/LoadingDots";
-import { getVariantInfo } from "@utils/hooks/useVariantInfo";
-import { safeParse } from "@utils/helper";
-import { ProductSwatchReview } from "@/types/category/type";
+import {getVariantInfo} from "@utils/hooks/useProductVariant";
+import {Sku, Spu} from "@/types/api/product/type";
+import {useCart} from "@utils/hooks/useAddToCart";
+import {useAuthStatus} from "@utils/hooks/useAuthStatus";
+import {useLocale, useTranslations} from "next-intl";
+import {useRef, useState} from "react";
+import {trackAddToCart} from "@/lib/analytics";
 
 interface AddToCartFormData {
   quantity: number;
@@ -17,181 +19,257 @@ interface AddToCartFormData {
 }
 
 function SubmitButton({
-  selectedVariantId,
-  pending,
-  type,
-  isSaleable,
-}: {
+                        selectedVariantId,
+                        pending,
+                        type,
+                        isSaleable,
+                      }: {
   selectedVariantId: boolean;
   pending: boolean;
   type: string;
-  isSaleable: string;
+  isSaleable: boolean;
 }) {
+  const t = useTranslations("cart");
   const buttonClasses =
-    "relative flex w-full max-w-[16rem] cursor-pointer h-fit items-center justify-center rounded-full bg-blue-600 p-4 tracking-wide text-white";
+      "relative flex w-full max-w-[16rem] cursor-pointer h-fit items-center justify-center rounded-full bg-blue-600 p-4 tracking-wide text-white";
   const disabledClasses = "cursor-wait opacity-60";
 
-  if (!isSaleable || isSaleable === "") {
+  if (!isSaleable) {
     return (
-      <button
-        aria-disabled
-        aria-label="Out of stock"
-        type="button"
-        disabled
-        className={clsx(buttonClasses, " opacity-60 !cursor-not-allowed")}
-      >
-        Out of Stock
-      </button>
+        <button
+            aria-disabled
+            aria-label={t("outOfStock")}
+            type="button"
+            disabled
+            className={clsx(buttonClasses, " opacity-60 !cursor-not-allowed")}
+        >
+          {t("outOfStock")}
+        </button>
     );
   }
 
   if (!selectedVariantId && type === "configurable") {
     return (
-      <button
-        aria-disabled
-        aria-label="Please select an option"
-        type="button"
-        disabled={!selectedVariantId}
-        className={clsx(buttonClasses, " opacity-60 !cursor-not-allowed")}
-      >
-        Add To Cart
-      </button>
+        <button
+            aria-disabled
+            aria-label={t("selectOption")}
+            type="button"
+            disabled={!selectedVariantId}
+            className={clsx(buttonClasses, " opacity-60 !cursor-not-allowed")}
+        >
+          {t("addToCart")}
+        </button>
     );
   }
 
   return (
-    <button
-      aria-disabled={pending}
-      aria-label="Add to cart"
-      type="submit"
-      className={clsx(buttonClasses, {
-        "hover:opacity-90": true,
-        [disabledClasses]: pending,
-      })}
-      onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
-        if (pending) e.preventDefault();
-      }}
-    >
-      <div className="absolute left-0 ml-4">
-        {pending ? <LoadingDots className="mb-3 bg-white" /> : ""}
-      </div>
-      Add To Cart
-    </button>
+      <button
+          aria-disabled={pending}
+          aria-label={t("addToCart")}
+          type="submit"
+          className={clsx(buttonClasses, {
+            "hover:opacity-90": true,
+            [disabledClasses]: pending,
+          })}
+          onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
+            if (pending) e.preventDefault();
+          }}
+      >
+        <div className="absolute left-0 ml-4">
+          {pending ? <LoadingDots className="mb-3 bg-white"/> : ""}
+        </div>
+        {t("addToCart")}
+      </button>
   );
 }
 
 export function AddToCart({
-  productSwatchReview,
-  index,
-  productId,
-  userInteracted,
-}: {
-  productSwatchReview: ProductSwatchReview;
-  productId: string;
-  index: ConfigurableProductIndexData[];
+                            product,
+                            userInteracted,
+                          }: {
+  product: Spu;
   userInteracted: boolean;
 }) {
-  const isSaleable = productSwatchReview?.isSaleable || "";
-  const { onAddToCart, isCartLoading } = useAddProduct();
-  const { handleSubmit, setValue, control, register } = useForm<AddToCartFormData>({
-    defaultValues: {
-      quantity: 1,
-      isBuyNow: false,
-    },
-  });
+  const {onAddToCart, isCartLoading} = useCart();
+  const {isGuest} = useAuthStatus();
+  const t = useTranslations("cart");
+  const locale = useLocale();
 
-  const quantity = useWatch({
-    control,
-    name: "quantity",
-  });
+  const searchParams = useSearchParams();
+  const type = product?.specType ? "configurable" : "simple";
+
+  const {productid: selectedVariantId, instock: checkStock} = getVariantInfo(
+      product,
+      searchParams.toString(),
+      locale
+  );
+
+  const selectedSku = product.skus?.find((item: Sku) => item.id === Number(selectedVariantId));
+  const minQty = selectedSku?.minQty || product.skus?.[0]?.minQty || 0;
+  const effectiveMinQty = minQty > 0 ? minQty : 1;
+
+  const [quantity, setQuantity] = useState(effectiveMinQty);
+  const [isEditing, setIsEditing] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const increment = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    setValue("quantity", Number(quantity) + 1);
+    setQuantity(prev => prev + 1);
   };
 
   const decrement = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    setValue("quantity", Math.max(1, Number(quantity) - 1));
+    setQuantity(prev => Math.max(effectiveMinQty, prev - 1));
   };
 
-  const searchParams = useSearchParams();
-  const type = productSwatchReview?.type;
+  const handleQuantityFocus = () => {
+    setIsEditing(true);
+  };
 
-  const superAttributes = productSwatchReview?.superAttributeOptions
-    ? safeParse(productSwatchReview.superAttributeOptions)
-    : productSwatchReview?.superAttributes?.edges?.map(
-        (e) => e.node,
-      ) || [];
+  const handleQuantityBlur = () => {
+    setIsEditing(false);
+    if (quantity < effectiveMinQty || quantity <= 0 || isNaN(quantity)) {
+      setQuantity(effectiveMinQty);
+    }
+  };
 
-  const isConfigurable = superAttributes.length > 0;
+  const handleQuantityKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") {
+      (e.target as HTMLInputElement).blur();
+    } else if (e.key === "Escape") {
+      setIsEditing(false);
+      setQuantity(effectiveMinQty);
+    }
+  };
 
-  const { productid: selectedVariantId, Instock: checkStock } = getVariantInfo(
-    isConfigurable,
-    searchParams.toString(),
-    superAttributes,
-    JSON.stringify(index),
-  );
-  const buttonStatus = !!selectedVariantId;
+  const {handleSubmit} = useForm<AddToCartFormData>({
+    defaultValues: {
+      quantity: quantity,
+      isBuyNow: false,
+    },
+  });
 
-  const actionWithVariant = async (data: AddToCartFormData) => {
-    const pid =
-      type === "configurable"
+  const actionWithVariant = async () => {
+    const skuId = type === "configurable"
         ? String(selectedVariantId)
-        : (String(productId).split("/").pop() ?? "");
-    onAddToCart({
-      productId: pid,
-      quantity: data.quantity,
+        : product.skus && product.skus.length > 0
+            ? String(product.skus[0].id)
+            : String(product.id);
+    const sku = product.skus?.find((item: Sku) => item.id === Number(selectedVariantId));
+    await onAddToCart({
+      skuId: Number(skuId),
+      name: product.name || "",
+      id: Number(skuId),
+      count: quantity,
+      selected: true,
+        sku: {
+          id: Number(skuId),
+          price: Number(sku?.price) || 0,
+          stock: sku?.stock || 0,
+          picUrl: sku?.picUrl || "",
+          properties: sku?.properties || [],
+          minQty: sku?.minQty,
+        },
+        spu: {
+          id: product.id || 0,
+          name: product.name || "",
+          picUrl: product.picUrl || "",
+          stock: product.stock || 0,
+          categoryId: product.categoryId || 0,
+          status: product.status || 0,
+        },
+    }, isGuest);
+
+    // ✅ 加购成功后触发 add_to_cart 事件
+    trackAddToCart({
+      product_id: product.id,
+      quantity: quantity,
+      price: Number(sku?.price) || 0,
+      value: (Number(sku?.price) || 0) * quantity,
     });
   };
 
+  const buttonStatus = !!selectedVariantId;
+
   return (
-    <>
-      {!checkStock && type === "configurable" && userInteracted && (
-        <div className="gap-1 px-2 py-1 my-2 font-bold text-red-500 dark:text-red-400">
-          <h1>NO STOCK AVAILABLE</h1>
-        </div>
-      )}
-      <form className="flex gap-x-4" onSubmit={handleSubmit(actionWithVariant)}>
-        <div className="flex items-center justify-center">
-          <div className="flex items-center rounded-full border-2 border-blue-500">
-            <div
-              aria-label="Decrease quantity"
-              role="button"
-              className="flex h-12 w-12 cursor-pointer items-center justify-center rounded-l-full text-gray-600 transition-colors hover:text-gray-800 dark:text-white hover:dark:text-white/[80%]"
-              onClick={decrement}
-            >
-              <MinusIcon className="h-4 w-4" />
+      <>
+        {!checkStock && type === "configurable" && userInteracted && (
+            <div className="gap-1 px-2 py-1 my-2 font-bold text-red-500 dark:text-red-400">
+              <h1>{t("noStockAvailable")}</h1>
             </div>
+        )}
 
-            <input
-              type="hidden"
-              {...register("quantity", { valueAsNumber: true })}
-            />
-
-            <div className="flex h-12 min-w-[4rem] items-center justify-center px-2 font-medium text-gray-800 dark:text-white">
-              {quantity}
+        {minQty > 0 && (
+            <div className="text-xs text-neutral-500 dark:text-neutral-400 mb-2">
+              {t("minOrderQty", {minQty})}
             </div>
+        )}
 
-            <div
-              aria-label="Increase quantity"
-              role="button"
-              className="flex h-12 w-12 cursor-pointer items-center justify-center rounded-r-full text-gray-600 transition-colors hover:text-gray-800 dark:text-white hover:dark:text-white/[80%]"
-              onClick={increment}
-            >
-              <PlusIcon className="h-4 w-4" />
+        <form className="flex gap-x-4" onSubmit={handleSubmit(actionWithVariant)}>
+          <div className="flex items-center justify-center">
+            <div className="flex items-center rounded-full border-2 border-blue-500">
+              <div
+                  aria-label="Decrease quantity"
+                  role="button"
+                  className={clsx(
+                      "flex h-12 w-12 cursor-pointer items-center justify-center rounded-l-full text-gray-600 transition-colors hover:text-gray-800 dark:text-white hover:dark:text-white/[80%]",
+                      {"opacity-50 cursor-not-allowed": quantity <= effectiveMinQty}
+                  )}
+                  onClick={decrement}
+              >
+                <MinusIcon className="h-4 w-4"/>
+              </div>
+
+              {isEditing ? (
+                  <input
+                      type="number"
+                      className="w-20 bg-transparent text-center font-medium text-gray-800 dark:text-white focus:outline-none"
+                      value={quantity}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        if (val === "") {
+                          setQuantity(effectiveMinQty);
+                        } else {
+                          const num = Number(val);
+                          if (!isNaN(num) && num > 0) {
+                            setQuantity(num);
+                          }
+                        }
+                      }}
+                      ref={inputRef}
+                      autoFocus
+                      onBlur={handleQuantityBlur}
+                      onKeyDown={handleQuantityKeyDown}
+                      min={effectiveMinQty}
+                  />
+              ) : (
+                  <div
+                      className="w-20 bg-transparent text-center font-medium text-gray-800 dark:text-white cursor-pointer hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-full"
+                      onClick={handleQuantityFocus}
+                  >
+                    {quantity}
+                  </div>
+              )}
+
+              <div
+                  aria-label="Increase quantity"
+                  role="button"
+                  className="flex h-12 w-12 cursor-pointer items-center justify-center rounded-r-full text-gray-600 transition-colors hover:text-gray-800 dark:text-white hover:dark:text-white/[80%]"
+                  onClick={increment}
+              >
+                <PlusIcon className="h-4 w-4"/>
+              </div>
             </div>
           </div>
-        </div>
-        <SubmitButton
-          pending={isCartLoading}
-          selectedVariantId={buttonStatus}
-          type={type || ""}
-          isSaleable={isSaleable}
-        />
-      </form>
-    </>
+          <SubmitButton
+              pending={isCartLoading}
+              selectedVariantId={buttonStatus}
+              type={type}
+              isSaleable={true}
+          />
+        </form>
+      </>
   );
 }

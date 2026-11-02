@@ -1,13 +1,11 @@
-import { ReadonlyURLSearchParams } from "next/navigation";
-import { Metadata } from "next";
-import { CartItem, FilterDataTypes } from "@/types/types";
-import { isArray } from "./type-guards";
-import { BASE_URL, baseUrl } from "./constants";
-import { ProductData } from "@components/catalog/type";
-import { CategoryNode } from "@/types/theme/category-tree";
-import { cachedGraphQLRequest } from "./hooks/useCache";
-import { GET_FILTER_ATTRIBUTES } from "@/graphql";
-import { ProductReview } from "@/types/category/type";
+import {ReadonlyURLSearchParams} from "next/navigation";
+import {Metadata} from "next";
+import {FilterDataTypes} from "@/types/types";
+import {isArray} from "./type-guards";
+import {BASE_URL, baseUrl, SITE_CONFIG} from "./constants";
+import {Category, Comment, Spu} from "@/types/api/product/type";
+import {CartItem} from "@/types/api/trade/cart";
+import {routing} from "@/i18n/routing";
 
 export const createUrl = (
   pathname: string,
@@ -132,56 +130,49 @@ export function formatDate(dateStr: string): string {
 export const isCheckout = (
   items: Array<CartItem>,
   isGuest: boolean,
-  email: string,
-  isSeclectAddress: boolean,
+  email: string | undefined | null,
+  isSelectAddress: boolean,
   isSelectShipping: boolean,
   isSelectPayment: boolean,
 ): string => {
   if (!isArray(items) || items.length === 0) {
     return "/";
   }
+  /*
+    if (isGuest) {
+      const hasRestrictedProduct = items.some(
+        ({ product }) =>
+          product?.guestCheckout === false || product?.guestCheckout === null,
+      );
 
-  if (isGuest) {
-    const hasRestrictedProduct = items.some(
-      ({ product }) =>
-        product?.guestCheckout === false || product?.guestCheckout === null,
-    );
+      if (hasRestrictedProduct) {
+        return "/customer/login";
+      }
+    }*/
 
-    if (hasRestrictedProduct) {
-      return "/customer/login";
-    }
-
-    if (isSelectPayment) {
-      return "/checkout?step=review";
-    }
-
-    if (isSelectShipping) {
-      return "/checkout?step=payment";
-    }
-
-    if (isSeclectAddress) {
-      return "/checkout?step=shipping";
-    }
-
-    if (!email || typeof email === "object") {
-      return "/checkout";
-    }
-
-    return "/checkout?step=address";
-  } else {
-    if (isSelectPayment) {
-      return "/checkout?step=review";
-    }
-
-    if (isSelectShipping) {
-      return "/checkout?step=payment";
-    }
-
-    if (!email || typeof email === "object") {
-      return "/checkout";
-    }
-    return "/checkout?step=address";
+  if (!email) {
+    return "/checkout?step=email";
   }
+
+  // Navigate based on the current step of the checkout process
+  if (isSelectPayment) {
+    return "/checkout?step=review";
+  }
+
+  if (isSelectShipping) {
+    return "/checkout?step=payment";
+  }
+
+  if (isSelectAddress) {
+    return "/checkout?step=shipping";
+  }
+
+  if (email && !isSelectAddress) {
+    return "/checkout?step=shipping";
+  }
+
+  // Default entry point to the checkout process
+  return "/checkout";
 };
 
 export const delay = (ms: number) => {
@@ -218,32 +209,39 @@ export async function generateMetadataForPage(
     canonical?: string;
     other?: Record<string, string>;
   },
+  locale?: string,
+  noindex?: boolean,
 ): Promise<Metadata> {
-  const seo: {
-    title?: string;
-    description?: string;
-    image?: string;
-    canonical?: string;
-    other?: Record<string, string>;
-  } = {};
-
-  // Default fallback (from your staticSeo.default)
   const DEFAULT_OTHER = {
     "document-meta-version": "dsv-2025.04.19-7e29",
   };
 
-  const title = seo.title || fallback?.title || "Default Title";
+  const title = fallback?.title || SITE_CONFIG.defaultTitle;
   const description =
-    seo.description || fallback?.description || "Default page description.";
-  const ogImage = seo.image || fallback?.image || "/default-og.png";
+      fallback?.description || SITE_CONFIG.defaultDescription;
+  const ogImage = fallback?.image || "/Logo.webp";
+
+  // 构建 canonical URL，包含语言前缀
+  const effectiveLocale = locale || routing.defaultLocale;
+  const localePath = `/${effectiveLocale}${slug}`;
   const canonicalUrl =
-    seo.canonical || fallback?.canonical || `${BASE_URL}/${slug}`;
+      fallback?.canonical
+          ? (fallback.canonical.startsWith('http') ? fallback.canonical : `${BASE_URL}${fallback.canonical}`)
+          : `${BASE_URL}${localePath}`;
 
   const otherMeta = {
     ...DEFAULT_OTHER,
     ...(fallback?.other || {}),
-    ...(seo.other || {}),
   };
+
+  // 构建 hreflang alternates（多语言 SEO）
+  const languages: Record<string, string> = {};
+  for (const loc of routing.locales) {
+    const locPath = `/${loc}${slug}`;
+    languages[loc] = `${BASE_URL}${locPath}`;
+  }
+  // x-default 指向默认语言版本
+  languages["x-default"] = `${BASE_URL}/${routing.defaultLocale}${slug}`;
 
   return {
     metadataBase: new URL(baseUrl || BASE_URL || "http://localhost:3000"),
@@ -255,7 +253,7 @@ export async function generateMetadataForPage(
       title,
       description,
       url: canonicalUrl,
-      siteName: "Your Store Name",
+      siteName: SITE_CONFIG.name,
       type: "website",
       images: [
         {
@@ -275,7 +273,12 @@ export async function generateMetadataForPage(
 
     alternates: {
       canonical: canonicalUrl,
+      languages,
     },
+
+    robots: noindex
+        ? {index: false, follow: false}
+        : {index: true, follow: true},
 
     other: otherMeta,
   };
@@ -312,13 +315,13 @@ export const getValidTitle = (text: string) => {
   return text?.toLowerCase()?.replaceAll("_", " ") ?? "";
 };
 
-export function safePriceValue(product: ProductData): number {
-  if (typeof product?.price === "string") {
-    const priceValue =
-      product?.type === "configurable"
-        ? (product?.minimumPrice ?? "0")
-        : (product?.price ?? "0");
-    return parseFloat(priceValue) || 0;
+export function safePriceValue(product: Spu): number {
+  if (typeof product?.price === "number") {
+    // const priceValue =
+    //   product?.type === "configurable"
+    //     ? (product?.minimumPrice ?? "0")
+    //     : (product?.price ?? "0");
+    return product?.price || 0;
   }
   if (
     typeof product?.price === "object" &&
@@ -330,8 +333,8 @@ export function safePriceValue(product: ProductData): number {
   return 0;
 }
 
-export function safeCurrencyCode(product: ProductData): string {
-  if (product?.priceHtml?.currencyCode) return product.priceHtml.currencyCode;
+export function safeCurrencyCode(product: Spu): string {
+  /*if (product?.priceHtml?.currencyCode) return product.priceHtml.currencyCode;
 
   if (
     typeof product?.price === "object" &&
@@ -340,9 +343,12 @@ export function safeCurrencyCode(product: ProductData): string {
     typeof product.price.currencyCode === "string"
   ) {
     return product.price.currencyCode;
+  }*/
+  if (!product) {
+    return "EUR";
   }
 
-  return "USD";
+  return "EUR";
 }
 
 /**
@@ -368,12 +374,12 @@ export function throttle<T extends (...args: any[]) => any>(
 }
 
 export function findCategoryBySlug(
-  categories: CategoryNode[],
-  slug: string,
-): CategoryNode | null {
+    categories: Category[],
+    slug: string | number,
+): Category | null {
   for (const category of categories) {
-    if (category.translation?.slug === slug) return category;
-
+    // REST API返回的分类直接使用name作为标识，没有translation节点
+    if (category.id === Number(slug)) return category;
     if (category.children && isArray(category.children)) {
       const found = findCategoryBySlug(category.children, slug);
       if (found) return found;
@@ -413,23 +419,23 @@ export function safeParse<T = any>(value: string | null | undefined): T | null {
  * @returns Promise with formatted filter attributes
  */
 export async function getFilterAttributes() {
-  const filterData = await cachedGraphQLRequest<{
-    color: any;
-    size: any;
-    brand: any;
-  }>("static", GET_FILTER_ATTRIBUTES, { locale: "en" });
+  /* const filterData = await cachedGraphQLRequest<{
+     color: any;
+     size: any;
+     brand: any;
+   }>("static", GET_FILTER_ATTRIBUTES, { locale: "en" });
 
-  const attributes = [filterData?.color, filterData?.size, filterData?.brand];
+   const attributes = [filterData?.color, filterData?.size, filterData?.brand];
 
-  return attributes.filter(Boolean).map((attr) => ({
-    id: attr.id,
-    code: attr.code,
-    adminName: attr.code.toUpperCase(),
-    options: attr.options.edges.map((o: any) => ({
-      id: o.node.id,
-      adminName: o.node.adminName,
-    })),
-  }));
+   return attributes.filter(Boolean).map((attr) => ({
+     id: attr.id,
+     code: attr.code,
+     adminName: attr.code.toUpperCase(),
+     options: attr.options.edges.map((o: any) => ({
+       id: o.node.id,
+       adminName: o.node.adminName,
+     })),
+   }));*/
 }
 
 /**
@@ -501,9 +507,9 @@ export function buildProductFilters(params: {
   };
 }
 
-export function getAverageRating(reviews: ProductReview[]): number {
+export function getAverageRating(reviews: Comment[]): number {
   if (!reviews.length) return 0;
 
-  const total = reviews.reduce((sum, review) => sum + review.rating, 0);
+  const total = reviews.reduce((sum, review) => sum + review.scores, 0);
   return total / reviews.length;
 }

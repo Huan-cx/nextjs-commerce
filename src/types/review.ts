@@ -1,4 +1,4 @@
-export interface CreateProductReviewInput {
+export interface CreateReviewInput {
     productId: number;
     title: string;
     comment: string;

@@ -76,13 +76,13 @@ Before you begin, ensure you have the following installed:
 
    In your Next.js frontend project, create or update your `.env.local` file with the following variables:
 
-| Variable | Description | Example |
-|----------|-------------|---------|
-| `NEXT_PUBLIC_BAGISTO_ENDPOINT` | Enter Your Bagisto Shop URL | `https://your-store.bagisto.com/` |
-| `NEXT_PUBLIC_BAGISTO_STOREFRONT_KEY` | Enter Your Bagisto Storefront Key | `pk_storefront_*************************` |
-| `NEXT_PUBLIC_NEXT_AUTH_URL` | Enter Your Headless Shop URL | `https://headless-store.com/` |
-| `NEXT_PUBLIC_NEXT_AUTH_SECRET` | Enter Your Headless Shop Secret | Generate with `openssl rand -base64 32` |
-| `COMPANY_NAME` | Enter Your company name | Bagisto Headless Store |
+| Variable                     | Description                 | Example                                   |
+|------------------------------|-----------------------------|-------------------------------------------|
+| `NEXT_PUBLIC_API_URL`        | Backend API URL             | `https://your-api-instance.com/`          |
+| `NEXT_PUBLIC_STOREFRONT_KEY` | Storefront API Key          | `pk_storefront_*************************` |
+| `NEXTAUTH_URL`               | NextAuth URL (frontend URL) | `https://your-store.com/`                 |
+| `NEXTAUTH_SECRET`            | NextAuth Secret             | Generate with `openssl rand -base64 32`   |
+| `COMPANY_NAME`               | Company name                | Bagisto Headless Store                    |
 
 
 **Important Notes**  

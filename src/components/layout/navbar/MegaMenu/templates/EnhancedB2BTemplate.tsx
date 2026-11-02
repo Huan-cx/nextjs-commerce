@@ -1,0 +1,235 @@
+import {type MouseEvent, useEffect, useRef, useState} from 'react';
+import Link from '@/components/common/Link';
+import type {Category} from '@/types/api/product/type';
+import {Card, CardBody} from '@heroui/react';
+import {useTranslations} from 'next-intl';
+import {useCategoryDirectNavigation} from '@utils/hooks/useCategoryDirectNavigation';
+import {DIRECT_TO_PRODUCT_ENABLED} from '@/utils/constants';
+
+interface EnhancedB2BTemplateProps {
+  categories: Category[];
+  hoveredCategory: number | null;
+  setHoveredCategory: (id: number | null) => void;
+}
+
+export default function EnhancedB2BTemplate({
+                                              categories,
+                                              hoveredCategory,
+                                              setHoveredCategory
+                                            }: EnhancedB2BTemplateProps) {
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [menuTop, setMenuTop] = useState(70);
+  const t = useTranslations('navbar');
+
+  const {navigateToCategory} = useCategoryDirectNavigation();
+
+  // 三级分类点击：启用直达产品时先解析商品列表，仅一个在售商品则直达商品详情页，否则进入分类页
+  const handleThirdCatClick = (e: MouseEvent, thirdCat: Category) => {
+    if (!DIRECT_TO_PRODUCT_ENABLED) {
+      setIsMenuOpen(false);
+      return;
+    }
+    e.preventDefault();
+    setIsMenuOpen(false);
+    navigateToCategory(thirdCat, thirdCat.slug ? `/category/${thirdCat.slug}` : '#');
+  };
+
+  // 动态计算菜单顶部位置
+  useEffect(() => {
+    const updateMenuPosition = () => {
+      if (buttonRef.current) {
+        const buttonRect = buttonRef.current.getBoundingClientRect();
+        const navbarHeight = buttonRect.bottom;
+        setMenuTop(navbarHeight);
+      }
+    };
+
+    updateMenuPosition();
+    window.addEventListener('resize', updateMenuPosition);
+    return () => window.removeEventListener('resize', updateMenuPosition);
+  }, []);
+
+  // 鼠标移入主菜单项时打开菜单（显示第一个分类的内容）
+  const openMenu = () => {
+    if (!isMenuOpen) {
+      setIsMenuOpen(true);
+      const firstCategory = categories.find((cat) => !cat.href);
+      if (firstCategory) {
+        setHoveredCategory(firstCategory.id);
+      }
+    }
+  };
+
+  // 鼠标移出主菜单项及菜单面板时关闭菜单
+  const closeMenu = () => {
+    setIsMenuOpen(false);
+    setHoveredCategory(null);
+  };
+
+  return (
+      <div className="relative">
+        {/* 主菜单项 */}
+        <ul className="flex items-center space-x-1">
+          <li onMouseLeave={closeMenu}>
+            <button
+                ref={buttonRef}
+                className="text-nowrap relative text-neutral-500 before:absolute before:bottom-0 before:left-0 before:h-px before:w-0 before:bg-current before:transition-all before:duration-300 before:content-[''] hover:text-black hover:before:w-full dark:text-neutral-400 dark:hover:text-neutral-300 px-4 py-5 inline-flex items-center text-sm font-medium gap-1"
+                onMouseEnter={openMenu}
+            >
+
+              {t('products')}
+            </button>
+
+            {/* 巨型菜单面板 */}
+            <div
+                onClick={closeMenu}
+                className={`fixed inset-x-0 bg-white shadow-2xl border-t border-neutral-200 z-50 transition-all duration-300 ${
+                    isMenuOpen ? 'opacity-100 visible translate-y-0 pointer-events-auto' : 'opacity-0 invisible -translate-y-2 pointer-events-none'
+                }`}
+                style={{top: `${menuTop}px`}}
+            >
+              <div className="max-w-screen-2xl mx-auto flex min-h-[480px]">
+                {/* 左侧一级分类 */}
+                <div className="w-64 bg-neutral-50 border-r border-neutral-100 p-2 flex flex-col">
+                  {categories.slice(0, 6).map((cat) =>
+                      cat.href ? (
+                          // 入口项（如"所有产品"）直接跳转页面
+                          <Link
+                              key={cat.id}
+                              href={cat.href}
+                              onClick={closeMenu}
+                              className="flex items-center justify-between p-3 text-sm rounded-lg text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900 mt-1"
+                          >
+                            <span>{cat.name}</span>
+                            <svg className="w-4 h-4 text-neutral-400" fill="none" stroke="currentColor"
+                                 viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
+                                    d="M9 5l7 7-7 7"></path>
+                            </svg>
+                          </Link>
+                      ) : (
+                          <button
+                              key={cat.id}
+                              className={`flex items-center justify-between p-3 text-sm rounded-lg text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900 mt-1 ${
+                                  hoveredCategory === cat.id ? 'bg-white text-black dark:text-white shadow-sm border border-neutral-100' : ''
+                              }`}
+                              onMouseEnter={() => setHoveredCategory(cat.id)}
+                              onClick={(e) => e.stopPropagation()} // 平板端靠点击切换分类，阻止冒泡避免误关菜单
+                          >
+                            <span>{cat.name}</span>
+                            <svg className="w-4 h-4 text-neutral-400" fill="none" stroke="currentColor"
+                                 viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
+                                    d="M9 5l7 7-7 7"></path>
+                            </svg>
+                          </button>
+                      )
+                  )}
+                </div>
+
+                {/* 右侧二三级分类 */}
+                <div className="flex-1 p-8 grid grid-cols-3 gap-x-8 gap-y-6 overflow-y-auto max-h-[480px]">
+                  {hoveredCategory ? (
+                      <>
+                        {categories
+                            .find(c => c.id === hoveredCategory)
+                            ?.children
+                            ?.map((subCat: Category) => (
+                                <div key={subCat.id}>
+                                  <h4 className="text-sm font-bold text-neutral-900 dark:text-white flex items-center gap-1.5 border-b border-neutral-100 dark:border-neutral-700 pb-2 mb-3">
+                                    <span className="w-1 h-3.5 bg-blue-600 rounded-full"></span>
+                                    {subCat.name}
+                                  </h4>
+                                  <ul className="space-y-2">
+                                    {subCat.children?.slice(0, 5).map((thirdCat: Category) => (
+                                        <li key={thirdCat.id}>
+                                          <Link
+                                              href={thirdCat.slug ? `/category/${thirdCat.slug}` : '#'}
+                                              onClick={(e) => handleThirdCatClick(e, thirdCat)}
+                                              className="text-xs text-neutral-500 hover:text-black dark:text-neutral-400 dark:hover:text-neutral-300 block py-1"
+                                          >
+                                            {thirdCat.name}
+                                          </Link>
+                                        </li>
+                                    ))}
+                                  </ul>
+                                </div>
+                            ))
+                        }
+                      </>
+                  ) : (
+                      <div className="col-span-3 text-center py-10 text-neutral-500">
+                        {t('selectCategory')}
+                      </div>
+                  )}
+                </div>
+
+                {/* 右侧边栏：B2B 服务 */}
+                <div className="w-64 bg-slate-50 border-l border-neutral-200 p-6 flex flex-col justify-between">
+                  <div className="space-y-4">
+                    <h5 className="text-xs font-bold text-neutral-400 dark:text-neutral-500 tracking-wider uppercase">{t('bulkPurchase')}</h5>
+
+                    <Card className="bg-gradient-to-br from-blue-600 to-blue-700">
+                      <CardBody className="p-4">
+                        <h6 className="text-xs font-bold text-white mb-1">{t('bulkQuote')}</h6>
+                        <p className="text-[11px] text-blue-100 mb-3 leading-relaxed">
+                          {t('bulkQuoteDesc')}
+                        </p>
+                        <Link
+                            href="/rfq/contact"
+                            onClick={() => setIsMenuOpen(false)}
+                            className="inline-block bg-white text-blue-600 text-[11px] font-bold px-3 py-1.5 rounded-lg shadow-sm hover:bg-blue-50 transition-colors"
+                        >
+                          {t('requestQuote')}
+                        </Link>
+                      </CardBody>
+                    </Card>
+
+                    <Link
+                        href="/catalogs"
+                        onClick={() => setIsMenuOpen(false)}
+                        className="flex items-center gap-2 p-2.5 rounded-lg border border-neutral-200 bg-white hover:border-blue-400 transition-colors"
+                    >
+                      <svg className="w-4 h-4 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
+                              d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                      </svg>
+                      <div className="text-[11px]">
+                        <span
+                            className="font-semibold text-neutral-700 dark:text-neutral-300 block">{t('catalogManual')}</span>
+                        <span className="text-neutral-400 dark:text-neutral-500 block">{t('catalogSize')}</span>
+                      </div>
+                    </Link>
+                  </div>
+
+                  <div
+                      className="text-[11px] text-neutral-400 dark:text-neutral-500 text-center border-t border-neutral-200 dark:border-neutral-700 pt-3">
+                    {t('hotline')}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </li>
+
+          {/* 其他主菜单项 */}
+          <li>
+            <Link
+                href="/b2b/wholesale"
+                className="text-nowrap relative text-neutral-500 before:absolute before:bottom-0 before:left-0 before:h-px before:w-0 before:bg-current before:transition-all before:duration-300 before:content-[''] hover:text-black hover:before:w-full dark:text-neutral-400 dark:hover:text-neutral-300 px-4 py-5 inline-flex items-center text-sm font-medium"
+            >
+              {t('wholesale')}
+            </Link>
+          </li>
+          <li>
+            <Link
+                href="/projects"
+                className="text-nowrap relative text-neutral-500 before:absolute before:bottom-0 before:left-0 before:h-px before:w-0 before:bg-current before:transition-all before:duration-300 before:content-[''] hover:text-black hover:before:w-full dark:text-neutral-400 dark:hover:text-neutral-300 px-4 py-5 inline-flex items-center text-sm font-medium"
+            >
+              {t('projects')}
+            </Link>
+          </li>
+        </ul>
+      </div>
+  );
+}

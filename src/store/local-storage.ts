@@ -1,5 +1,4 @@
-
-import { isArray, isObject } from "@/utils/type-guards";
+import {isArray, isObject} from "@/utils/type-guards";
 
 /**
  * Storage keys
@@ -107,7 +106,7 @@ export const removeFromLocalStorage = (storageKey: string) => {
  * @returns void
  */
 export const resetCartStorage = () => {
-  removeFromLocalStorage(CART_DATA);
-  removeFromLocalStorage(GUEST_CART);
-  removeFromLocalStorage(SHIPPING_ADDRESS);
+  // removeFromLocalStorage(CART_DATA);
+  // removeFromLocalStorage(GUEST_CART);
+  // removeFromLocalStorage(SHIPPING_ADDRESS);
 };

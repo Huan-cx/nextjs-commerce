@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<!-- 顶部导航栏 -->
+<nav class="bg-white border-b border-gray-200 px-6 relative font-sans">
+    <div class="max-w-7xl mx-auto flex items-center justify-between">
+
+        <div class="flex items-center space-x-8">
+            <!-- Logo -->
+            <div class="text-blue-900 font-bold text-xl tracking-tight py-5">ARCH-B2B <span
+                    class="text-xs font-normal text-gray-400">采购商城</span></div>
+
+            <!-- 主菜单 -->
+            <ul class="flex space-x-1">
+                <!-- 核心三级巨型菜单项：加上 group 类 -->
+                <li class="group">
+                    <a class="text-gray-700 hover:text-blue-600 px-4 py-5 inline-block text-sm font-medium flex items-center gap-1"
+                       href="#">
+                        <svg class="w-4 h-4 text-gray-500 group-hover:text-blue-600" fill="none" stroke="currentColor"
+                             viewBox="0 0 24 24">
+                            <path d="M4 6h16M4 12h16M4 18h16" stroke-linecap="round" stroke-linejoin="round"
+                                  stroke-width="2"></path>
+                        </svg>
+                        全部产品分类
+                    </a>
+
+                    <!-- 三级联动面板：全宽铺满，确保海量 SKU 能够放得下 -->
+                    <div class="absolute left-0 w-full top-full bg-white shadow-2xl border-t border-gray-200 transition-all duration-300 transform translate-y-2 invisible opacity-0 group-hover:visible group-hover:opacity-100 group-hover:translate-y-0 z-50">
+
+                        <!-- 左右分栏：左侧 1/5 宽度为一级，右侧 4/5 宽度为二三级平铺 -->
+                        <div class="max-w-7xl mx-auto flex min-h-[480px]">
+
+                            <!-- 【第一级：垂直大类索引栏】 (灰色背景底) -->
+                            <div class="w-64 bg-gray-50 border-r border-gray-100 p-2 flex flex-col shrink-0">
+                                <!-- 建筑建材（激活状态示范） -->
+                                <a class="flex items-center justify-between p-3 text-sm font-semibold rounded-lg bg-white text-blue-600 shadow-sm border border-gray-100 group/tab"
+                                   href="#">
+                                    <span>建筑建材与工程硬装</span>
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path d="M9 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round"
+                                              stroke-width="2"></path>
+                                    </svg>
+                                </a>
+                                <!-- 常规非激活行 -->
+                                <a class="flex items-center justify-between p-3 text-sm font-medium rounded-lg text-gray-600 hover:bg-gray-100 hover:text-gray-900 mt-1"
+                                   href="#">
+                                    <span>酒店与生活家居用品</span>
+                                    <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor"
+                                         viewBox="0 0 24 24">
+                                        <path d="M9 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round"
+                                              stroke-width="2"></path>
+                                    </svg>
+                                </a>
+                                <a class="flex items-center justify-between p-3 text-sm font-medium rounded-lg text-gray-600 hover:bg-gray-100 hover:text-gray-900 mt-1"
+                                   href="#">
+                                    <span>智能照明与电气五金</span>
+                                    <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor"
+                                         viewBox="0 0 24 24">
+                                        <path d="M9 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round"
+                                              stroke-width="2"></path>
+                                    </svg>
+                                </a>
+                                <a class="flex items-center justify-between p-3 text-sm font-medium rounded-lg text-gray-600 hover:bg-gray-100 hover:text-gray-900 mt-1"
+                                   href="#">
+                                    <span>户外景观与园林工程</span>
+                                    <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor"
+                                         viewBox="0 0 24 24">
+                                        <path d="M9 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round"
+                                              stroke-width="2"></path>
+                                    </svg>
+                                </a>
+                            </div>
+
+                            <!-- 【第二、三级：网格平铺展示区】（黄金多列排版） -->
+                            <div class="flex-1 p-8 grid grid-cols-3 gap-x-8 gap-y-6 overflow-y-auto">
+
+                                <!-- 模块 A：二级分类 1 -->
+                                <div>
+                                    <!-- 二级类目标题 -->
+                                    <h4 class="text-sm font-bold text-gray-900 flex items-center gap-1.5 border-b border-gray-100 pb-2 mb-3">
+                                        <span class="w-1 h-3.5 bg-blue-600 rounded-full"></span>
+                                        墙地面石材与面材
+                                    </h4>
+                                    <!-- 三级具体产品列表 -->
+                                    <ul class="space-y-2">
+                                        <li>
+                                            <a class="text-xs text-gray-500 hover:text-blue-600 flex justify-between items-center"
+                                               href="#"><span>天然大理石岩板</span><span
+                                                    class="text-[10px] text-gray-400 bg-gray-100 px-1 rounded">52款</span></a>
+                                        </li>
+                                        <li>
+                                            <a class="text-xs text-gray-500 hover:text-blue-600 flex justify-between items-center"
+                                               href="#"><span>工业级微水泥基础料</span><span
+                                                    class="text-[10px] text-gray-400 bg-gray-100 px-1 rounded">12款</span></a>
+                                        </li>
+                                        <li>
+                                            <a class="text-xs text-gray-500 hover:text-blue-600 flex justify-between items-center"
+                                               href="#"><span>水性艺术仿古漆</span></a>
+                                        </li>
+                                        <li>
+                                            <a class="text-xs text-gray-500 hover:text-blue-600 flex justify-between items-center"
+                                               href="#"><span>SPC锁扣环保木地板</span></a>
+                                        </li>
+                                        <li>
+                                            <a class="text-xs text-gray-500 hover:text-blue-600 flex justify-between items-center"
+                                               href="#"><span>外墙保温干挂瓷砖</span></a>
+                                        </li>
+                                    </ul>
+                                </div>
+
+                                <!-- 模块 B：二级分类 2 -->
+                                <div>
+                                    <h4 class="text-sm font-bold text-gray-900 flex items-center gap-1.5 border-b border-gray-100 pb-2 mb-3">
+                                        <span class="w-1 h-3.5 bg-blue-600 rounded-full"></span>
+                                        商业与卫浴五金
+                                    </h4>
+                                    <ul class="space-y-2">
+                                        <li>
+                                            <a class="text-xs text-gray-500 hover:text-blue-600 flex justify-between items-center"
+                                               href="#"><span>工程级不锈钢花洒</span></a>
+                                        </li>
+                                        <li>
+                                            <a class="text-xs text-gray-500 hover:text-blue-600 flex justify-between items-center"
+                                               href="#"><span>感应式静音水龙头</span><span
+                                                    class="text-[10px] text-emerald-600 bg-emerald-50 px-1 rounded font-medium">现货</span></a>
+                                        </li>
+                                        <li>
+                                            <a class="text-xs text-gray-500 hover:text-blue-600 flex justify-between items-center"
+                                               href="#"><span>智能控温地暖分水器</span></a>
+                                        </li>
+                                        <li>
+                                            <a class="text-xs text-gray-500 hover:text-blue-600 flex justify-between items-center"
+                                               href="#"><span>防臭重力地漏五金</span></a>
+                                        </li>
+                                    </ul>
+                                </div>
+
+                                <!-- 模块 C：二级分类 3 -->
+                                <div>
+                                    <h4 class="text-sm font-bold text-gray-900 flex items-center gap-1.5 border-b border-gray-100 pb-2 mb-3">
+                                        <span class="w-1 h-3.5 bg-blue-600 rounded-full"></span>
+                                        门窗与隔断系统
+                                    </h4>
+                                    <ul class="space-y-2">
+                                        <li>
+                                            <a class="text-xs text-gray-500 hover:text-blue-600 flex justify-between items-center"
+                                               href="#"><span>系统断桥铝合金窗</span></a>
+                                        </li>
+                                        <li>
+                                            <a class="text-xs text-gray-500 hover:text-blue-600 flex justify-between items-center"
+                                               href="#"><span>钢化双层夹胶玻璃门</span></a>
+                                        </li>
+                                        <li>
+                                            <a class="text-xs text-gray-500 hover:text-blue-600 flex justify-between items-center"
+                                               href="#"><span>办公室吸音移动隔断</span></a>
+                                        </li>
+                                        <li>
+                                            <a class="text-xs text-gray-500 hover:text-blue-600 flex justify-between items-center"
+                                               href="#"><span>防火防盗工程子母门</span></a>
+                                        </li>
+                                    </ul>
+                                </div>
+
+                                <!-- 模块 D：二级分类 4（第二行排版示范） -->
+                                <div>
+                                    <h4 class="text-sm font-bold text-gray-900 flex items-center gap-1.5 border-b border-gray-100 pb-2 mb-3">
+                                        <span class="w-1 h-3.5 bg-blue-600 rounded-full"></span>
+                                        管道与定制结构件
+                                    </h4>
+                                    <ul class="space-y-2">
+                                        <li>
+                                            <a class="text-xs text-gray-500 hover:text-blue-600 flex justify-between items-center"
+                                               href="#"><span>PPR冷热水抗菌管材</span></a>
+                                        </li>
+                                        <li>
+                                            <a class="text-xs text-gray-500 hover:text-blue-600 flex justify-between items-center"
+                                               href="#"><span>高韧性双壁波纹管</span></a>
+                                        </li>
+                                    </ul>
+                                </div>
+
+                            </div>
+
+                            <!-- 【右侧边栏：B2B 快捷服务专区】（加速工程客户转化） -->
+                            <div class="w-64 bg-slate-50 border-l border-gray-200 p-6 flex flex-col justify-between shrink-0">
+                                <div class="space-y-4">
+                                    <h5 class="text-xs font-bold text-gray-400 tracking-wider uppercase">
+                                        工程大宗采购</h5>
+
+                                    <!-- 询价卡片 -->
+                                    <div class="bg-blue-600 rounded-xl p-4 text-white shadow-md">
+                                        <h6 class="text-xs font-bold mb-1">大宗工程批量询价</h6>
+                                        <p class="text-[11px] text-blue-100 mb-3 leading-relaxed">
+                                            支持上传BOM表，最快2小时专人出具源头厂货报价单。</p>
+                                        <a class="inline-block bg-white text-blue-600 text-[11px] font-bold px-3 py-1.5 rounded-lg shadow-sm hover:bg-blue-50 transition-colors"
+                                           href="#">立即发起询价</a>
+                                    </div>
+
+                                    <!-- 资料下载 -->
+                                    <a class="flex items-center gap-2 p-2.5 rounded-lg border border-gray-200 bg-white hover:border-blue-400 transition-colors group/tool"
+                                       href="#">
+                                        <svg class="w-4 h-4 text-gray-400 group-hover/tool:text-blue-600" fill="none"
+                                             stroke="currentColor" viewBox="0 0 24 24">
+                                            <path d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                                                  stroke-linecap="round" stroke-linejoin="round"
+                                                  stroke-width="2"></path>
+                                        </svg>
+                                        <div class="text-[11px]">
+                                            <span class="font-semibold text-gray-700 block">2026产品类目选型手册</span>
+                                            <span class="text-gray-400 block">PDF / 45.2 MB</span>
+                                        </div>
+                                    </a>
+                                </div>
+
+                                <div class="text-[11px] text-gray-400 text-center border-t border-gray-200 pt-3">
+                                    专属客服热线：400-123-4567
+                                </div>
+                            </div>
+
+                        </div>
+
+                    </div>
+                </li>
+                <li><a class="text-gray-600 hover:text-blue-600 px-4 py-5 inline-block text-sm font-medium" href="#">大宗专区</a>
+                </li>
+                <li><a class="text-gray-600 hover:text-blue-600 px-4 py-5 inline-block text-sm font-medium" href="#">工程案例</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+</body>
+</html>

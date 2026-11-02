@@ -1,16 +1,17 @@
 "use client";
 
 import Cart from "@components/cart";
-import { CategoryIcon } from "@components/common/icons/CategoryIcon";
-import { HomeIcon } from "@components/common/icons/HomeIcon";
-import { IconSkeleton } from "@components/common/skeleton/IconSkeleton";
+import {CategoryIcon} from "@components/common/icons/CategoryIcon";
+import {HomeIcon} from "@components/common/icons/HomeIcon";
+import {IconSkeleton} from "@components/common/skeleton/IconSkeleton";
 import UserAccount from "@components/customer/credentials";
-import Link from "next/link";
-import { Suspense, memo } from "react";
+import Link from "@/components/common/Link";
+import {memo, Suspense} from "react";
 import clsx from "clsx";
 import OpenCart from "@components/cart/OpenCart";
-import { useAppSelector } from "@/store/hooks";
+import {useAppSelector} from "@/store/hooks";
 import OpenAuth from "@components/customer/OpenAuth";
+import {useTranslations} from "next-intl";
 
 type Tab = "home" | "category" | "cart" | "account" | null;
 
@@ -23,6 +24,7 @@ const BottomNavbar = memo(function BottomNavbar({
   activeTab: Tab;
   setActiveTab: (tab: Tab) => void;
 }) {
+  const t = useTranslations("navbar");
   const cartDetail = useAppSelector((state) => state.cartDetail);
   const itemBase =
     "flex flex-col items-center gap-1 text-xs font-semibold py-2 rounded-lg transition-colors cursor-pointer";
@@ -50,7 +52,7 @@ const BottomNavbar = memo(function BottomNavbar({
             <div className={getIconWrapperClass("home")}>
               <HomeIcon />
             </div>
-            <span>Home</span>
+            <span>{t("home")}</span>
           </Link>
 
           {/* Categories */}
@@ -65,7 +67,7 @@ const BottomNavbar = memo(function BottomNavbar({
             <div className={getIconWrapperClass("category")}>
               <CategoryIcon />
             </div>
-            <span>Categories</span>
+            <span>{t("categories")}</span>
           </button>
 
           {/* Cart */}
@@ -78,7 +80,7 @@ const BottomNavbar = memo(function BottomNavbar({
             <div className={getIconWrapperClass("cart")}>
               <OpenCart quantity={cartDetail?.cart?.itemsQty} />
             </div>
-            <span>Cart</span>
+            <span>{t("cart")}</span>
           </Cart>
 
           {/* Account */}
@@ -92,7 +94,7 @@ const BottomNavbar = memo(function BottomNavbar({
               <div className={getIconWrapperClass("account")}>
                 <OpenAuth />
               </div>
-              <span>Account</span>
+              <span>{t("account")}</span>
             </UserAccount>
           </Suspense>
 
