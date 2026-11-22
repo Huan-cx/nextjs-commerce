@@ -186,7 +186,7 @@ export default function EnhancedB2BTemplate({
                       </CardBody>
                     </Card>
 
-                    <Link
+                    {/*<Link
                         href="/catalogs"
                         onClick={() => setIsMenuOpen(false)}
                         className="flex items-center gap-2 p-2.5 rounded-lg border border-neutral-200 bg-white hover:border-blue-400 transition-colors"
@@ -197,15 +197,15 @@ export default function EnhancedB2BTemplate({
                       </svg>
                       <div className="text-[11px]">
                         <span
-                            className="font-semibold text-neutral-700 dark:text-neutral-300 block">{t('catalogManual')}</span>
+                            className="font-semibold text-neutral-700 dark:text-neutral-300 block">t('catalogManual')</span>
                         <span className="text-neutral-400 dark:text-neutral-500 block">{t('catalogSize')}</span>
                       </div>
-                    </Link>
+                    </Link>*/}
                   </div>
 
                   <div
                       className="text-[11px] text-neutral-400 dark:text-neutral-500 text-center border-t border-neutral-200 dark:border-neutral-700 pt-3">
-                    {t('hotline')}
+                    {/*{t('hotline')}*/}
                   </div>
                 </div>
               </div>
@@ -215,20 +215,20 @@ export default function EnhancedB2BTemplate({
           {/* 其他主菜单项 */}
           <li>
             <Link
-                href="/b2b/wholesale"
+                href="/rfq/contact"
                 className="text-nowrap relative text-neutral-500 before:absolute before:bottom-0 before:left-0 before:h-px before:w-0 before:bg-current before:transition-all before:duration-300 before:content-[''] hover:text-black hover:before:w-full dark:text-neutral-400 dark:hover:text-neutral-300 px-4 py-5 inline-flex items-center text-sm font-medium"
             >
               {t('wholesale')}
             </Link>
           </li>
-          <li>
+          {/*<li>
             <Link
                 href="/projects"
                 className="text-nowrap relative text-neutral-500 before:absolute before:bottom-0 before:left-0 before:h-px before:w-0 before:bg-current before:transition-all before:duration-300 before:content-[''] hover:text-black hover:before:w-full dark:text-neutral-400 dark:hover:text-neutral-300 px-4 py-5 inline-flex items-center text-sm font-medium"
             >
               {t('projects')}
             </Link>
-          </li>
+          </li>*/}
         </ul>
       </div>
   );
