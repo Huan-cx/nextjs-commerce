@@ -1,42 +1,48 @@
 "use client";
 
-import { useMutation } from "@apollo/client";
-import { useAppDispatch } from "@/store/hooks";
-import { addItem } from "@/store/slices/cart-slice";
-import { CREATE_MERGE_CART } from "@/graphql";
-
+import {useMutation, useQueryClient} from "@tanstack/react-query";
+import {useAppSelector} from "@/store/hooks";
+import {mergeCart, MergeCartRequest} from "@utils/api/trade";
+import {useCustomToast} from "./useToast";
+import {useTranslations} from "next-intl";
 
 export function useMergeCart() {
-  const dispatch = useAppDispatch();
+  const queryClient = useQueryClient();
+  const cartItems = useAppSelector((state) => state.cartDetail.cart?.items);
+  const {showToast} = useCustomToast();
+  const t = useTranslations("cart");
 
-  const [mergeCart, { loading: isLoading }] = useMutation(CREATE_MERGE_CART, {
-    onCompleted: (response) => {
-      const responseData = response?.createMergeCart?.mergeCart;
-      if (!responseData) {
-        return;
-      }
-       const cartId = responseData?.id ?? null;
-
-      const setCookie = (name: string, value: string | number, days = 30) => {
-        if (typeof window === "undefined" || !name) return;
-        const d = new Date();
-        d.setTime(d.getTime() + days * 24 * 60 * 60 * 1000);
-        const expires = "expires=" + d.toUTCString();
-        document.cookie = `${name}=${encodeURIComponent(String(value))};${expires};path=/`;
-      };
-
-      if (cartId !== null && typeof cartId !== "undefined") {
-        setCookie("guest_cart_id", String(cartId));
-      }
-
-      dispatch(addItem(responseData));
+  const {mutateAsync: mergeCartMutation, isPending: isLoading} = useMutation({
+    mutationFn: (payload: MergeCartRequest) => mergeCart(payload),
+    onSuccess: () => {
+      // On successful merge, invalidate the cart query to refetch the latest cart data.
+      queryClient.invalidateQueries({queryKey: ['cart']});
+      showToast(t("mergedSuccess"), "success");
     },
-    onError: (_error) => {
+    onError: (error: unknown) => {
+      const message = error instanceof Error ? error.message : "Failed to merge cart";
+      showToast(message, "danger");
+      console.error("Failed to merge cart:", error);
     },
   });
 
+  const handleMergeCart = async () => {
+    if (!cartItems || cartItems.length === 0) {
+      return;
+    }
+
+    const payload: MergeCartRequest = {
+      items: cartItems.map((item) => ({
+        skuId: item.sku.id,
+        count: item.count,
+      })),
+    };
+
+    await mergeCartMutation(payload);
+  };
+
   return {
-    mergeCart,
+    mergeCart: handleMergeCart,
     isLoading,
   };
 }

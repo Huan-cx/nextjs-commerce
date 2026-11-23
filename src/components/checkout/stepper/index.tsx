@@ -1,12 +1,15 @@
-import Link from "next/link";
-import { useMemo } from "react";
+"use client";
+
+import Link from "@/components/common/Link";
+import {useMemo} from "react";
 import LogoIcon from "@components/common/icons/LogoIcon";
 import Email from "./Email";
-import { GuestAddAdressForm } from "./GuestAddAdressForm";
+import {AddAddressForm} from "./address";
 import Shipping from "./shipping";
 import Payment from "./payment";
 import Review from "./review";
-
+import {OrderSettlement} from "@utils/api/trade";
+import {useTranslations} from "next-intl";
 
 
 const { SITE_NAME } = process.env;
@@ -20,66 +23,52 @@ interface Step {
 }
 
 interface CheckOutProps {
-  billingAddress?: any;
-  shippingAddress?: any;
+  settlementData?: OrderSettlement | null;
   currentStep: string;
-  selectedPayment?: any;
-  selectedPaymentTitle?: string;
-  selectedShippingRate?: any;
-  selectedShippingRateTitle?: string;
 }
 
 export default function Stepper(
   {
-    billingAddress,
-    shippingAddress,
-    selectedShippingRate,
-    selectedShippingRateTitle,
-    selectedPayment,
-    selectedPaymentTitle,
+    settlementData,
     currentStep,
   }: CheckOutProps
 ) {
+  const t = useTranslations("checkout");
 
   const steps = useMemo<Step[]>(() => {
     return [
       {
         id: 1,
         key: "email",
-        title: "Email",
+        title: t("email"),
         href: "/checkout",
         component: <Email />,
       },
       {
         id: 2,
         key: "address",
-        title: "Address",
+        title: t("address"),
         href: "/checkout",
         component:
-          <GuestAddAdressForm
-            billingAddress={billingAddress}
-            shippingAddress={shippingAddress}
-            currentStep={currentStep}
+            <AddAddressForm
           />
       },
       {
         id: 3,
         key: "shipping",
-        title: "Shipping",
+        title: t("shipping"),
         href: "/checkout?step=address",
         component: <Shipping
-          selectedShippingRate={selectedShippingRate}
           currentStep={currentStep}
         />,
       },
       {
         id: 4,
         key: "payment",
-        title: "Payment",
+        title: t("payment"),
         href: "/checkout?step=shipping",
         component: (
           <Payment
-            selectedPayment={selectedPayment}
             currentStep={currentStep}
           />
         ),
@@ -87,27 +76,19 @@ export default function Stepper(
       {
         id: 5,
         key: "review",
-        title: "Review",
+        title: t("review"),
         href: "/checkout?step=payment",
         component: (
           <Review
-            billingAddress={billingAddress}
-            selectedPaymentTitle={selectedPaymentTitle}
-            selectedShippingRate={selectedShippingRate}
-            selectedShippingRateTitle={selectedShippingRateTitle}
-            shippingAddress={shippingAddress}
+              settlementData={settlementData}
           />
         ),
       },
     ];
   }, [
     currentStep,
-    billingAddress,
-    shippingAddress,
-    selectedShippingRate,
-    selectedPayment,
-    selectedPaymentTitle,
-    selectedShippingRateTitle,
+    settlementData,
+    t,
   ]);
 
   const currentStepIndex = steps.findIndex((s) => s.key === currentStep);

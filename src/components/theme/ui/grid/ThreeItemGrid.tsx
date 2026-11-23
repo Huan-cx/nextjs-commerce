@@ -1,9 +1,10 @@
 import clsx from "clsx";
-import Link from "next/link";
+import Link from "@/components/common/Link";
 
-import { NOT_IMAGE } from "@/utils/constants";
-import { ProductDetailsInfo } from "@/types/types";
-import { GridTileImage } from "./Tile";
+import {NOT_IMAGE} from "@/utils/constants";
+import {ProductDetailsInfo} from "@/types/types";
+import {GridTileImage} from "./Tile";
+
 export default function ThreeItemGridItem({
   item,
   size,

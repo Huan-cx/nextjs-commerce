@@ -1,91 +1,53 @@
-import { FC } from "react";
-import { cachedGraphQLRequest } from "@/utils/hooks/useCache";
-import { ThreeItemGrid } from "./ThreeItemGrid";
+"use client";
+
+import {FC} from "react";
+import {ThreeItemGrid} from "./ThreeItemGrid";
 import Theme from "./ProductCarouselTheme";
-import { GET_PRODUCTS } from "@/graphql";
+import type {ThemeProductBrief, ThemeSection} from "@/types/theme/theme-customization";
 
 interface ProductCarouselProps {
-  options: {
-    title?: string;
-    filters: Record<string, any>;
-  };
-  itemCount?: number;
-  sortOrder?: number;
+  section: ThemeSection;
 }
 
-const ProductCarousel: FC<ProductCarouselProps> = async ({
-  options,
-  itemCount = 4,
-  sortOrder,
-}) => {
-  const { filters, title } = options;
-  try {
-    const { sort, limit, ...rest } = filters || {};
-    const filterObject: Record<string, string> = {};
-    Object.entries(rest).forEach(([key, value]) => {
-      if (value !== undefined && value !== null) {
-        filterObject[key] = String(value);
-      }
-    });
-    const filterInput =
-      Object.keys(filterObject).length > 0
-        ? JSON.stringify(filterObject)
-        : undefined;
+const ProductCarousel: FC<ProductCarouselProps> = ({section}) => {
+  // ✅ 直接用后端已经填充好的商品数据 — 零额外请求
+  const products: ThemeProductBrief[] = section.products ?? [];
 
-    let sortKey = "CREATED_AT";
-    let reverse = true;
+  if (!products.length) return null;
 
-    if (sort === "created_at-desc") {
-      sortKey = "CREATED_AT";
-      reverse = true;
-    } else if (sort === "price-desc") {
-      sortKey = "PRICE";
-      reverse = true;
-    }
+  // ✅ 标题和副标题全部从 Admin 配置的 translation 取，没配时回落
+  const title = section.translation?.title ?? section.name ?? "Products";
+  const description = section.translation?.subtitle ?? null;
+  const layout = section.layout;
+  const isFeatured3 = layout === "featured3";
 
-    const data = await cachedGraphQLRequest<any>(
-      "home",
-      GET_PRODUCTS,
-      {
-        sortKey,
-        filter: filterInput,
-        first: limit ? parseInt(limit, 10) : itemCount,
-        reverse,
-      }
-    );
+  // 将 ThemeProductBrief 适配 ThreeItemGrid / Theme 组件期望的 Spu 字段
+  const spuLikeList = products.map((p) => ({
+    id: p.id,
+    name: p.name,
+    picUrl: p.picUrl ?? "",
+    price: p.price ?? 0,
+    originalPrice: p.originalPrice,
+    salesCount: p.salesCount ?? 0,
+  }));
 
-    const products =
-      data?.products?.edges?.slice(0, 8).map((edge: any) => edge.node) || [];
-
-    if (!products.length) {
-      return null;
-    }
-
-    if (sortOrder === 2) {
-      return (
-        <ThreeItemGrid
-          title={title || "Products"}
-          description="Discover the latest trends! Fresh products just added—shop new styles, tech, and essentials before they're gone."
-          products={products.slice(0, 3)}
-        />
-      );
-    }
-
+  if (isFeatured3) {
     return (
-      <Theme
-        title={title || "Products"}
-        description="Discover the latest trends! Fresh products just added—shop new styles, tech, and essentials before they're gone."
-        products={products}
-      />
+        <ThreeItemGrid
+            title={title}
+            description={description}
+            products={spuLikeList.slice(0, 3)}
+        />
     );
-  } catch (error) {
-    console.error("Error fetching products for carousel:", {
-      title,
-      filters,
-      error: error instanceof Error ? error.message : error,
-    });
-    return null;
   }
+
+  return (
+      <Theme
+          title={title}
+          description={description}
+          products={spuLikeList.slice(0, Math.min(products.length, 8))}
+      />
+  );
 };
 
 export default ProductCarousel;

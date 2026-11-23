@@ -2,31 +2,46 @@
 
 import * as React from "react";
 import Image from "next/image";
-import { ArrowLeftIcon, ArrowRightIcon } from "@heroicons/react/24/outline";
-import { GridTileImage } from "@/components/theme/ui/grid/Tile";
-import { Shimmer } from "@/components/common/Shimmer";
-import {
-  HeroCarouselShimmer,
-  HeroCarouselThumbnailShimmer,
-} from "./HeroCarouselShimmer";
+import {ArrowLeftIcon, ArrowRightIcon} from "@heroicons/react/24/outline";
+import {GridTileImage} from "@/components/theme/ui/grid/Tile";
+import {Shimmer} from "@/components/common/Shimmer";
+import {HeroCarouselShimmer, HeroCarouselThumbnailShimmer,} from "./HeroCarouselShimmer";
 
 export default function HeroCarousel({
   images,
+                                       currentIndex,
+                                       onIndexChange,
 }: {
   images: { src: string; altText: string }[];
+  currentIndex?: number;
+  onIndexChange?: (index: number) => void;
 }) {
-  const [current, setCurrent] = React.useState(0);
+  const [internalCurrent, setInternalCurrent] = React.useState(0);
   const [isLoading, setIsLoading] = React.useState(true);
 
-  const prevSlide = () => {
+  const isControlled = currentIndex !== undefined && onIndexChange !== undefined;
+  const current = isControlled ? currentIndex : internalCurrent;
+
+  const setCurrent = React.useCallback((index: number) => {
+    if (isControlled) {
+      onIndexChange?.(index);
+    } else {
+      setInternalCurrent(index);
+    }
     setIsLoading(true);
-    setCurrent((prev) => (prev === 0 ? images.length - 1 : prev - 1));
+  }, [isControlled, onIndexChange]);
+
+  const prevSlide = () => {
+    setCurrent(current === 0 ? images.length - 1 : current - 1);
   };
 
   const nextSlide = () => {
-    setIsLoading(true);
-    setCurrent((prev) => (prev === images.length - 1 ? 0 : prev + 1));
+    setCurrent(current === images.length - 1 ? 0 : current + 1);
   };
+
+  React.useEffect(() => {
+    setIsLoading(true);
+  }, [current]);
 
   if (!images || images.length === 0) {
     return (
@@ -65,7 +80,7 @@ export default function HeroCarousel({
               priority={true}
               sizes="(max-width: 1024px) 100vw, (max-width: 1536px) 66vw, 1000px"
               src={images[current]?.src as string}
-              onLoadingComplete={() => setIsLoading(false)}
+              onLoad={() => setIsLoading(false)}
               onError={() => setIsLoading(false)}
             />
           </div>

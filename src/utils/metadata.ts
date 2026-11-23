@@ -1,25 +1,24 @@
-
 export const staticSeo = {
   default: {
-    title: "Bagisto Headless",
-    description: "Headless eCommerce with Bagisto",
+    title: "Easy island supply",
+    description: "Professional Island Wholesaler & Supply Chain",
     image: "/Logo.webp",
     canonical: "/",
   },
   register : {
-    title: "Register",
-    description: "Register to Bagisto Headless",
+    title: "Create Account",
+    description: "Register to start shopping with us",
     image: "/Logo.webp",
     canonical: "/customer/register",
   },
   login: {
-    title: "Login",
-    description: "Login to Bagisto Headless",
+    title: "Sign In",
+    description: "Login to your account",
     image: "/Logo.webp",
     canonical: "/customer/login",
   },
   forget:{
-    title: "Forget Password",
+    title: "Reset Password",
   description: "Recover your account by resetting your password.",
   image: "/Logo.webp",
   canonical: "/customer/forget-password",

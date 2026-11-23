@@ -1,22 +1,38 @@
 "use client";
 
-import { FC, useState, useEffect, useCallback, useRef } from "react";
-import Link from "next/link";
+import {FC, useCallback, useEffect, useRef, useState} from "react";
+import Link from "@/components/common/Link";
 import Image from "next/image";
-import { Shimmer } from "@/components/common/Shimmer";
+import {Shimmer} from "@/components/common/Shimmer";
+import type {ThemeBannerBrief} from "@/types/theme/theme-customization";
 
 interface ImageCarouselProps {
-    options: {
-        images: {
-            image: string;
-            link: string;
-            title?: string;
-        }[];
-    };
+    /**
+     * image_carousel 区块数据。
+     * 由后端 ThemeCustomizationServiceImpl.injectBannerSection() 从 PromotionBanner 自动注入，
+     * Admin 端独立管理 Banner，前端只调一次主题接口拿到。
+     */
+    banners: ThemeBannerBrief[];
+    sectionTitle?: string | null;
+    sectionSubtitle?: string | null;
 }
 
-const ImageCarousel: FC<ImageCarouselProps> = ({ options }) => {
-    const { images } = options;
+const ImageCarousel: FC<ImageCarouselProps> = ({
+                                                   banners,
+                                                   sectionTitle: _sectionTitle,
+                                                   sectionSubtitle: _sectionSubtitle
+                                               }) => {
+    // ✅ 最小改动：把 BannerBriefVO 映射成组件内部期望的 options.images 结构
+    // link 是 Admin 端 PromotionBanner 配的完整链接，需要智能处理：
+    //   - http(s):// → 外部链接，新窗口打开
+    //   - /xxx/yyy   → 内部绝对路径，直接跳转
+    //   - 纯文本     → 当作搜索关键词（兜底）
+    const images = (banners ?? []).map((b) => ({
+        image: b.picUrl,
+        link: b.url,
+        title: b.title,
+        isExternal: !!b.url && /^https?:\/\//i.test(b.url),
+    }));
 
     const [currentIndex, setCurrentIndex] = useState(0);
     const [isPaused, setIsPaused] = useState(false);
@@ -28,7 +44,7 @@ const ImageCarousel: FC<ImageCarouselProps> = ({ options }) => {
             return imagePath;
         }
 
-        const backendUrl = process.env.NEXT_PUBLIC_BAGISTO_ENDPOINT;
+        const backendUrl = process.env.NEXT_PUBLIC_API_URL;
         if (!backendUrl) return "";
 
         const cleanPath = imagePath.startsWith('/') ? imagePath.slice(1) : imagePath;
@@ -146,23 +162,47 @@ const ImageCarousel: FC<ImageCarouselProps> = ({ options }) => {
                             }}
                         >
                             {img.link ? (
-                                <Link
-                                    href={`/search/${img.link}`}
-                                    className="block h-full w-full"
-                                    aria-label={`View ${altText}`}
-                                >
-                                    <div className="relative h-full w-full">
-                                        <Shimmer className="h-full w-full" />
-                                        <Image
-                                            src={imageUrl}
-                                            alt={altText}
-                                            fill
-                                            className="object-cover !z-0"
-                                            priority={index === 0}
-                                            sizes="100vw"
-                                        />
-                                    </div>
-                                </Link>
+                                img.isExternal ? (
+                                    <a
+                                        href={img.link}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="block h-full w-full"
+                                        aria-label={`View ${altText}`}
+                                    >
+                                        <div className="relative h-full w-full">
+                                            <Shimmer className="h-full w-full"/>
+                                            <Image
+                                                src={imageUrl}
+                                                alt={altText}
+                                                fill
+                                                className="object-cover !z-0"
+                                                priority={index === 0}
+                                                sizes="100vw"
+                                                loading={index === 0 ? "eager" : "lazy"}
+                                            />
+                                        </div>
+                                    </a>
+                                ) : (
+                                    <Link
+                                        href={img.link.startsWith("/") ? img.link : `/search/${img.link}`}
+                                        className="block h-full w-full"
+                                        aria-label={`View ${altText}`}
+                                    >
+                                        <div className="relative h-full w-full">
+                                            <Shimmer className="h-full w-full"/>
+                                            <Image
+                                                src={imageUrl}
+                                                alt={altText}
+                                                fill
+                                                className="object-cover !z-0"
+                                                priority={index === 0}
+                                                sizes="100vw"
+                                                loading={index === 0 ? "eager" : "lazy"}
+                                            />
+                                        </div>
+                                    </Link>
+                                )
                             ) : (
                                 <div className="relative h-full w-full">
                                     <Shimmer className="h-full w-full" />

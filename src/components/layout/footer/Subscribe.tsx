@@ -1,19 +1,21 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import {useEffect, useState} from "react";
 import clsx from "clsx";
-import { useForm } from "react-hook-form";
-import { RecoverPasswordFormState } from "@components/customer/types";
-import { Button } from "@components/common/button/LoadingButton";
-import { userSubscribe } from "@utils/actions";
-import { useCustomToast } from "@utils/hooks/useToast";
-import { EMAIL_REGEX } from "@utils/constants";
+import {useForm} from "react-hook-form";
+import {RecoverPasswordFormState} from "@components/customer/types";
+import {Button} from "@components/common/button/LoadingButton";
+import {userSubscribe} from "@utils/actions";
+import {useCustomToast} from "@utils/hooks/useToast";
+import {EMAIL_REGEX} from "@utils/constants";
+import {useTranslations} from "next-intl";
 
 type FormValues = {
   email: string;
 };
 
 const Subscribe = () => {
+  const t = useTranslations("footer");
   const [loading, setLoading] = useState<boolean>(false);
   const {
     register,
@@ -65,9 +67,9 @@ const Subscribe = () => {
       className="mt-4 md:mt-0 md:px-0 relative"
       onSubmit={handleSubmit(onSubmit)}
     >
-      <p className="mb-1 text-base font-semibold">Newsletter</p>
+      <p className="mb-1 text-base font-semibold">{t("newsletter")}</p>
       <p className="font-sm font-normal">
-        Subscribe to our newsletter for exclusive offers!
+        {t("newsletterDescription")}
       </p>
 
       <div className="mt-4 flex gap-x-3">
@@ -87,7 +89,7 @@ const Subscribe = () => {
               ? "border-red-500 dark:border-red-500"
               : "border-gray-300 dark:border-neutral-200"
           )}
-          placeholder="Email Address"
+          placeholder={t("emailPlaceholder")}
         />
         <Button
           className={clsx(
@@ -99,7 +101,7 @@ const Subscribe = () => {
           )}
           disabled={loading || isSubmitting}
           loading={loading || isSubmitting}
-          title="Subscribe"
+          title={t("subscribe")}
           type="submit"
         />
       </div>

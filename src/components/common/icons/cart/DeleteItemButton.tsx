@@ -1,7 +1,9 @@
 import LoadingDots from "@components/common/icons/LoadingDots";
-import { TrashIcon } from "@heroicons/react/24/outline";
-import { useAddProduct } from "@utils/hooks/useAddToCart";
+import {TrashIcon} from "@heroicons/react/24/outline";
 import clsx from "clsx";
+import {CartItem} from "@/types/api/trade/cart";
+import {useCart} from "@utils/hooks/useAddToCart";
+import {useAuthStatus} from "@utils/hooks/useAuthStatus";
 
 
 function SubmitButton({
@@ -33,20 +35,11 @@ function SubmitButton({
   );
 }
 
-interface CartItemEdge {
-  node: {
-    id: string;
-    quantity: number;
-    name: string;
-    price: number;
-  };
-}
-
-export function DeleteItemButton({ item }: { item: CartItemEdge }) {
-  const { onAddToRemove, isRemoveLoading } = useAddProduct();
-  const itemId = item?.node?.id;
+export function DeleteItemButton({item}: { item: CartItem }) {
+  const {onRemoveItem, isRemoveLoading} = useCart();
+  const {isGuest} = useAuthStatus();
   const handleRemoveCart = () => {
-    onAddToRemove(itemId);
+    onRemoveItem(item, isGuest);
   };
 
   return (

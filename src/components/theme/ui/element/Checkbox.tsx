@@ -1,5 +1,5 @@
 import clsx from "clsx";
-import { forwardRef } from "react";
+import {forwardRef} from "react";
 
 const CheckBox = forwardRef<HTMLInputElement, any>(
   ({ id, label, name, className, defaultValue, ...rest }, ref) => {

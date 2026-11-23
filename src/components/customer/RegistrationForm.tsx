@@ -1,14 +1,16 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
-import { SubmitHandler, useForm } from "react-hook-form";
+import Link from "@/components/common/Link";
+import {SubmitHandler, useForm} from "react-hook-form";
 import InputText from "@components/common/form/Input";
-import { useCustomToast } from "@/utils/hooks/useToast";
-import { useRouter } from "next/navigation";
-import { EMAIL_REGEX, SIGNUP_IMG, IS_VALID_INPUT } from "@utils/constants";
-import { createUser } from "@utils/actions";
-import { Button } from "@components/common/button/Button";
+import {useCustomToast} from "@/utils/hooks/useToast";
+import {useRouter} from "next/navigation";
+import {EMAIL_REGEX, IS_VALID_INPUT, SIGNUP_IMG} from "@utils/constants";
+import {RegisterRequest, registerUser} from "@utils/api/member";
+import {Button} from "@components/common/button/Button";
+import {useTranslations} from "next-intl";
+import {trackEvent} from "@/lib/analytics";
 
 export type RegisterInputs = {
   firstName: string;
@@ -20,6 +22,7 @@ export type RegisterInputs = {
 
 export default function RegistrationForm() {
   const router = useRouter();
+  const t = useTranslations("auth");
 
   const {
     register,
@@ -33,23 +36,31 @@ export default function RegistrationForm() {
   const { showToast } = useCustomToast();
 
   const onSubmit: SubmitHandler<RegisterInputs> = async (data) => {
-    if (data.password !== data.passwordConfirmation) {
-      showToast("The Passwords do not match.", "warning");
-      return;
-    }
+    try {
+      const payload: RegisterRequest = {
+        firstName: data.firstName,
+        lastName: data.lastName,
+        email: data.email,
+        password: data.password,
+        confirmPassword: data.passwordConfirmation,
+      };
 
-    await createUser(data)
-      .then((res) => {
-        if (res?.success) {
-          showToast("User created successfully", "success");
-          router.replace("/customer/login");
-        } else {
-          showToast(res?.error?.message || "Failed to create user", "warning");
-        }
-      })
-      .catch((error) => {
-        showToast(error.message || "An error occurred", "warning");
-      });
+      const success = await registerUser(payload);
+
+      if (success) {
+        // ✅ 注册成功触发 sign_up 事件
+        trackEvent("sign_up", {method: "email"});
+        showToast("User created successfully", "success");
+        router.replace("/customer/login");
+      } else {
+        // 如果 API 返回 false，但没有抛出错误，也视为失败
+        throw new Error("Failed to create user. Please try again.");
+      }
+    } catch (error: any) {
+      // 捕获 API 调用中抛出的错误
+      const message = error?.message || "An error occurred during registration.";
+      showToast(message, "danger");
+    }
   };
 
   return (
@@ -57,10 +68,10 @@ export default function RegistrationForm() {
       <div className="relative flex w-full max-w-[583px] flex-col gap-y-4 lg:gap-y-12">
         <div className="font-outfit">
           <h2 className="py-1 text-2xl font-semibold sm:text-4xl">
-            Become User
+            {t("becomeUser")}
           </h2>
           <p className="mt-2 text-base md:text-lg font-normal text-black/[60%] dark:text-neutral-400 sm:mt-2">
-            You are new to our store, we are glad to have you as a member.
+            {t("welcomeMessage")}
           </p>
         </div>
 
@@ -85,10 +96,10 @@ export default function RegistrationForm() {
                     ? [errors.firstName.message]
                     : undefined
                 }
-                label="First Name"
+                label={t("firstName")}
                 labelPlacement="outside"
                 name="firstName"
-                placeholder="Enter first name"
+                placeholder={t("firstNamePlaceholder")}
                 size="lg"
               />
               <InputText
@@ -106,10 +117,10 @@ export default function RegistrationForm() {
                     ? [errors.lastName.message]
                     : undefined
                 }
-                label="Last Name"
+                label={t("lastName")}
                 labelPlacement="outside"
                 name="lastName"
-                placeholder="Enter last name"
+                placeholder={t("lastNamePlaceholder")}
                 size="lg"
               />
             </div>
@@ -123,10 +134,10 @@ export default function RegistrationForm() {
                 },
               })}
               errorMsg={errors.email?.message}
-              label="Email"
+              label={t("email")}
               labelPlacement="outside"
               name="email"
-              placeholder="Enter email address"
+              placeholder={t("emailPlaceholder")}
               size="lg"
             />
 
@@ -149,10 +160,10 @@ export default function RegistrationForm() {
                   return true;
                 },
               })}
-              label="Password"
+              label={t("password")}
               labelPlacement="outside"
               name="password"
-              placeholder="Enter password"
+              placeholder={t("passwordPlaceholder")}
               typeName="password"
               size="lg"
               errorMsg={
@@ -164,10 +175,10 @@ export default function RegistrationForm() {
               {...register("passwordConfirmation", {
                 required: "Please confirm your password",
               })}
-              label="Confirm Password"
+              label={t("confirmPassword")}
               labelPlacement="outside"
               name="passwordConfirmation"
-              placeholder="Enter confirm password"
+              placeholder={t("confirmPasswordPlaceholder")}
               size="lg"
               typeName="password"
             />
@@ -177,13 +188,13 @@ export default function RegistrationForm() {
             <Button
               disabled={isSubmitting}
               loading={isSubmitting}
-              title="Sign Up"
+              title={t("signUp")}
               type="submit"
             />
             <span className="mx-auto md:mx-0 font-outfit">
-              Already have an account?{" "}
+              {t("alreadyHaveAccount")}{" "}
               <Link className="text-blue-600 underline" href="/customer/login" aria-label="Go to sign in page">
-                Sign In
+                {t("signIn")}
               </Link>
             </span>
           </div>

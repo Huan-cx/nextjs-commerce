@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+<div class="max-w-md mx-auto h-[760px] bg-slate-50 flex flex-col relative shadow-2xl border border-slate-200 overflow-hidden rounded-[36px] font-sans">
+
+    <!-- 1. 顶部搜索区 -->
+    <div class="bg-white px-4 pt-6 pb-3 border-b border-slate-100 shrink-0">
+        <div class="relative">
+            <input class="w-full bg-slate-100 text-xs pl-8 pr-4 py-2.5 rounded-xl focus:bg-white focus:ring-1 focus:ring-blue-600 focus:outline-none transition-all"
+                   placeholder="Search categories, products or specs..."
+                   type="text">
+            <svg class="w-3.5 h-3.5 text-slate-400 absolute left-3 top-3" fill="none" stroke="currentColor"
+                 viewBox="0 0 24 24">
+                <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke-linecap="round" stroke-linejoin="round"
+                      stroke-width="2"></path>
+            </svg>
+        </div>
+    </div>
+
+    <!-- 2. 双栏联动核心区 -->
+    <div class="flex-1 flex overflow-hidden">
+
+        <!-- 【左栏：一级索引】自适应比例，允许长词断行 -->
+        <div class="w-[30%] max-w-[120px] min-w-[90px] bg-slate-100 overflow-y-auto flex flex-col shrink-0 border-r border-slate-200/60 select-none">
+            <a class="p-2.5 min-h-[56px] flex items-center bg-white border-l-4 border-blue-600 text-left" href="#">
+                <span class="text-xs font-bold text-slate-900 leading-tight break-words hyphens-auto">Architecture & Materials</span>
+            </a>
+            <a class="p-2.5 min-h-[56px] flex items-center text-left border-l-4 border-transparent border-b border-slate-200/40"
+               href="#">
+                <span class="text-xs font-medium text-slate-600 leading-tight break-words hyphens-auto">Home & Living</span>
+            </a>
+            <a class="p-2.5 min-h-[56px] flex items-center text-left border-l-4 border-transparent border-b border-slate-200/40"
+               href="#">
+                <span class="text-xs font-medium text-slate-600 leading-tight break-words hyphens-auto">Hardware Fittings</span>
+            </a>
+        </div>
+
+        <!-- 【右栏：海量二三级高密度平铺区】 -->
+        <div class="flex-1 bg-white overflow-y-auto select-none">
+
+            <!-- 【二级类目大组 1】 -->
+            <div class="relative">
+                <!-- 二级标题吸顶效果 (sticky top-0)，滑动时体验极佳 -->
+                <div class="sticky top-0 bg-white/95 backdrop-blur-sm px-4 py-2 border-b border-slate-100 z-10 flex justify-between items-center">
+                    <h4 class="text-xs font-bold text-slate-900 tracking-wide">Wall & Floor Surfaces</h4>
+                    <span class="text-[9px] text-slate-400 font-mono">14 Categories</span>
+                </div>
+
+                <!-- 三级微型带图行：固定 2 列网格，最大化压缩纵向高度 -->
+                <div class="p-3 grid grid-cols-2 gap-x-3 gap-y-2">
+
+                    <!-- 产品行 1 -->
+                    <a class="flex items-center gap-2 py-1 px-1.5 rounded-md hover:bg-slate-50 border border-transparent hover:border-slate-100 transition-all min-w-0"
+                       href="#">
+                        <!-- 28x28 微型产品图 -->
+                        <div class="w-7 h-7 bg-slate-100 rounded border border-slate-200/60 overflow-hidden shrink-0 flex items-center justify-center p-0.5">
+                            <img alt="Marble" class="w-full h-full object-cover rounded-sm" src="https://unsplash.com">
+                        </div>
+                        <!-- 文本自适应，英文换行高度也刚好平齐图片 -->
+                        <span class="text-[11px] font-medium text-slate-700 leading-tight break-words min-w-0 line-clamp-2">Natural Marble Slabs</span>
+                    </a>
+
+                    <!-- 产品行 2 -->
+                    <a class="flex items-center gap-2 py-1 px-1.5 rounded-md hover:bg-slate-50 border border-transparent hover:border-slate-100 transition-all min-w-0"
+                       href="#">
+                        <div class="w-7 h-7 bg-slate-100 rounded border border-slate-200/60 overflow-hidden shrink-0 flex items-center justify-center p-0.5">
+                            <img alt="Microcement" class="w-full h-full object-cover rounded-sm"
+                                 src="https://unsplash.com">
+                        </div>
+                        <span class="text-[11px] font-medium text-slate-700 leading-tight break-words min-w-0 line-clamp-2">Eco Microcement</span>
+                    </a>
+
+                    <!-- 产品行 3（极长英文词测试，行高依然完美对齐） -->
+                    <a class="flex items-center gap-2 py-1 px-1.5 rounded-md hover:bg-slate-50 border border-transparent hover:border-slate-100 transition-all min-w-0"
+                       href="#">
+                        <div class="w-7 h-7 bg-slate-100 rounded border border-slate-200/60 overflow-hidden shrink-0 flex items-center justify-center p-0.5">
+                            <img alt="Concrete" class="w-full h-full object-cover rounded-sm"
+                                 src="https://unsplash.com">
+                        </div>
+                        <span class="text-[11px] font-medium text-slate-700 leading-none tracking-tight break-words min-w-0 line-clamp-2">Precast Concrete Components</span>
+                    </a>
+
+                    <!-- 产品行 4 -->
+                    <a class="flex items-center gap-2 py-1 px-1.5 rounded-md hover:bg-slate-50 border border-transparent hover:border-slate-100 transition-all min-w-0"
+                       href="#">
+                        <div class="w-7 h-7 bg-slate-100 rounded border border-slate-200/60 overflow-hidden shrink-0 flex items-center justify-center p-0.5">
+                            <img alt="Flooring" class="w-full h-full object-cover rounded-sm"
+                                 src="https://unsplash.com">
+                        </div>
+                        <span class="text-[11px] font-medium text-slate-700 leading-tight break-words min-w-0 line-clamp-2">SPC Flooring Systems</span>
+                    </a>
+
+                </div>
+            </div>
+
+            <!-- 【二级类目大组 2（演示海量多分类连续排列）】 -->
+            <div class="relative">
+                <div class="sticky top-0 bg-white/95 backdrop-blur-sm px-4 py-2 border-b border-slate-100 z-10 flex justify-between items-center">
+                    <h4 class="text-xs font-bold text-slate-900 tracking-wide">Bathroom & Hardware</h4>
+                    <span class="text-[9px] text-slate-400 font-mono">8 Categories</span>
+                </div>
+                <div class="p-3 grid grid-cols-2 gap-x-3 gap-y-2">
+                    <a class="flex items-center gap-2 py-1 px-1.5 rounded-md min-w-0" href="#">
+                        <div class="w-7 h-7 bg-slate-100 rounded border border-slate-200/60 overflow-hidden shrink-0 flex items-center justify-center p-0.5">
+                            <img alt="Shower" class="w-full h-full object-cover rounded-sm" src="https://unsplash.com">
+                        </div>
+                        <span class="text-[11px] font-medium text-slate-700 leading-tight min-w-0 line-clamp-2">Stainless Showers</span>
+                    </a>
+                    <a class="flex items-center gap-2 py-1 px-1.5 rounded-md min-w-0" href="#">
+                        <div class="w-7 h-7 bg-slate-100 rounded border border-slate-200/60 overflow-hidden shrink-0 flex items-center justify-center p-0.5">
+                            <img alt="Faucet" class="w-full h-full object-cover rounded-sm" src="https://unsplash.com">
+                        </div>
+                        <span class="text-[11px] font-medium text-slate-700 leading-tight min-w-0 line-clamp-2">Sensor Faucets</span>
+                    </a>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- 3.底部固定导航栏 仅样板不使用 -->
+    <div class="bg-white border-t border-slate-200 px-2 py-2 flex justify-between items-center text-center shrink-0 z-10 shadow-[0_-4px_12px_rgba(0,0,0,0.03)]">
+        <a class="flex flex-col items-center flex-1 py-1 text-slate-400" href="#">
+            <svg class="w-4 h-4 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
+                      stroke-linecap="round" stroke-linejoin="round"
+                      stroke-width="2"></path>
+            </svg>
+            <span class="text-[9px] font-medium tracking-tight">Home</span></a>
+        <a class="flex flex-col items-center flex-1 py-1 text-blue-600" href="#">
+            <svg class="w-4 h-4 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path d="M4 6h16M4 12h16M4 18h16" stroke-linecap="round" stroke-linejoin="round"
+                      stroke-width="2"></path>
+            </svg>
+            <span class="text-[9px] font-bold tracking-tight">Category</span></a>
+        <a class="flex flex-col items-center flex-1 py-1 text-slate-400" href="#">
+            <svg class="w-4 h-4 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+                      stroke-linecap="round" stroke-linejoin="round"
+                      stroke-width="2"></path>
+            </svg>
+            <span class="text-[9px] font-medium tracking-tight">Inquiry</span></a>
+        <a class="flex flex-col items-center flex-1 py-1 text-slate-400" href="#">
+            <svg class="w-4 h-4 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"></path>
+            </svg>
+            <span class="text-[9px] font-medium tracking-tight">Profile</span></a>
+    </div>
+
+</div>
+
+
+</div>
+
+
+</body>
+</html>

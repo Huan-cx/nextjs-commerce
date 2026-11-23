@@ -1,97 +1,115 @@
-import Link from "next/link";
-import { FC } from "react";
+import Link from "@/components/common/Link";
+import {FC} from "react";
 import Grid from "@/components/theme/ui/grid/Grid";
 import AddToCartButton from "@/components/theme/ui/AddToCartButton";
-import { NextImage } from "@/components/common/NextImage";
-import { Price } from "@/components/theme/ui/Price";
+import {NextImage} from "@/components/common/NextImage";
+import {Price, PriceWrapper} from '@/components/theme/ui/Price';
+import {Sku, Spu} from "@/types/api/product/type";
+import {getImageUrl, NOT_IMAGE} from "@utils/constants";
+import {useTranslationData} from "@/hooks/useTranslationData";
 
 type ProductCardProps = {
   currency: string;
-  price: string;
-  specialPrice?: string;
-  imageUrl: string;
-  product: {
-    urlKey: string;
-    name: string;
-    id: string;
-    type: string;
-    isSaleable?: string;
-  };
-  sizes?: string; 
+  product: Spu;
+  sizes?: string;
   priority?: boolean;
 };
 
 export const ProductCard: FC<ProductCardProps> = ({
-  currency,
-  price,
-  specialPrice,
-  imageUrl,
-  product,
-  sizes = "(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw",
-  priority = false
-}) => {
+                                                    currency,
+                                                    product,
+                                                    sizes = "(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw",
+                                                    priority = false
+                                                  }) => {
+  const {getName} = useTranslationData();
+  const productType = product.skus?.length === 1 ? 'simple' : 'configurable';
+  const price = product.price?.toString() || "0";
+  const specialPrice = product.combinationPrice?.toString() || product.seckillPrice?.toString();
+  const imageUrl = getImageUrl(
+      product?.picUrl || "",
+      process.env.NEXT_PUBLIC_API_URL,
+      NOT_IMAGE
+  );
+  const isSaleable = product.skus && product.skus.length > 0;
+  const productName = getName(product, product.name || "");
+
+  // 优先使用产品本身的slug，不使用多语言翻译的slug，最后回退到id
+  const productSlug = product.slug || String(product.id);
+
+  // For simple products, we can construct the full product info for the cart button.
+  // For configurable products, the button will act as a link, so we pass the data anyway.
+  const cartProductInfo = {
+    spu: product,
+    sku: product.skus && product.skus.length > 0 ? product.skus[0] : ({} as Sku), // Provide a default or handle appropriately
+  };
+
   return (
-    <Grid.Item
-      key={product.id}
-      className="animate-fadeIn gap-y-4.5 flex flex-col"
-    >
-      <div className="group relative overflow-hidden rounded-lg">
-        <Link href={`/product/${product.urlKey}`} aria-label={`View ${product.name}`}>
-          <div className="aspect-[353/283] h-auto truncate rounded-lg">
-            <NextImage
-              alt={product?.name || "Product image"}
-              src={imageUrl}
-              width={353}
-              height={283}
-              sizes={sizes}
-              className={`rounded-lg bg-neutral-100 object-cover transition duration-300 ease-in-out group-hover:scale-105`}
-              priority={priority}
+      <Grid.Item
+          key={product.id}
+          className="animate-fadeIn gap-y-4.5 flex flex-col"
+      >
+        <div className="group relative overflow-hidden rounded-lg">
+          <Link href={`/product/${productSlug}`} aria-label={`View ${productName}`}>
+            <div className="aspect-[353/283] h-auto truncate rounded-lg">
+              <NextImage
+                  alt={productName || "Product image"}
+                  src={imageUrl}
+                  width={353}
+                  height={283}
+                  sizes={sizes}
+                  className={`rounded-lg bg-neutral-100 object-cover transition duration-300 ease-in-out group-hover:scale-105`}
+                  priority={priority}
+              />
+            </div>
+          </Link>
+
+          <div
+              className={`hidden lg:block absolute bottom-4 left-1/2 flex -translate-x-1/2 items-center gap-x-4 rounded-full border-[1.5px] border-white bg-white/70 px-4 py-1.5 text-xs font-semibold text-black opacity-0 shadow-2xl backdrop-blur-md duration-300 group-hover:opacity-100 dark:text-white`}
+          >
+            <AddToCartButton
+                product={cartProductInfo}
+                isSaleable={isSaleable}
             />
           </div>
-        </Link>
-
-        <div
-          className={`hidden lg:block absolute bottom-4 left-1/2 flex -translate-x-1/2 items-center gap-x-4 rounded-full border-[1.5px] border-white bg-white/70 px-4 py-1.5 text-xs font-semibold text-black opacity-0 shadow-2xl backdrop-blur-md duration-300 group-hover:opacity-100 dark:text-white`}
-        >
-          <AddToCartButton productType={product.type} productId={product.id} productUrlKey={product.urlKey} isSaleable={product?.isSaleable} />
-        </div>
-        <div
-          className={`block lg:hidden absolute bottom-[10px] left-1/2 flex -translate-x-1/2 items-center gap-x-4 rounded-full border-[1.5px] border-white bg-white/70 px-3 py-0.5 md:px-4 md:py-1.5 text-xs font-semibold text-black opacity-100 shadow-2xl backdrop-blur-md duration-300 group-hover:opacity-100 dark:text-white`}
-        >
-          <AddToCartButton productType={product.type} productId={product.id} productUrlKey={product.urlKey} isSaleable={product?.isSaleable} />
-        </div>
-      </div>
-
-      <div>
-        <h3 className="mb-2.5 text-sm font-medium md:text-lg">
-          {product?.name}
-        </h3>
-
-        <div className="flex items-center gap-2">
-          {product?.type === "configurable" && (
-            <span className="text-xs text-gray-600 dark:text-gray-400 md:text-sm">
-              As low as
-            </span>
-          )}
-          {product?.type === "simple" && specialPrice ? (
-            <>
-              <div className="flex items-center gap-2">
-                <Price
-                  amount={specialPrice}
-                  className="text-xs font-semibold md:text-sm"
-                  currencyCode={currency}
-                />
-              </div>
-            </>
-          ) : (
-            <Price
-              amount={price}
-              className="text-xs font-semibold md:text-sm"
-              currencyCode={currency}
+          <div
+              className={`block lg:hidden absolute bottom-[10px] left-1/2 flex -translate-x-1/2 items-center gap-x-4 rounded-full border-[1.5px] border-white bg-white/70 px-3 py-0.5 md:px-4 md:py-1.5 text-xs font-semibold text-black opacity-100 shadow-2xl backdrop-blur-md duration-300 group-hover:opacity-100 dark:text-white`}
+          >
+            <AddToCartButton
+                product={cartProductInfo}
+                isSaleable={isSaleable}
             />
-          )}
+          </div>
         </div>
-      </div>
-    </Grid.Item>
+
+        <div>
+          <h3 className="mb-2.5 text-sm font-medium md:text-lg">
+            {productName}
+          </h3>
+
+
+          <PriceWrapper>
+            <div className="flex items-center gap-2">
+              {productType === "configurable" && (
+                  <span className="text-xs text-gray-600 dark:text-gray-400 md:text-sm">
+                As low as
+              </span>
+              )}
+              {productType === "simple" && specialPrice ? (
+                  <Price
+                      amount={specialPrice}
+                      className="text-xs font-semibold md:text-sm"
+                      currencyCode={currency}
+                  />
+              ) : (
+                  <Price
+                      amount={price}
+                      className="text-xs font-semibold md:text-sm"
+                      currencyCode={currency}
+                  />
+              )}
+            </div>
+          </PriceWrapper>
+        </div>
+      </Grid.Item>
   );
 };

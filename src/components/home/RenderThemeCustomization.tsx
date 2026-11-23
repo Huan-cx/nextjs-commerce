@@ -1,68 +1,62 @@
-import { FC, Suspense } from "react";
-import { safeParse } from "@utils/helper";
-import { CategoryCarouselOptions, ProductCarouselOptions, ThemeCustomizationResponse } from "@/types/theme/theme-customization";
+"use client";
+
+import type {ThemeSection} from "@/types/theme/theme-customization";
 import ImageCarousel from "./ImageCarousel";
 import ProductCarousel from "./ProductCarousel";
 import CategoryCarousel from "./CategoryCarousel";
-import { MobileSearchBar } from "@components/layout/navbar/MobileSearch";
-import { CategoryCarouselSkeleton } from "@components/common/skeleton/CategoryCarouselSkeleton";
-import { ThemeSkeleton } from "@components/common/skeleton/ThemeSkeleton";
-import { ThreeItemGridSkeleton } from "@components/theme/ui/grid/ThreeItemsSkeleton";
 
-interface RenderThemeCustomizationProps {
-    themeCustomizations: ThemeCustomizationResponse['themeCustomizations'];
+interface Props {
+  sections: ThemeSection[];
+  locale: string;
 }
 
-const RenderThemeCustomization: FC<RenderThemeCustomizationProps> = ({ themeCustomizations }) => {
-    if (!themeCustomizations?.edges?.length) return null;
+const RenderThemeCustomization = ({sections, locale: _locale}: Props) => {
+  if (!Array.isArray(sections) || sections.length === 0) {
+    return null;
+  }
 
-    let productCarouselIndex = 0;
+  return (
+      <section className="w-full max-w-screen-2xl mx-auto pb-4 px-4 xss:px-7.5">
+        {sections.map((section) => {
+          const key = `${section.id}-${section.type}`;
 
-    const sortedEdges = [...themeCustomizations.edges].sort((a, b) =>
-        (a.node.sortOrder || 0) - (b.node.sortOrder || 0)
-    );
+          switch (section.type) {
+            case "image_carousel":
+              return (
+                  <ImageCarousel
+                      key={key}
+                      banners={section.banners ?? []}
+                      sectionTitle={section.translation?.title ?? null}
+                      sectionSubtitle={section.translation?.subtitle ?? null}
+                  />
+              );
 
-    return (
-        <>
-            <MobileSearchBar />
-            <section className="w-full max-w-screen-2xl mx-auto pb-4 px-4 xss:px-7.5">
-                {sortedEdges.map(({ node }) => {
-                    const translation = node.translations.edges.find(e => e.node.locale === 'en') || node.translations.edges[0];
-                    if (!translation) return null;
+            case "product_carousel":
+              return (
+                  <ProductCarousel
+                      key={key}
+                      section={section}
+                  />
+              );
 
-                    const options = safeParse(translation.node.options) || {};
-                    if (Object.keys(options).length === 0) {
-                        console.error("Error parsing options for", node.type);
-                    }
+            case "category_carousel":
+              return (
+                  <CategoryCarousel
+                      key={key}
+                      section={section}
+                  />
+              );
 
-                    switch (node.type) {
-                        case "image_carousel":
-                            return <ImageCarousel key={node.id} options={options as any} />;
-                        case "product_carousel": {
-                            productCarouselIndex++;
-                            const opts = options as ProductCarouselOptions;
-                            const limit = opts?.filters?.limit ? parseInt(String(opts.filters.limit), 10) : null;
-                            const itemCount = limit || (productCarouselIndex === 1 ? 3 : 4);
-                            const fallback = node.sortOrder === 2 ? <ThreeItemGridSkeleton /> : <ThemeSkeleton />;
-                            return (
-                                <Suspense key={node.id} fallback={fallback}>
-                                    <ProductCarousel key={node.id} options={{ ...options, title: node.name } as ProductCarouselOptions} itemCount={itemCount} sortOrder={node?.sortOrder} />
-                                </Suspense>
-                            );
-                        }
-                        case "category_carousel":
-                            return (
-                                <Suspense key={node.id} fallback={<CategoryCarouselSkeleton />}>
-                                    <CategoryCarousel options={options as CategoryCarouselOptions} />
-                                </Suspense>
-                            );
-                        default:
-                            return null;
-                    }
-                })}
-            </section>
-        </>
-    );
+            case "static_content":
+              // 二期接入前端渲染，暂时跳过
+              return null;
+
+            default:
+              return null;
+          }
+        })}
+      </section>
+  );
 };
 
 export default RenderThemeCustomization;

@@ -1,9 +1,6 @@
-
-import { NOT_IMAGE } from "@/utils/constants";
 import Grid from "../../theme/ui/grid/Grid";
-import { baseUrl, getImageUrl } from "@/utils/constants";
-import { ProductCard } from "./ProductCard";
-import { ProductsSectionProps } from "../type";
+import {ProductCard} from "./ProductCard";
+import {ProductsSectionProps} from "../type";
 
 
 export function ProductsSection({ title, description, products }: ProductsSectionProps) {
@@ -18,27 +15,14 @@ export function ProductsSection({ title, description, products }: ProductsSectio
 
       <Grid className="grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
         {products.map((item, index) => {
-          const imageUrl = getImageUrl(item?.baseImageUrl, baseUrl, NOT_IMAGE);
-          const ProductPrice =
-            item?.type === "configurable"
-              ? item?.minimumPrice ?? "0"
-              : item?.price ?? "0";
           return (
             <ProductCard
               key={item.id ?? index}
               currency="USD"
-              imageUrl={imageUrl || ""}
-              price={String(ProductPrice)}
-              product={{
-                urlKey: item.urlKey || item.sku,
-                name: item?.name || item.sku,
-                id: item.id,
-                type: item.type,
-              }} specialPrice={""} />
+              product={item}/>
           );
         })}
       </Grid>
     </div>
   );
 }
-

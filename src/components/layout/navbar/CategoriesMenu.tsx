@@ -1,55 +1,57 @@
-import Link from "next/link";
-import { GET_TREE_CATEGORIES } from "@/graphql";
+"use client";
+
 import MobileMenu from "./MobileMenu";
-import { cachedGraphQLRequest } from "@utils/hooks/useCache";
-import { TreeCategoriesResponse } from "@/types/theme/category-tree";
+import {useQuery} from "@tanstack/react-query";
+import {getCategoryPage} from "@utils/api/product";
+import {useLocale, useTranslations} from "next-intl";
+import {getTranslationName} from "@/utils/i18n/translation";
+import MegaMenu from "./MegaMenu";
 
-export async function CategoriesMenu() {
-   const data = await cachedGraphQLRequest<TreeCategoriesResponse>(
-    "category",
-    GET_TREE_CATEGORIES,
-    { parentId: 1 }
-  );
+export function CategoriesMenu() {
+  const t = useTranslations("navbar");
+  const locale = useLocale();
 
+  const {data: allCategories = []} = useQuery({
+    queryKey: ['categories-menu'],
+    queryFn: () => getCategoryPage({}),
+  });
 
-  const categories = data?.treeCategories || [];
-
-  const filteredCategories = categories
-    .filter((cat: any) => cat.id !== "1")
-    .map((cat: any) => {
-      const translation = cat.translation;
-      return {
+  // 应用国际化翻译到所有分类数据
+  const translatedCategories = allCategories.map((cat: any) => ({
+    ...cat,
+    name: getTranslationName(cat, locale, cat.name || ""),
+    children: cat.children?.map((subCat: any) => ({
+      ...subCat,
+      name: getTranslationName(subCat, locale, subCat.name || ""),
+      children: subCat.children?.map((thirdCat: any) => ({
+        ...thirdCat,
+        name: getTranslationName(thirdCat, locale, thirdCat.name || "")
+      }))
+    }))
+  }));
+  translatedCategories
+      .map((cat: any) => ({
         id: cat.id,
-        name: translation?.name || "",
-        slug: translation?.slug || "",
-      };
-    })
-    .filter((item: any) => item.name && item.slug);
-
-  const menuData = [
-    { id: "all", name: "All", slug: "" },
-    ...filteredCategories.slice(0, 3),
-  ];
-
+        name: cat.name,
+        slug: cat.slug || cat.name || "",
+      }))
+      .filter((item: any) => item.name && item.slug);
+  t("all");
+    const menuData = [
+        {name: t("all"), slug: "", id: "", href: "/search"},
+        ...translatedCategories,
+    ];
   return (
-    <>
-      <MobileMenu menu={menuData} />
-      <ul className="hidden gap-4 text-sm md:items-center lg:flex xl:gap-6">
-        {menuData.map(
-          (item: { id: string; name: string; slug: string }) => (
-            <li key={item?.id + item?.name}>
-              <Link
-                className="text-nowrap relative text-neutral-500 before:absolute before:bottom-0 before:left-0 before:h-px before:w-0 before:bg-current before:transition-all before:duration-300 before:content-[''] hover:text-black hover:before:w-full dark:text-neutral-400 dark:hover:text-neutral-300"
-                href={item.slug ? `/search/${item.slug}` : "/search"}
-                prefetch={true}
-                aria-label={`Browse ${item.name} products`}
-              >
-                {item.name}
-              </Link>
-            </li>
-          )
-        )}
-      </ul>
-    </>
+      <>
+        {/* 对于移动设备和平板设备，使用移动端菜单 */}
+        <div className="lg:hidden">
+            <MobileMenu menu={menuData}/>
+        </div>
+
+        {/* 对于桌面设备，使用新的巨型菜单 */}
+        <div className="hidden lg:block">
+            <MegaMenu template="enhanced-b2b" categories={menuData}/>
+        </div>
+      </>
   );
 }
